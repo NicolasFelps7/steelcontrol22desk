@@ -1,0 +1,15 @@
+STEELCONTROL DESKTOP - BIOMETRIC COMMAND CENTER V12
+
+Atualização visual do login facial e do cadastro facial de funcionários.
+
+Principais melhorias:
+- HUD industrial alinhado ao aplicativo Mobile.
+- Indicadores de câmera, rastreamento, prova de vida e backend.
+- Moldura biométrica, grade técnica, profundidade e contraste aprimorados.
+- Layout responsivo para notebook, monitor e apresentação.
+
+Não foram alterados:
+- IDs usados pelo JavaScript.
+- Fluxo de autenticação e cadastro.
+- Prova de vida, segundo fator, Face API ou backend.
+- Banco de dados, permissões e regras de segurança.

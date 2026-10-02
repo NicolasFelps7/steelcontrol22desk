@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Minha Empresa | SteelControl</title>
+
+  <link rel="stylesheet" href="assets/css/base.css?v=20260901_OPAQUE_DIALOGS">
+
+  <link
+    rel="stylesheet"
+    href="assets/css/empresa.css?v=20260901_OPAQUE_UI_MAP"
+  >
+
+  <link rel="stylesheet" href="assets/vendor/steel-icons/steel-icons.css?v=1">
+
+  <link rel="stylesheet" href="assets/css/presentation.css?v=20260831_FACIAIS_NOMEADAS">
+
+  <link rel="stylesheet" href="assets/css/industrial-pro.css?v=20260906_FACTORY_PRO">
+
+  <link rel="stylesheet" href="assets/css/industrial-branding.css?v=20260907_COMPANY_CONTROLLER_V6">
+
+  <link rel="stylesheet" href="assets/css/industrial-command-center.css?v=20260907_COMMAND_CENTER_FINAL">
+
+  <link rel="stylesheet" href="assets/css/facial-command-center.css?v=20260928_FACE_HUD_V12">
+
+  <link rel="stylesheet" href="assets/css/company-logo-final.css?v=20260921_LOGO_LAYOUT_MAP_FIX">
+
+</head>
+
+
+<body data-i18n-page-title="companyPageTitle" class="page-company">
+
+  <main class="page">
+
+
+    <!-- ==================================================
+         TOPO
+    =================================================== -->
+
+    <header class="topbar">
+
+      <a href="/app/home" class="brand company-top-brand" aria-label="SteelControl">
+        <span class="company-top-symbol">
+          <img src="assets/img/steel-icon.svg" alt="">
+        </span>
+        <span class="company-top-copy">
+          <strong>SteelControl</strong>
+          <small>Gestão Industrial</small>
+        </span>
+      </a>
+
+
+      <div class="top-actions">
+
+        <button
+          type="button"
+          class="back-btn"
+          id="empresaVoltarBtn"
+          onclick="voltarOrigemEmpresa()"
+        >
+
+          <i class="fa-solid fa-arrow-left"></i>
+
+          <span id="empresaVoltarTexto">Máquinas</span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="logout-btn"
+          onclick="sair()"
+        >
+
+          <i class="fa-solid fa-right-from-bracket"></i>
+
+          Sair
+
+        </button>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- ==================================================
+         HERO DA EMPRESA
+    =================================================== -->
+
+    <section class="hero">
+
+      <div class="company-hero-content">
+
+
+        <!-- LOGO -->
+
+        <div class="company-logo-wrapper">
+
+          <div class="company-logo-box">
+
+            <div id="empresaLogoPlaceholder" class="company-logo-placeholder">
+              <img
+                src="assets/img/steel-icon.svg"
+                alt="SteelControl"
+                class="default-company-logo"
+              >
+            </div>
+
+            <img
+              id="empresaLogo"
+              src=""
+              alt="Logo da empresa"
+              hidden
+            >
+
+          </div>
+
+
+          <label
+            for="inputLogo"
+            class="change-logo-btn"
+            id="alterarLogoBtn"
+          >
+
+            <i class="fa-solid fa-camera"></i>
+
+            Alterar logo
+
+          </label>
+
+          <button
+            type="button"
+            class="remove-logo-btn"
+            id="removerLogoBtn"
+            hidden
+          >
+
+            <i class="fa-solid fa-trash-can"></i>
+
+            Remover logo
+
+          </button>
+
+
+          <input
+            type="file"
+            id="inputLogo"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          >
+
+        </div>
+
+
+
+        <!-- DADOS PRINCIPAIS -->
+
+        <div class="company-main-info">
+
+          <span class="tag">
+
+            <i class="fa-solid fa-building"></i>
+
+            Minha Empresa
+
+          </span>
+
+
+          <h1 id="empresaNome">
+            Carregando empresa...
+          </h1>
+
+
+          <p>
+
+            CNPJ:
+
+            <strong id="empresaCnpj">
+              -
+            </strong>
+
+          </p>
+
+
+          <p
+            id="empresaLocalizacaoHero"
+            class="hero-description"
+          >
+
+            Gerencie funcionários, dados institucionais,
+            localização e métodos de autenticação da empresa.
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         RESUMO
+    =================================================== -->
+
+    <section class="summary-grid">
+
+
+      <!-- FUNCIONÁRIOS -->
+
+      <article class="summary-card">
+
+        <div class="summary-icon">
+
+          <i class="fa-solid fa-users"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Funcionários
+          </span>
+
+          <strong id="totalFuncionarios">
+            0
+          </strong>
+
+        </div>
+
+      </article>
+
+
+
+      <!-- FACIAIS -->
+
+      <article class="summary-card">
+
+        <div class="summary-icon green">
+
+          <i class="fa-solid fa-face-viewfinder"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Com facial
+          </span>
+
+          <strong id="totalComFacial">
+            0
+          </strong>
+
+        </div>
+
+      </article>
+
+
+
+      <!-- ADMINISTRADORES -->
+
+      <article class="summary-card">
+
+        <div class="summary-icon orange">
+
+          <i class="fa-solid fa-user-shield"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Administradores
+          </span>
+
+          <strong id="totalAdministradores">
+            0
+          </strong>
+
+        </div>
+
+      </article>
+
+
+
+      <!-- STATUS -->
+
+      <article class="summary-card">
+
+        <div class="summary-icon purple">
+
+          <i class="fa-solid fa-shield-halved"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Status
+          </span>
+
+          <strong>
+            Protegido
+          </strong>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         DADOS + MAPA
+    =================================================== -->
+
+    <section class="company-management-grid">
+
+
+      <!-- ==================================================
+           DADOS DA EMPRESA
+      =================================================== -->
+
+      <article class="section-card company-data-card">
+
+        <div class="section-header company-data-header">
+
+          <div>
+
+            <span class="section-tag">
+              Dados institucionais
+            </span>
+
+            <h2>
+              Informações da empresa
+            </h2>
+
+            <p>
+              Mantenha os dados e o endereço da organização atualizados.
+            </p>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="edit-company-btn"
+            id="editarEmpresaBtn"
+            onclick="habilitarEdicaoEmpresa()"
+          >
+
+            <i class="fa-solid fa-pen"></i>
+
+            Editar dados
+
+          </button>
+
+        </div>
+
+
+
+        <form
+          id="formDadosEmpresa"
+          class="company-form"
+        >
+
+
+          <!-- ==============================================
+               DADOS INSTITUCIONAIS
+          =============================================== -->
+
+          <div class="company-form-grid">
+
+
+            <div class="form-group company-full-field">
+
+              <label for="empresaNomeInput">
+
+                <i class="fa-solid fa-building"></i>
+
+                Nome da empresa
+
+              </label>
+
+              <input
+                type="text"
+                id="empresaNomeInput"
+                placeholder="Nome da empresa"
+                disabled
+              >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+              <label for="empresaCnpjInput">
+
+                <i class="fa-solid fa-id-card"></i>
+
+                CNPJ
+
+              </label>
+
+              <input
+                type="text"
+                id="empresaCnpjInput"
+                inputmode="numeric"
+                maxlength="18"
+                placeholder="00.000.000/0000-00"
+                disabled
+              >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+              <label for="empresaTelefoneInput">
+
+                <i class="fa-solid fa-phone"></i>
+
+                Telefone
+
+              </label>
+
+              <input
+                type="text"
+                id="empresaTelefoneInput"
+                inputmode="tel"
+                maxlength="15"
+                placeholder="(00) 00000-0000"
+                disabled
+              >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+              <label for="empresaEmailInput">
+
+                <i class="fa-solid fa-envelope"></i>
+
+                E-mail institucional da empresa
+
+              </label>
+
+              <input
+                type="email"
+                id="empresaEmailInput"
+                placeholder="contato@empresa.com"
+                disabled
+              >
+
+            </div>
+
+
+
+            <div class="form-group">
+
+              <label for="empresaSiteInput">
+
+                <i class="fa-solid fa-globe"></i>
+
+                Site
+
+              </label>
+
+              <input
+                type="text"
+                id="empresaSiteInput"
+                placeholder="www.empresa.com.br"
+                disabled
+              >
+
+            </div>
+
+          </div>
+
+
+
+          <!-- ==============================================
+               ENDEREÇO
+          =============================================== -->
+
+          <div class="company-form-divider">
+
+            <div class="divider-icon">
+
+              <i class="fa-solid fa-location-dot"></i>
+
+            </div>
+
+            <div>
+
+              <strong>
+                Endereço da empresa
+              </strong>
+
+              <span>
+                As informações abaixo ficam disponíveis localmente no SteelControl.
+              </span>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="company-form-grid">
+
+
+            <!-- CEP -->
+
+            <div class="form-group">
+
+              <label for="empresaCepInput">
+                CEP
+              </label>
+
+              <input
+                type="text"
+                id="empresaCepInput"
+                inputmode="numeric"
+                maxlength="9"
+                placeholder="00000-000"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- ESTADO -->
+
+            <div class="form-group">
+
+              <label for="empresaEstadoInput">
+                Estado
+              </label>
+
+              <input
+                type="text"
+                id="empresaEstadoInput"
+                maxlength="2"
+                placeholder="SP"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- RUA -->
+
+            <div class="form-group company-full-field">
+
+              <label for="empresaEnderecoInput">
+                Rua / Avenida
+              </label>
+
+              <input
+                type="text"
+                id="empresaEnderecoInput"
+                placeholder="Avenida Industrial"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- NÚMERO -->
+
+            <div class="form-group">
+
+              <label for="empresaNumeroInput">
+                Número
+              </label>
+
+              <input
+                type="text"
+                id="empresaNumeroInput"
+                placeholder="1000"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- COMPLEMENTO -->
+
+            <div class="form-group">
+
+              <label for="empresaComplementoInput">
+                Complemento
+              </label>
+
+              <input
+                type="text"
+                id="empresaComplementoInput"
+                placeholder="Galpão 2"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- BAIRRO -->
+
+            <div class="form-group">
+
+              <label for="empresaBairroInput">
+                Bairro
+              </label>
+
+              <input
+                type="text"
+                id="empresaBairroInput"
+                placeholder="Distrito Industrial"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- CIDADE -->
+
+            <div class="form-group">
+
+              <label for="empresaCidadeInput">
+                Cidade
+              </label>
+
+              <input
+                type="text"
+                id="empresaCidadeInput"
+                placeholder="São Paulo"
+                disabled
+              >
+
+            </div>
+
+
+
+            <!-- PAÍS -->
+
+            <div class="form-group company-full-field">
+
+              <label for="empresaPaisInput">
+                País
+              </label>
+
+              <input
+                type="text"
+                id="empresaPaisInput"
+                placeholder="Brasil"
+                disabled
+              >
+
+            </div>
+
+          </div>
+
+
+
+          <!-- ==============================================
+               AÇÕES
+          =============================================== -->
+
+          <div
+            class="company-form-actions"
+            id="acoesEditarEmpresa"
+            style="display:none"
+          >
+
+            <button
+              type="button"
+              class="cancel-company-btn"
+              onclick="cancelarEdicaoEmpresa()"
+            >
+
+              <i class="fa-solid fa-xmark"></i>
+
+              Cancelar
+
+            </button>
+
+
+            <button
+              type="submit"
+              class="save-company-btn"
+              id="salvarEmpresaBtn"
+            >
+
+              <i class="fa-solid fa-floppy-disk"></i>
+
+              Salvar alterações
+
+            </button>
+
+          </div>
+
+
+          <p
+            id="mensagemDadosEmpresa"
+            class="form-message"
+          ></p>
+
+        </form>
+
+      </article>
+
+
+
+      <!-- ==================================================
+           LOCALIZAÇÃO
+      =================================================== -->
+
+      <article class="section-card company-location-card">
+
+        <div class="section-header">
+
+          <div>
+
+            <span class="section-tag">
+              Localização
+            </span>
+
+            <h2>
+              Localização cadastrada
+            </h2>
+
+            <p>
+              Dados de localização disponíveis mesmo sem internet.
+            </p>
+
+          </div>
+
+
+          <div class="location-header-icon">
+
+            <i class="fa-solid fa-location-dot"></i>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- MAPA -->
+
+        <div class="company-map-wrapper">
+
+          <iframe
+            id="empresaMapa"
+            title="Localização da empresa"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+
+
+          <div
+            class="map-empty-state"
+            id="mapaSemEndereco"
+          >
+
+            <div class="map-empty-icon">
+
+              <i class="fa-solid fa-map-location-dot"></i>
+
+            </div>
+
+            <strong>
+              Localização não cadastrada
+            </strong>
+
+            <span>
+              Clique em editar dados e informe o endereço da empresa.
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ENDEREÇO RESUMIDO -->
+
+        <div class="company-address-card">
+
+          <div class="address-icon">
+
+            <i class="fa-solid fa-location-dot"></i>
+
+          </div>
+
+
+          <div>
+
+            <strong id="empresaEnderecoResumo">
+              Endereço não cadastrado
+            </strong>
+
+            <span id="empresaCidadeResumo">
+              Adicione a localização da empresa.
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ABRIR MAPA -->
+
+        <button
+          type="button"
+          class="open-map-btn"
+          id="abrirMapaBtn"
+          onclick="abrirMapaEmpresa()"
+          disabled
+        >
+
+          <i class="fa-solid fa-map"></i>
+
+          Copiar endereço
+
+          <i class="fa-solid fa-copy"></i>
+
+        </button>
+
+      </article>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         USUÁRIO ATUAL
+    =================================================== -->
+
+    <section class="section-card">
+
+      <div class="section-header">
+
+        <div>
+
+          <span class="section-tag">
+            Sessão atual
+          </span>
+
+          <h2>
+            Usuário conectado
+          </h2>
+
+          <p>
+            Informações da conta atualmente autenticada.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="logged-user">
+
+        <div class="logged-avatar">
+
+          <i class="fa-solid fa-user"></i>
+
+        </div>
+
+
+        <div>
+
+          <strong id="usuarioAtualNome">
+            Usuário
+          </strong>
+
+          <span id="usuarioAtualEmail">
+            -
+          </span>
+
+          <small id="usuarioAtualCargo">
+            -
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         FUNCIONÁRIOS
+    =================================================== -->
+
+    <section class="section-card">
+
+      <div class="section-header">
+
+        <div>
+
+          <span class="section-tag">
+            Gestão de acessos
+          </span>
+
+          <h2>
+            Funcionários da empresa
+          </h2>
+
+          <p>
+            Cadastre usuários e configure o
+            reconhecimento facial de cada funcionário.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="new-user-btn"
+          id="novoFuncionarioBtn"
+          onclick="abrirNovoFuncionario()"
+        >
+
+          <i class="fa-solid fa-user-plus"></i>
+
+          Novo funcionário
+
+        </button>
+
+      </div>
+
+
+      <div
+        class="employees-grid"
+        id="funcionariosGrid"
+      >
+
+        <div class="loading-users">
+
+          <i class="fa-solid fa-spinner fa-spin"></i>
+
+          Carregando funcionários...
+
+        </div>
+
+      </div>
+
+
+      <p
+        id="mensagemEmpresa"
+        class="message"
+      ></p>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- ==================================================
+       MODAL NOVO FUNCIONÁRIO
+  =================================================== -->
+
+  <div
+    class="modal"
+    id="modalFuncionario"
+  >
+
+    <div class="modal-card employee-modal">
+
+      <button
+        type="button"
+        class="close-modal"
+        onclick="fecharNovoFuncionario()"
+      >
+
+        <i class="fa-solid fa-xmark"></i>
+
+      </button>
+
+
+      <div class="modal-header">
+
+        <div class="modal-icon">
+
+          <i class="fa-solid fa-user-plus"></i>
+
+        </div>
+
+
+        <div>
+
+          <h2>
+            Novo funcionário
+          </h2>
+
+          <p>
+            Cadastre uma pessoa para acessar o SteelControl.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <form id="formFuncionario">
+
+
+        <div class="form-group">
+
+          <label for="funcNome">
+            Nome completo
+          </label>
+
+          <input
+            type="text"
+            id="funcNome"
+            placeholder="Nome do funcionário"
+            required
+          >
+
+        </div>
+
+
+
+        <div class="form-group">
+
+          <label for="funcEmail">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="funcEmail"
+            placeholder="funcionario@empresa.com"
+            required
+          >
+
+        </div>
+
+
+
+        <div class="form-group">
+
+          <label for="funcSenha">
+            Senha inicial
+          </label>
+
+          <input
+            type="password"
+            id="funcSenha"
+            minlength="8"
+            placeholder="Mínimo 8 caracteres"
+            required
+          >
+
+        </div>
+
+
+
+        <div class="form-group">
+
+          <label for="funcCargo">
+            Cargo
+          </label>
+
+          <select
+            id="funcCargo"
+            required
+          >
+
+            <option value="">
+              Selecione o cargo
+            </option>
+
+            <option value="ADMINISTRADOR">
+              Administrador
+            </option>
+
+            <option value="SUPERVISOR">
+              Supervisor
+            </option>
+
+            <option value="TECNICO">
+              Técnico
+            </option>
+
+            <option value="OPERADOR">
+              Operador
+            </option>
+
+            <option value="VISITANTE">
+              Visitante
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="save-user-btn"
+        >
+
+          <i class="fa-solid fa-check"></i>
+
+          Cadastrar funcionário
+
+        </button>
+
+
+        <p
+          class="form-message"
+          id="mensagemFuncionario"
+        ></p>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+
+
+  <!-- ==================================================
+       MODAL EDITAR FUNCIONÁRIO / ADMINISTRADOR
+  =================================================== -->
+
+  <div
+    class="modal"
+    id="modalEditarFuncionario"
+  >
+
+    <div class="modal-card employee-modal employee-edit-modal">
+
+      <button
+        type="button"
+        class="close-modal"
+        onclick="fecharEditarFuncionario()"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="modal-header">
+        <div class="modal-icon">
+          <i class="fa-solid fa-user-pen"></i>
+        </div>
+
+        <div>
+          <h2>Editar acesso</h2>
+          <p id="editarFuncionarioDescricao">
+            Atualize e-mail, senha, nome e cargo.
+          </p>
+        </div>
+      </div>
+
+      <form id="formEditarFuncionario">
+
+        <input type="hidden" id="editFuncionarioId">
+
+        <div class="form-group">
+          <label for="editFuncionarioNome">Nome completo</label>
+          <input type="text" id="editFuncionarioNome" required>
+        </div>
+
+        <div class="form-group">
+          <label for="editFuncionarioEmail">E-mail de acesso</label>
+          <input type="email" id="editFuncionarioEmail" required>
+          <small class="field-help">
+            Ao alterar o próprio e-mail de administrador,
+            um código de 6 dígitos será enviado ao novo endereço.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="editFuncionarioSenha">Nova senha</label>
+          <input
+            type="password"
+            id="editFuncionarioSenha"
+            minlength="8"
+            placeholder="Deixe em branco para manter a senha atual"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="editFuncionarioCargo">Cargo</label>
+          <select id="editFuncionarioCargo" required>
+            <option value="ADMINISTRADOR">Administrador</option>
+            <option value="SUPERVISOR">Supervisor</option>
+            <option value="TECNICO">Técnico</option>
+            <option value="OPERADOR">Operador</option>
+            <option value="VISITANTE">Visitante</option>
+          </select>
+        </div>
+
+        <div
+          class="email-verification-box"
+          id="emailVerificationBox"
+          hidden
+        >
+          <div class="verification-heading">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+            <div>
+              <strong>Confirme o novo e-mail</strong>
+              <span id="emailVerificationText">
+                Digite o código enviado para o novo endereço.
+              </span>
+            </div>
+          </div>
+
+          <div class="verification-code-row">
+            <input
+              type="text"
+              id="emailVerificationCode" aria-label="Código de verificação do novo e-mail"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="000000"
+            >
+
+            <button
+              type="button"
+              id="confirmarNovoEmailBtn"
+              onclick="confirmarNovoEmailAdministrador()"
+            >
+              Confirmar código
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="save-user-btn"
+          id="salvarEdicaoFuncionarioBtn"
+        >
+          <i class="fa-solid fa-floppy-disk"></i>
+          Salvar alterações
+        </button>
+
+        <p class="form-message" id="mensagemEditarFuncionario"></p>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       MODAL FACIAL
+  =================================================== -->
+
+  <div class="modal face-command-modal" id="faceModal">
+    <div class="modal-card face-modal-card face-command-card face-enroll-card">
+      <button type="button" class="close-modal face-command-close" onclick="fecharCameraFacial()" aria-label="Fechar cadastro facial">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="face-command-topbar">
+        <div class="face-command-brand">
+          <span class="face-command-brand-icon"><i class="fa-solid fa-face-viewfinder"></i></span>
+          <span>
+            <strong>Cadastrar facial</strong>
+            <small id="funcionarioFacialNome">Funcionário • cadastro facial único</small>
+          </span>
+        </div>
+        <span class="face-command-state" id="faceEnrollState">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>ENROLL</span>
+        </span>
+      </div>
+
+      <div class="face-command-layout face-enroll-layout">
+        <section class="face-camera-console">
+          <div class="face-command-heading">
+            <span class="face-flutter-kicker">Captura biométrica</span>
+            <h2>Posicione o rosto</h2>
+            <p>Centralize o funcionário no enquadramento e mantenha boa iluminação.</p>
+          </div>
+
+          <div class="face-command-camera-shell">
+            <div class="camera-container face-tech-camera">
+              <video id="faceVideo" autoplay playsinline muted></video>
+              <canvas id="faceOverlay"></canvas>
+              <div class="camera-loading" id="cameraLoading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Abrindo câmera...</span>
+              </div>
+              <div aria-hidden="true" class="face-tech-guide">
+                <span class="face-tech-corner c1"></span>
+                <span class="face-tech-corner c2"></span>
+                <span class="face-tech-corner c3"></span>
+                <span class="face-tech-corner c4"></span>
+                <span class="face-scan-line"></span>
+              </div>
+              <span class="face-tech-badge face-tech-badge-camera"><i class="fa-solid fa-video"></i> CAM 01</span>
+              <span class="face-tech-badge face-tech-badge-mode"><i class="fa-solid fa-user-plus"></i> ENROLL</span>
+            </div>
+          </div>
+
+          <div class="face-sensor-strip" aria-label="Status do cadastro biométrico">
+            <span class="face-sensor-item online"><i class="fa-solid fa-video"></i><small>CÂMERA</small><strong>ONLINE</strong></span>
+            <span class="face-sensor-item"><i class="fa-solid fa-crosshairs"></i><small>RASTREAMENTO</small><strong>AUTO</strong></span>
+            <span class="face-sensor-item online"><i class="fa-solid fa-shield-halved"></i><small>PROVA DE VIDA</small><strong>ATIVA</strong></span>
+            <span class="face-sensor-item"><i class="fa-solid fa-server"></i><small>PROCESSAMENTO</small><strong>BACKEND</strong></span>
+          </div>
+
+          <div class="camera-status analisando face-command-status" id="cameraStatus">
+            <div class="indicator"></div>
+            <div>
+              <strong id="cameraStatusTitulo">Procurando rosto...</strong>
+              <span id="cameraStatusTexto">Posicione seu rosto no centro.</span>
+            </div>
+          </div>
+
+          <div class="face-progress face-command-enroll-progress">
+            <div class="progress-info">
+              <span>Qualidade da captura</span>
+              <strong id="progressoTexto">0%</strong>
+            </div>
+            <div class="progress-bar"><div class="progress-value" id="progressoFace"></div></div>
+          </div>
+        </section>
+
+        <aside class="face-validation-console face-enroll-console">
+          <div class="face-validation-title">
+            <i class="fa-solid fa-fingerprint"></i>
+            <div><strong>Cadastro protegido</strong><span>Validação biométrica pelo backend</span></div>
+          </div>
+
+          <div class="face-sample-name-field face-command-field">
+            <label for="nomeFacialAmostra"><i class="fa-solid fa-tag"></i> Nome desta facial</label>
+            <input type="text" id="nomeFacialAmostra" maxlength="40" autocomplete="off" placeholder="Ex.: Principal, Sem óculos, Turno A">
+            <small>Identificação interna da biometria deste perfil.</small>
+          </div>
+
+          <label class="consent-box face-command-consent">
+            <input type="checkbox" id="consentimentoFace" aria-label="Consentimento para cadastro facial">
+            <span>Confirmo que o funcionário autorizou o uso dos dados biométricos para autenticação. Cada rosto pode ficar vinculado a apenas um perfil no SteelControl.</span>
+          </label>
+
+          <div class="face-validation-steps face-enroll-steps">
+            <div class="face-validation-step active" data-enroll-step="position">
+              <span class="face-validation-step-icon"><i class="fa-solid fa-crosshairs"></i></span>
+              <span><strong>Enquadramento</strong><small>Rosto centralizado e único na imagem.</small></span>
+            </div>
+            <div class="face-validation-step" data-enroll-step="quality">
+              <span class="face-validation-step-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+              <span><strong>Qualidade</strong><small>Iluminação, pose e nitidez validadas automaticamente.</small></span>
+            </div>
+            <div class="face-validation-step" data-enroll-step="secure">
+              <span class="face-validation-step-icon"><i class="fa-solid fa-lock"></i></span>
+              <span><strong>Proteção</strong><small>O embedding é gerado e vinculado com segurança.</small></span>
+            </div>
+          </div>
+
+          <p class="camera-help face-command-help"><i class="fa-solid fa-circle-info"></i> Evite bonés, óculos escuros e pouca iluminação.</p>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       MODAL GERENCIAR FACIAIS
+  =================================================== -->
+
+  <div
+    class="modal"
+    id="facesManagerModal"
+  >
+
+    <div class="modal-card faces-manager-card">
+
+      <button
+        type="button"
+        class="close-modal"
+        onclick="fecharGerenciadorFaciais()"
+        aria-label="Fechar gerenciador de faciais"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="modal-header">
+        <div class="modal-icon">
+          <i class="fa-solid fa-face-viewfinder"></i>
+        </div>
+
+        <div>
+          <h2>Biometria cadastrada</h2>
+          <p id="facesManagerUserName">Funcionário</p>
+        </div>
+      </div>
+
+      <p class="faces-manager-help">
+        Este perfil pode possuir apenas uma biometria. Remova-a somente quando precisar cadastrar outro rosto.
+      </p>
+
+      <div
+        class="faces-manager-list"
+        id="facesManagerList"
+      ></div>
+
+      <p
+        class="form-message"
+        id="facesManagerMessage"
+      ></p>
+
+    </div>
+
+  </div>
+
+
+  <!-- CANVAS ESCONDIDO -->
+
+  <canvas
+    id="captureCanvas"
+    style="display:none"
+  ></canvas>
+
+
+  <script src="assets/js/config.js?v=20260921_COMPANY_LOGO_VISIBLE"></script>
+
+  <script src="assets/js/empresa.js?v=20260908_FACE_MULTI_TEMPLATE_V13"></script>
+
+</body>
+
+</html>

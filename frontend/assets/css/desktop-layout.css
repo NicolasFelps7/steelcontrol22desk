@@ -1,0 +1,301 @@
+/* ========================================================================
+   STEELCONTROL DESKTOP FINISH V7
+   Ajustes finais de proporção: Home, idioma e hero de Máquinas.
+   ======================================================================== */
+
+/* HOME ------------------------------------------------------------------ */
+.home-page .hero {
+  min-height: 690px !important;
+  padding: 92px 0 58px !important;
+}
+
+/* Remove qualquer linha/cartão ao redor do texto principal. */
+.home-page .hero-container.hero-no-preview .hero-content,
+html[data-theme="escuro"] .home-page .hero-container.hero-no-preview .hero-content {
+  padding: 0 !important;
+  border: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* O fundo continua fotográfico, mas a seção não domina a tela inteira. */
+.home-page .hero-background,
+html[data-theme="escuro"] .home-page .hero-background {
+  background-size: cover !important;
+  background-position: center 46% !important;
+}
+
+/* Idioma integrado ao header: uma única peça compacta, sem ícone duplicado. */
+.home-page .header-actions .steel-language-switcher {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 66px !important;
+  min-width: 66px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 8px !important;
+  gap: 0 !important;
+  border: 1px solid #d7dee3 !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.home-page .header-actions .steel-language-switcher .steel-language-icon {
+  display: none !important;
+}
+
+.home-page .header-actions .steel-language-switcher select {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  padding: 0 2px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  color: #1f292f !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: 700 12px/1 "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: .02em !important;
+  cursor: pointer !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+}
+
+.home-page .header-actions .steel-language-switcher select:focus {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="escuro"] .home-page .header-actions .steel-language-switcher {
+  border-color: #394247 !important;
+  background: #171d21 !important;
+}
+
+html[data-theme="escuro"] .home-page .header-actions .steel-language-switcher select {
+  color: #f2f4f5 !important;
+}
+
+/* MÁQUINAS -------------------------------------------------------------- */
+.page-machines .hero {
+  min-height: 218px !important;
+  padding: 24px 28px !important;
+  margin-top: 16px !important;
+  margin-bottom: 10px !important;
+  gap: 28px !important;
+}
+
+.page-machines .hero-content {
+  max-width: 780px !important;
+}
+
+.page-machines .hero h1 {
+  font-size: clamp(34px, 3vw, 46px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -1.6px !important;
+}
+
+.page-machines .hero p {
+  max-width: 720px !important;
+  margin-top: 10px !important;
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+}
+
+.page-machines .hero-features {
+  margin-top: 14px !important;
+  gap: 7px !important;
+}
+
+.page-machines .hero-features span {
+  padding: 6px 9px !important;
+  font-size: 8.5px !important;
+}
+
+.page-machines .hero-icon-circle {
+  width: 112px !important;
+  height: 112px !important;
+  font-size: 42px !important;
+}
+
+/* Resumo imediatamente abaixo também fica mais proporcional. */
+.page-machines .summary-card {
+  min-height: 82px !important;
+  padding: 11px 15px !important;
+}
+
+@media (max-width: 980px) {
+  .home-page .hero {
+    min-height: 640px !important;
+    padding: 82px 0 52px !important;
+  }
+
+  .page-machines .hero {
+    min-height: 190px !important;
+    padding: 20px !important;
+  }
+
+  .page-machines .hero-icon-circle {
+    width: 88px !important;
+    height: 88px !important;
+    font-size: 34px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-page .hero {
+    min-height: auto !important;
+    padding: 74px 0 48px !important;
+  }
+
+  .home-page .header-actions .steel-language-switcher {
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+
+  .home-page .header-actions .steel-language-switcher select {
+    height: 36px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ========================================================================
+   STEELCONTROL — AÇÕES LARANJA NA TELA DE EQUIPAMENTOS
+   Mantém o Desktop alinhado ao Mobile sem alterar cores semânticas de status.
+   ======================================================================== */
+.page-machines .toggle-form-btn,
+.page-machines .discovery-scan-btn,
+.page-machines .discovery-ip-btn,
+.page-machines .discovery-approve-btn:not(:disabled) {
+  background: #c47b12 !important;
+  border-color: #c47b12 !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(196, 123, 18, .16) !important;
+}
+
+.page-machines .toggle-form-btn:hover,
+.page-machines .discovery-scan-btn:not(:disabled):hover,
+.page-machines .discovery-ip-btn:not(:disabled):hover,
+.page-machines .discovery-approve-btn:not(:disabled):hover {
+  background: #9e600a !important;
+  border-color: #9e600a !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+}
+
+.page-machines .toggle-form-btn i,
+.page-machines .discovery-scan-btn i,
+.page-machines .discovery-ip-btn i,
+.page-machines .discovery-approve-btn:not(:disabled) i {
+  color: #fff !important;
+}
+
+/* Checks e setas visuais seguem o mesmo laranja usado no Mobile. */
+.page-machines .hero-features .fa-check,
+.page-machines .machine-card-btn .fa-arrow-right,
+.page-machines .discovery-diagnostics > summary i,
+.page-machines .discovered-device-icon {
+  color: #c47b12 !important;
+}
+
+/* Estados desabilitados continuam neutros para não parecerem clicáveis. */
+.page-machines .discovery-approve-btn:disabled {
+  background: #94a3b8 !important;
+  border-color: #94a3b8 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Lista desktop compacta: mantém só o que ajuda a identificar e operar. */
+@media (min-width: 721px) {
+  .page-machines .maquinas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 390px)) !important;
+    justify-content: start !important;
+    align-items: start !important;
+    gap: 12px !important;
+  }
+
+  .page-machines .maquina-card {
+    width: 100% !important;
+    max-width: 390px !important;
+    padding: 14px !important;
+  }
+
+  .page-machines .card-top {
+    margin-bottom: 8px !important;
+  }
+
+  .page-machines .machine-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+  }
+
+  .page-machines .dobot-dashboard-badge {
+    margin: 4px 0 7px !important;
+    padding: 5px 8px !important;
+    font-size: 8px !important;
+  }
+
+  .page-machines .maquina-card h3 {
+    margin-top: 3px !important;
+    font-size: 17px !important;
+  }
+
+  /* Descrição e métricas instantâneas pertencem ao dashboard, não à lista. */
+  .page-machines .machine-description,
+  .page-machines .machine-metrics {
+    display: none !important;
+  }
+
+  .page-machines .machine-identification {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 7px !important;
+    margin-top: 11px !important;
+  }
+
+  /* Fabricante e setor já aparecem no contexto do card; evita repetição. */
+  .page-machines .machine-identification > div:first-child,
+  .page-machines .machine-identification > div:nth-child(4) {
+    display: none !important;
+  }
+
+  .page-machines .machine-identification > div {
+    min-height: 52px !important;
+    padding: 9px 10px !important;
+  }
+
+  .page-machines .machine-connection,
+  .page-machines .machine-maintenance {
+    margin-top: 9px !important;
+    padding: 9px 10px !important;
+    border-radius: 9px !important;
+  }
+
+  .page-machines .machine-card-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+  }
+
+  .page-machines .machine-card-actions > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 8px 10px !important;
+    border-radius: 9px !important;
+  }
+}

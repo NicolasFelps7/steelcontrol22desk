@@ -1,0 +1,23 @@
+{
+  "name": "steelcontrol-tcc",
+  "version": "3.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20 <23"
+  },
+  "scripts": {
+    "build": "npm --prefix backend ci --include=dev && npm --prefix backend run prisma:generate",
+    "start": "npm --prefix backend run start:prod",
+    "test": "npm --prefix backend test",
+    "check": "node tools/check-production.mjs",
+    "check:dobot": "node tools/check-dobot.mjs",
+    "check:controllers": "node tools/check-controller-panels.mjs",
+    "check:static": "node tools/validar-estatico.mjs",
+    "check:secrets": "node tools/check-secrets.mjs",
+    "check:docker": "node tools/check-docker-hardening.mjs",
+    "check:freeze": "node tools/check-code-freeze.mjs",
+    "check:platform": "node tools/check-platform-hardening.mjs",
+    "check:security9": "node tools/check-security-level9.mjs",
+    "quality": "npm test && npm run check && npm run check:static && npm run check:controllers && npm run check:dobot && npm run check:secrets && npm run check:docker && npm run check:platform && npm run check:freeze"
+  }
+}
