@@ -1,697 +1,109 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>
-    SteelControl | Gestão Industrial Inteligente
-  </title>
-<meta content="SteelControl é uma plataforma de monitoramento industrial, manutenção, segurança e gestão empresarial." name="description"/>
-<link href="assets/css/base.css?v=20260908_HOME_LANG_COMPACT" rel="stylesheet"/>
-<link href="assets/css/home.css?v=20260824_TCC_9PLUS" rel="stylesheet"/>
-<link href="assets/vendor/steel-icons/steel-icons.css?v=1" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/presentation.css?v=20260831_PRESENTACAO_FINAL">
-
-  <link rel="stylesheet" href="assets/css/industrial-branding.css?v=20260907_MODAL_PRO_V5">
-
-  <link rel="stylesheet" href="assets/css/industrial-command-center.css?v=20260908_HOME_HERO_CLEAN">
-
-  <link rel="stylesheet" href="assets/css/desktop-layout.css?v=20260908_DESKTOP_FINISH_V7">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SteelControl — inteligência, controle e segurança para operações industriais conectadas.">
+  <meta name="theme-color" content="#070707">
+  <title>SteelControl | Gestão Industrial Inteligente</title>
+  <link rel="stylesheet" href="assets/css/base.css?v=20261005_HOME_WORLD">
+  <link rel="stylesheet" href="assets/css/home.css?v=20261005_HOME_WORLD">
+  <link rel="stylesheet" href="assets/css/home-steelcontrol.css?v=20261005_PRODUCT_HOME_364">
 </head>
-<body class="home-page">
-<!-- ==================================================
-       HEADER
-  =================================================== -->
-<header class="site-header">
-<div class="header-container">
-<!-- LOGO -->
-<a class="brand" href="#inicio">
-<div class="brand-icon">
-<img alt="SteelControl" id="homeLogo" src="assets/img/steel-icon.svg"/>
-</div>
-<div class="brand-text">
-<strong>
-            SteelControl
-          </strong>
-<span>
-            Gestão Industrial
-          </span>
-</div>
-</a>
-<!-- MENU -->
-<nav class="nav" id="navMenu">
-<a class="active" href="#inicio">
-          Início
-        </a>
-<a href="#sobre">
-          Sobre
-        </a>
-<a href="#recursos">
-          Recursos
-        </a>
-<a href="#seguranca">
-          Segurança
-        </a>
-<a href="#tecnologia">
-          Tecnologia
-        </a>
-<a href="#contato">
-          Contato
-        </a>
-</nav>
-<!-- AÇÕES -->
-<div class="header-actions">
-<button aria-label="Alterar tema" class="theme-btn" id="themeBtn" type="button">
-<i class="fa-solid fa-moon"></i>
-</button>
-<a class="login-btn" href="/app/login">
+<body class="world-home">
+  <div class="cursor-light" aria-hidden="true"></div>
+  <header class="world-header" id="topo">
+    <div class="header-shell">
+      <a class="world-brand" href="#inicio" aria-label="SteelControl — voltar ao início">
+        <span class="brand-mark"><img src="assets/img/steel-icon.svg" alt=""></span>
+        <span class="brand-copy"><strong>SteelControl</strong><small>GESTÃO INDUSTRIAL</small></span>
+      </a>
+      <nav class="world-nav" id="navMenu" aria-label="Navegação principal">
+        <a href="#plataforma" data-home-key="navPlatform">Plataforma</a><a href="#recursos" data-home-key="navResources">Recursos</a><a href="#seguranca" data-home-key="navSecurity">Segurança</a><a href="#tecnologia" data-home-key="navTechnology">Tecnologia</a>
+      </nav>
+      <div class="header-actions">
+        <span class="system-online"><i></i> <span data-home-key="operational">Plataforma operacional</span></span>
+        <a class="header-login" href="/app/login"><span data-home-key="signIn">Entrar</span> <span>↗</span></a>
+        <button class="menu-button" id="mobileBtn" type="button" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
 
-          Entrar no sistema
-
-          <i class="fa-solid fa-arrow-right-to-bracket"></i>
-</a>
-<button aria-label="Abrir menu" class="mobile-btn" id="mobileBtn" type="button">
-<i class="fa-solid fa-bars"></i>
-</button>
-</div>
-</div>
-</header>
-<main>
-<!-- ==================================================
-         HERO
-    =================================================== -->
-<section class="hero" id="inicio">
-<div class="hero-background"></div>
-<div class="hero-container hero-no-preview">
-<!-- TEXTO -->
-<div class="hero-content">
-<div class="hero-badge">
-<span></span>
-
-            Plataforma de gestão industrial
-
+  <main>
+    <section class="world-hero" id="inicio">
+      <canvas id="worldCanvas" aria-label="Rede industrial tridimensional animada"></canvas>
+      <div class="hero-grid" aria-hidden="true"></div><div class="hero-halo halo-one" aria-hidden="true"></div><div class="hero-halo halo-two" aria-hidden="true"></div>
+      <div class="hero-shell">
+        <div class="hero-copy cinematic-copy" data-reveal>
+          <article class="hero-chapter is-active" data-chapter="0">
+            <div class="micro-label"><i></i> <span data-home-key="heroLabel">STEELCONTROL / OPERAÇÃO INDUSTRIAL</span></div>
+            <h1 data-home-key="heroTitle">Controle que<br><span>move a indústria.</span></h1>
+            <p data-home-key="heroText">Uma plataforma para conectar máquinas, operadores e decisões em tempo real — do chão de fábrica ao painel.</p>
+            <div class="hero-actions"><a class="button-primary" href="/app/login"><span data-home-key="accessPlatform">Acessar plataforma</span><b>↗</b></a><a class="button-ghost" href="#plataforma"><span data-home-key="explore">Explorar sistema</span><b>↓</b></a></div>
+          </article>
+          <article class="hero-chapter" data-chapter="1"><div class="micro-label"><i></i> <span>01 / STEEL EDGE</span></div><h1 data-home-key="chapterEdgeTitle">Da máquina<br><span>ao Edge.</span></h1><p data-home-key="chapterEdgeText">A camada local recebe sinais, valida limites e mantém o equipamento conectado com baixa latência.</p></article>
+          <article class="hero-chapter" data-chapter="2"><div class="micro-label"><i></i> <span>02 / TELEMETRIA</span></div><h1 data-home-key="chapterDataTitle">Dados que<br><span>viram contexto.</span></h1><p data-home-key="chapterDataText">Produção, alarmes, estados e desempenho organizados em uma leitura operacional clara.</p></article>
+          <article class="hero-chapter" data-chapter="3"><div class="micro-label"><i></i> <span>03 / CONTROLE</span></div><h1 data-home-key="chapterControlTitle">Decisões em<br><span>tempo real.</span></h1><p data-home-key="chapterControlText">Desktop e mobile sincronizados para acompanhar, autorizar e agir com rastreabilidade.</p></article>
+        </div>
+        <div class="hero-console product-preview" data-reveal aria-label="Demonstração da plataforma SteelControl">
+          <div class="console-topline"><span>STEELCONTROL / CENTRAL OPERACIONAL</span><span class="console-live"><i></i> AO VIVO</span></div>
+          <div class="product-window">
+            <aside class="product-sidebar"><div class="product-brand"><img src="assets/img/steel-icon.svg" alt=""><span>SC</span></div><i class="active"></i><i></i><i></i><i></i><i></i></aside>
+            <section class="product-main">
+              <header><div><small>VISÃO DA OPERAÇÃO</small><strong>Bom dia, operador</strong></div><span><i></i> SISTEMA ONLINE</span></header>
+              <div class="product-machine"><div><small>MÁQUINA SELECIONADA</small><strong>Dobot Magician Lite</strong><span>Steel Edge conectado · 12 ms</span></div><b>OPERACIONAL</b></div>
+              <div class="product-kpis"><article><small>DISPONIBILIDADE</small><strong>98,4%</strong><span>+2,1% no turno</span></article><article><small>PRODUÇÃO</small><strong>1.248</strong><span>peças concluídas</span></article><article><small>ALERTAS</small><strong>02</strong><span>sem criticidade</span></article></div>
+              <div class="product-panels"><article class="product-chart"><header><strong>DESEMPENHO DO TURNO</strong><small>08:00 — 16:00</small></header><svg viewBox="0 0 420 145" preserveAspectRatio="none" aria-hidden="true"><path class="chart-grid" d="M0 25H420M0 65H420M0 105H420"/><path class="chart-area" d="M0 120C45 112 58 65 104 72S162 104 205 70 270 30 309 52 370 82 420 29V145H0Z"/><path class="chart-line" d="M0 120C45 112 58 65 104 72S162 104 205 70 270 30 309 52 370 82 420 29"/></svg></article><article class="product-events"><header><strong>EVENTOS RECENTES</strong></header><div><i></i><span><b>Ciclo concluído</b><small>há 12 s</small></span></div><div><i></i><span><b>Telemetria atualizada</b><small>há 18 s</small></span></div><div><i></i><span><b>Operador autenticado</b><small>há 2 min</small></span></div></article></div>
+            </section>
           </div>
-<h1>
+          <div class="console-footer"><span>DESKTOP · MOBILE · EDGE</span><div class="signal-bars"><i></i><i></i><i></i><i></i><i></i></div></div>
+        </div>
+      </div>
+      <div class="hero-story-progress" aria-label="Progresso da apresentação"><span></span><span></span><span></span><span></span></div>
+    </section>
 
-            Controle industrial
+    <section class="world-section platform-section" id="plataforma">
+      <div class="section-shell">
+        <div class="section-intro" data-reveal><span class="section-index">01 / COMO FUNCIONA</span><h2>Da máquina ao painel.<br><em>Tudo sincronizado.</em></h2><p>O SteelControl recebe os sinais do equipamento pelo Edge, organiza a telemetria e entrega a mesma informação no desktop e no mobile.</p></div>
+        <div class="operation-stage" data-reveal>
+          <div class="stage-grid" aria-hidden="true"></div><div class="flow-line flow-one" aria-hidden="true"></div><div class="flow-line flow-two" aria-hidden="true"></div>
+          <article class="stage-node node-machine tilt-card" data-tilt><span class="node-number">01</span><div class="node-visual machine-visual"><i></i><i></i><i></i></div><small>EQUIPAMENTO</small><h3>Máquina industrial</h3><p>Dobot, impressora 3D, CNC ou outro equipamento.</p></article>
+          <article class="stage-node node-edge tilt-card" data-tilt><span class="node-number">02</span><div class="node-visual edge-visual"><i></i><i></i><i></i></div><small>CONEXÃO LOCAL</small><h3>Steel Edge</h3><p>Coleta, validação e comando próximo à máquina.</p></article>
+          <article class="stage-node node-core tilt-card" data-tilt><span class="node-number">03</span><div class="node-visual core-visual"><i></i></div><small>PLATAFORMA</small><h3>Núcleo SteelControl</h3><p>Regras, histórico, permissões e inteligência operacional.</p></article>
+          <article class="stage-node node-action tilt-card" data-tilt><span class="node-number">04</span><div class="node-visual action-visual"><i></i><i></i></div><small>EXPERIÊNCIA</small><h3>Desktop e mobile</h3><p>Os mesmos dados e comandos em todas as telas.</p></article>
+        </div>
+      </div>
+    </section>
 
-            <span>
-              inteligente
-            </span>
+    <section class="world-section resources-section" id="recursos">
+      <div class="section-shell">
+        <div class="section-intro intro-row" data-reveal><div><span class="section-index">02 / MÓDULOS STEELCONTROL</span><h2>Uma central.<br><em>Toda a operação.</em></h2></div><p>Os módulos que você já usa no sistema aparecem aqui com a mesma identidade visual e propósito industrial.</p></div>
+        <div class="bento-grid">
+          <article class="bento-card bento-large orange-card tilt-card" data-tilt data-reveal><div class="card-head"><span>PAINEL DA MÁQUINA</span><b>01</b></div><div class="dashboard-model" aria-hidden="true"><div class="model-sidebar"><i></i><i></i><i></i><i></i></div><div class="model-main"><span></span><div><i></i><i></i><i></i></div><b></b></div></div><h3>Dashboard dinâmico</h3><p>OEE, disponibilidade, desempenho e sinais exibidos conforme o perfil real do equipamento.</p></article>
+          <article class="bento-card dark-card tilt-card" data-tilt data-reveal><div class="card-head"><span>TELEMETRIA REAL</span><b>02</b></div><div class="radar-model" aria-hidden="true"><i></i><i></i><i></i><span></span></div><h3>Máquina conectada</h3><p>Status online, posição, produção e eventos.</p></article>
+          <article class="bento-card light-card tilt-card" data-tilt data-reveal><div class="card-head"><span>ACESSO OPERACIONAL</span><b>03</b></div><div class="face-model" aria-hidden="true"><span></span><i></i><i></i><i></i><i></i></div><h3>Identidade e permissão</h3><p>Validação biométrica, cargos e permissões por empresa.</p></article>
+          <article class="bento-card dark-card bento-wide tilt-card" data-tilt data-reveal><div class="card-head"><span>OPERAÇÃO</span><b>04</b></div><div class="timeline-model" aria-hidden="true"><div><span></span><b>PRODUÇÃO</b></div><div><span></span><b>MANUTENÇÃO</b></div><div><span></span><b>ALERTAS</b></div></div><div class="wide-copy"><div><h3>Do sinal à decisão</h3><p>Produção, manutenção, alertas e auditoria reunidos em um fluxo contínuo.</p></div><span class="round-arrow">↗</span></div></article>
+          <article class="bento-card orange-card tilt-card" data-tilt data-reveal><div class="card-head"><span>CONTROLE DO DOBOT</span><b>05</b></div><div class="robot-model" aria-hidden="true"><i></i><i></i><i></i><i></i></div><h3>Manual e automático</h3><p>Movimentos assistidos e ciclos ensinados com comandos autenticados.</p></article>
+        </div>
+      </div>
+    </section>
 
-            em uma única plataforma.
+    <section class="world-section security-section" id="seguranca">
+      <div class="section-shell security-layout">
+        <div class="security-copy" data-reveal><span class="section-index">03 / SEGURANÇA STEELCONTROL</span><h2>Controle também é<br><em>saber quem agiu.</em></h2><p>Do login até o comando do robô, o SteelControl protege a operação com identidade, permissão e rastreabilidade.</p><ul><li><span>01</span><div><strong>Identidade verificada</strong><small>Reconhecimento facial e autenticação segura</small></div></li><li><span>02</span><div><strong>Comandos autenticados</strong><small>Controle remoto somente para usuários autorizados</small></div></li><li><span>03</span><div><strong>Auditoria industrial</strong><small>Registro de acessos, alterações e comandos</small></div></li></ul></div>
+        <div class="security-vault" data-reveal aria-label="Terminal industrial de segurança"><div class="vault-top"><span>TERMINAL DE CONTROLE DE ACESSO</span><i>PROTEGIDO</i></div><div class="security-terminal"><div class="terminal-operator"><span><img src="assets/img/steel-icon.svg" alt=""></span><div><small>OPERADOR AUTENTICADO</small><strong>Identidade confirmada</strong><em>SESSÃO INDUSTRIAL ATIVA</em></div><b>✓</b></div><div class="terminal-permissions"><div><small>PERFIL</small><strong>Administrador</strong></div><div><small>CONTROLE REMOTO</small><strong>Liberado</strong></div><div><small>MFA</small><strong>Verificado</strong></div></div><div class="terminal-log"><span>13:20:41</span><p>Identidade biométrica validada</p><b>OK</b><span>13:20:42</span><p>Permissões da máquina carregadas</p><b>OK</b><span>13:20:43</span><p>Canal Edge autenticado</p><b>OK</b></div><div class="terminal-signature"><span>ASSINATURA DE COMANDO</span><i></i><code>SC-EDGE / AES-256 / 7F:2A:91</code></div></div><div class="vault-data"><span>ACESSO / LIBERADO</span><span>AES-256</span><span>AUDITORIA / ATIVA</span></div></div>
+      </div>
+    </section>
 
-          </h1>
-<p class="hero-description">
+    <section class="world-section tech-section" id="tecnologia">
+      <div class="section-shell"><div class="section-intro centered" data-reveal><span class="section-index">04 / ARQUITETURA STEELCONTROL</span><h2>Desktop, mobile e Edge.<br><em>Uma única plataforma.</em></h2></div><div class="architecture-flow" data-reveal><article><small>CAMADA 01</small><span>CHÃO DE FÁBRICA</span><strong>Máquinas e sensores</strong><p>Dobot, CNC, impressoras e equipamentos industriais.</p></article><i>→</i><article><small>CAMADA 02</small><span>PROCESSAMENTO LOCAL</span><strong>Steel Edge</strong><p>Coleta, validação e execução próxima da máquina.</p></article><i>→</i><article><small>CAMADA 03</small><span>PLATAFORMA SEGURA</span><strong>API e dados</strong><p>Permissões, histórico, telemetria e regras operacionais.</p></article><i>→</i><article><small>CAMADA 04</small><span>OPERAÇÃO</span><strong>Desktop e mobile</strong><p>A mesma informação em todas as telas.</p></article></div><div class="tech-strip" data-reveal><span>DESKTOP</span><i></i><span>MOBILE</span><i></i><span>STEEL EDGE</span><i></i><span>ACESSO SEGURO</span><i></i><span>TELEMETRIA</span><i></i><span>ROBÓTICA</span></div></div>
+    </section>
 
-            Monitore máquinas, produção, manutenção,
-            alertas, segurança e equipes em tempo real
-            com uma solução criada para ambientes industriais.
+    <section class="final-section"><div class="final-grid" aria-hidden="true"></div><div class="final-shell" data-reveal><span class="section-index">STEELCONTROL / GESTÃO INDUSTRIAL</span><h2>Sua indústria.<br><em>Seu controle.</em></h2><p>Monitore, proteja e controle sua operação em um só lugar.</p><a class="button-primary final-button" href="/app/login"><span>Entrar no SteelControl</span><b>↗</b></a></div><div class="final-orb" aria-hidden="true"><span></span></div></section>
+  </main>
 
-          </p>
-<div class="hero-actions">
-<a class="primary-btn" href="#recursos">
-
-              Conhecer a plataforma
-
-              <i class="fa-solid fa-arrow-right"></i>
-</a>
-<a class="secondary-btn" href="/app/login">
-
-              Entrar no sistema
-
-              <i class="fa-solid fa-arrow-right-to-bracket"></i>
-</a>
-</div>
-<div class="hero-trust">
-<div>
-<span class="trust-icon">
-<i class="fa-solid fa-chart-line"></i>
-</span>
-<strong>
-                Monitoramento
-                <br/>
-                em tempo real
-              </strong>
-</div>
-<div>
-<span class="trust-icon">
-<i class="fa-solid fa-shield-halved"></i>
-</span>
-<strong>
-                Segurança
-                <br/>
-                empresarial
-              </strong>
-</div>
-<div>
-<span class="trust-icon">
-<i class="fa-solid fa-users"></i>
-</span>
-<strong>
-                Gestão de
-                <br/>
-                equipes
-              </strong>
-</div>
-</div>
-</div>
-<!-- DASHBOARD VISUAL -->
-
-</div>
-</section>
-<!-- ==================================================
-         INDICADORES
-    =================================================== -->
-<section class="numbers-section">
-<div class="numbers-grid">
-<article>
-<div class="number-icon">
-<i class="fa-regular fa-clock"></i>
-</div>
-<div>
-<strong>
-              24/7
-            </strong>
-<span>
-              Monitoramento contínuo
-            </span>
-</div>
-</article>
-<article>
-<div class="number-icon">
-<i class="fa-solid fa-bullseye"></i>
-</div>
-<div>
-<strong>
-              100%
-            </strong>
-<span>
-              Gestão centralizada
-            </span>
-</div>
-</article>
-<article>
-<div class="number-icon">
-<i class="fa-solid fa-bolt"></i>
-</div>
-<div>
-<strong>
-              Real time
-            </strong>
-<span>
-              Dados operacionais
-            </span>
-</div>
-</article>
-<article>
-<div class="number-icon">
-<i class="fa-solid fa-users"></i>
-</div>
-<div>
-<strong>
-              Multiusuário
-            </strong>
-<span>
-              Controle de equipes
-            </span>
-</div>
-</article>
-</div>
-</section>
-<!-- ==================================================
-         SOBRE
-    =================================================== -->
-<section class="section" id="sobre">
-<div class="section-container about-grid">
-<div class="about-content">
-<span class="section-label">
-            Sobre nós
-          </span>
-<h2>
-            Tecnologia criada para tornar
-            a gestão industrial mais inteligente.
-          </h2>
-<p>
-
-            O SteelControl nasceu com o objetivo de
-            centralizar informações importantes de uma
-            operação industrial em um único ambiente.
-
-          </p>
-<p>
-
-            Nossa plataforma reúne monitoramento,
-            produção, manutenção, segurança,
-            equipes e informações empresariais,
-            oferecendo maior visibilidade da operação.
-
-          </p>
-<p>
-
-            A proposta é permitir que empresas acompanhem
-            seus processos de maneira simples, moderna
-            e preparada para futuras integrações com
-            automação industrial.
-
-          </p>
-</div>
-<article class="about-card">
-<div class="about-card-header">
-<div class="about-symbol">
-<img alt="" src="assets/img/steel-icon.svg"/>
-</div>
-<div>
-<span>
-                SteelControl
-              </span>
-<strong>
-                Inteligência industrial
-              </strong>
-</div>
-</div>
-<div class="about-list">
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Monitoramento de máquinas
-
-            </div>
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Controle de produção
-
-            </div>
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Gestão de manutenção
-
-            </div>
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Segurança biométrica
-
-            </div>
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Gestão de funcionários
-
-            </div>
-<div>
-<i class="fa-solid fa-check"></i>
-
-              Integração com automação
-
-            </div>
-</div>
-</article>
-</div>
-</section>
-<!-- ==================================================
-         RECURSOS
-    =================================================== -->
-<section class="section section-soft" id="recursos">
-<div class="section-container">
-<div class="section-heading">
-<span class="section-label">
-            Recursos
-          </span>
-<h2>
-            Tudo que sua operação precisa
-            em um só lugar.
-          </h2>
-<p>
-
-            Uma plataforma criada para centralizar
-            as principais informações de uma operação industrial.
-
-          </p>
-</div>
-<div class="features-grid">
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-industry"></i>
-</div>
-<h3>
-              Máquinas
-            </h3>
-<p>
-              Cadastre e acompanhe equipamentos,
-              setores, modelos, status e dados operacionais.
-            </p>
-</article>
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-chart-column"></i>
-</div>
-<h3>
-              Produção
-            </h3>
-<p>
-              Visualize indicadores e acompanhe
-              a evolução da produtividade.
-            </p>
-</article>
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-screwdriver-wrench"></i>
-</div>
-<h3>
-              Manutenção
-            </h3>
-<p>
-              Registre manutenções preventivas,
-              corretivas e acompanhe históricos.
-            </p>
-</article>
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-triangle-exclamation"></i>
-</div>
-<h3>
-              Alertas
-            </h3>
-<p>
-              Identifique rapidamente situações
-              que precisam da atenção da equipe.
-            </p>
-</article>
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-users"></i>
-</div>
-<h3>
-              Equipes
-            </h3>
-<p>
-              Gerencie funcionários, cargos,
-              permissões e acessos empresariais.
-            </p>
-</article>
-<article class="feature-card">
-<div class="feature-icon">
-<i class="fa-solid fa-face-viewfinder"></i>
-</div>
-<h3>
-              Reconhecimento facial
-            </h3>
-<p>
-              Autenticação biométrica integrada
-              para adicionar uma camada extra de segurança.
-            </p>
-</article>
-</div>
-</div>
-</section>
-<!-- ==================================================
-         SEGURANÇA
-    =================================================== -->
-<section class="section" id="seguranca">
-<div class="section-container security-grid">
-<div class="security-content">
-<span class="section-label">
-            Segurança empresarial
-          </span>
-<h2>
-            Controle de acesso preparado
-            para ambientes corporativos.
-          </h2>
-<p>
-
-            Cada funcionário pode possuir sua própria
-            conta e diferentes níveis de permissão,
-            proporcionando maior controle sobre o acesso
-            às informações.
-
-          </p>
-</div>
-<div class="security-list">
-<article>
-<div class="security-icon">
-<i class="fa-solid fa-face-viewfinder"></i>
-</div>
-<div>
-<strong>
-                Reconhecimento facial
-              </strong>
-<p>
-                Autenticação biométrica integrada.
-              </p>
-</div>
-</article>
-<article>
-<div class="security-icon">
-<i class="fa-solid fa-user-shield"></i>
-</div>
-<div>
-<strong>
-                Cargos e permissões
-              </strong>
-<p>
-                Controle de acesso por função.
-              </p>
-</div>
-</article>
-<article>
-<div class="security-icon">
-<i class="fa-solid fa-building-shield"></i>
-</div>
-<div>
-<strong>
-                Empresas separadas
-              </strong>
-<p>
-                Dados organizados por organização.
-              </p>
-</div>
-</article>
-</div>
-</div>
-</section>
-<!-- ==================================================
-         TECNOLOGIA
-    =================================================== -->
-<section class="section section-soft" id="tecnologia">
-<div class="section-container">
-<div class="section-heading">
-<span class="section-label">
-            Tecnologia
-          </span>
-<h2>
-            Tecnologia preparada para crescer
-            com a indústria.
-          </h2>
-</div>
-<div class="technology-grid">
-<article>
-<i class="fa-brands fa-node-js"></i>
-<strong>
-              Node.js
-            </strong>
-<span>
-              APIs e regras
-            </span>
-</article>
-<article>
-<i class="fa-solid fa-database"></i>
-<strong>
-              PostgreSQL
-            </strong>
-<span>
-              Banco de dados
-            </span>
-</article>
-<article>
-<i class="fa-solid fa-code"></i>
-<strong>
-              Prisma
-            </strong>
-<span>
-              ORM moderno
-            </span>
-</article>
-<article>
-<i class="fa-brands fa-python"></i>
-<strong>
-              Python
-            </strong>
-<span>
-              Visão computacional
-            </span>
-</article>
-<article>
-<i class="fa-solid fa-wifi"></i>
-<strong>
-              IoT
-            </strong>
-<span>
-              Sensores e dispositivos
-            </span>
-</article>
-<article>
-<i class="fa-solid fa-robot"></i>
-<strong>
-              Robótica
-            </strong>
-<span>
-              Integração industrial
-            </span>
-</article>
-</div>
-</div>
-</section>
-<!-- ==================================================
-         FUTURO
-    =================================================== -->
-<section class="section">
-<div class="section-container future-card">
-<div class="future-content">
-<span class="section-label light-label">
-            Preparado para o futuro
-          </span>
-<h2>
-            Sensores, automação
-            e robótica industrial.
-          </h2>
-<p>
-
-            O SteelControl foi pensado para evoluir
-            junto com a operação industrial,
-            permitindo futuras integrações com
-            sensores, microcontroladores e equipamentos.
-
-          </p>
-<div class="future-tags">
-<span>
-              ESP32
-            </span>
-<span>
-              Arduino
-            </span>
-<span>
-              Sensores
-            </span>
-<span>
-              Robótica
-            </span>
-<span>
-              Automação
-            </span>
-<span>
-              IoT
-            </span>
-</div>
-</div>
-<div class="future-robot">
-<i class="fa-solid fa-robot"></i>
-</div>
-</div>
-</section>
-<!-- ==================================================
-         CTA
-    =================================================== -->
-<section class="cta-section">
-<div class="cta-container">
-<div>
-<h2>
-            Mais controle para sua operação.
-            <br/>
-            Mais informação para suas decisões.
-          </h2>
-<p>
-
-            Entre na plataforma e acompanhe sua
-            operação industrial em um ambiente
-            centralizado e seguro.
-
-          </p>
-</div>
-<div class="cta-actions">
-<a class="cta-primary" href="/app/login">
-
-            Entrar no SteelControl
-
-            <i class="fa-solid fa-arrow-right-to-bracket"></i>
-</a>
-<a class="cta-secondary" href="#sobre">
-
-            Conhecer mais
-
-          </a>
-</div>
-</div>
-</section>
-</main>
-<!-- ==================================================
-       FOOTER
-  =================================================== -->
-<footer class="footer" id="contato">
-<div class="footer-container">
-<!-- BRAND -->
-<div class="footer-brand">
-<div class="footer-symbol">
-<img alt="SteelControl" src="assets/img/steel-icon.svg"/>
-</div>
-<div>
-<strong>
-            SteelControl
-          </strong>
-<span>
-            Gestão Industrial
-          </span>
-</div>
-</div>
-<!-- LINKS -->
-<div class="footer-column">
-<strong>
-          Plataforma
-        </strong>
-<a href="#recursos">
-          Recursos
-        </a>
-<a href="#seguranca">
-          Segurança
-        </a>
-<a href="#tecnologia">
-          Tecnologia
-        </a>
-</div>
-<div class="footer-column">
-<strong>
-          Empresa
-        </strong>
-<a href="#sobre">
-          Sobre nós
-        </a>
-<a href="/app/login">
-          Entrar
-        </a>
-</div>
-<div class="footer-column">
-<strong>
-          Contato
-        </strong>
-<span>
-          contato@steelcontrol.com
-        </span>
-<span>
-          Brasil
-        </span>
-</div>
-</div>
-<div class="footer-bottom">
-<span>
-        © 2026 SteelControl. Todos os direitos reservados.
-      </span>
-</div>
-</footer>
-<script src="assets/js/config.js?v=20260908_HOME_LANG_HEADER"></script>
-<script src="assets/js/home.js?v=20260824_TCC_9PLUS"></script>
+  <footer class="world-footer"><div class="footer-shell"><a class="world-brand" href="#topo"><span class="brand-mark"><img src="assets/img/steel-icon.svg" alt=""></span><span class="brand-copy"><strong>SteelControl</strong><small>GESTÃO INDUSTRIAL</small></span></a><div class="footer-links"><a href="#plataforma">Plataforma</a><a href="#recursos">Recursos</a><a href="#seguranca">Segurança</a><a href="/app/login">Entrar</a></div><div class="footer-meta"><span>BRASIL · 2026</span><span>© STEELCONTROL</span></div></div></footer>
+  <script src="assets/js/config.js?v=20261005_HOME_WORLD"></script>
+  <script src="assets/js/home.js?v=20261005_PRODUCT_HOME_364"></script>
 </body>
 </html>

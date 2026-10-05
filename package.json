@@ -1,6 +1,6 @@
 {
   "name": "steelcontrol-tcc",
-  "version": "3.1.0",
+  "version": "3.6.5",
   "private": true,
   "engines": {
     "node": ">=20 <23"

@@ -1,3 +1,20 @@
+# 2026-10-05 — Landing 3D industrial V3
+- Seção “Sobre o projeto” transformada em uma experiência cinematográfica e tecnológica.
+- Núcleo industrial 3D criado em Canvas, com partículas em profundidade e interação com o ponteiro.
+- HUD apresenta máquinas, processos, segurança e os módulos centrais do SteelControl.
+- Renderização é local e offline, sem bibliotecas ou serviços externos.
+- Quantidade de partículas reduzida no mobile e animação pausada fora da área visível.
+- Preferência de acessibilidade para redução de movimento respeitada.
+- Login, rotas, dashboards, telemetria e comandos industriais não foram alterados.
+
+# 2026-10-02 — Dashboard por perfil de máquina V2
+- O cadastro manual agora recomenda módulos conforme o tipo de equipamento.
+- Administradores podem ativar/desativar OEE, produção, segurança, manutenção e energia antes de salvar.
+- A seleção fica em `integracaoMeta.dashboard` e é compartilhada por Desktop e Mobile.
+- O dashboard mostra somente módulos escolhidos que possuam telemetria real.
+- Máquinas sem painel configurado não recebem um bloco genérico automaticamente.
+- IHMs dedicadas, comandos, filas e políticas de segurança foram preservados.
+
 # 2026-09-28 — Dashboard industrial dinâmico V1
 - Camada comum de indicadores para qualquer tipo de máquina industrial.
 - OEE calculado quando disponibilidade, desempenho e qualidade são publicados.
@@ -59,6 +76,52 @@
 - Registro de manutenção passou a ser transacional e não mascara parada de segurança ativa.
 
 # Changelog
+
+## 3.6.5 — 2026-10-05
+
+- Corrigido conflito de CSS que empurrava o capacete até o círculo de confirmação.
+- Corpo do mascote e capacete agora compartilham o mesmo posicionamento absoluto.
+- Ponto final da queda recalibrado para encaixar o capacete sobre a cabeça.
+
+## 3.6.4 — 2026-10-05
+
+- Braço robótico removido da abertura pública.
+- Home agora apresenta uma demonstração realista da plataforma SteelControl.
+- Logo inicial do login restaurada para o símbolo original, limpo e proporcional.
+- Queda do capacete movida exclusivamente para a confirmação de acesso.
+- Animação pós-login reforçada com Web Animations API, independente do cache CSS.
+- Textos da demonstração da plataforma integrados aos seis idiomas.
+
+## 3.6.3 — 2026-10-05
+
+- Logo do login reduzida ao mascote preto, sem o nome SteelControl.
+- Capacete industrial separado do mascote e animado até encaixar na cabeça.
+- Abertura do Home transformada em experiência cinematográfica guiada pelo scroll.
+- Quatro capítulos conectam máquina, Edge, telemetria e controle ao braço CAD interativo.
+- Tradução do Home sincronizada com o seletor global de PT, EN, ES, FR, DE e IT.
+- Idioma selecionado deixou de ser redefinido para português ao abrir o login.
+
+## 3.6.2 — 2026-10-05
+
+- Home redesenhado com linguagem CAD e interface de software industrial.
+- Braço robótico recriado em SVG técnico interativo, com juntas e ferramenta articuladas.
+- Elementos abstratos substituídos por terminal de segurança e arquitetura em camadas.
+- Animação do login reiniciada somente após o overlay ficar visível.
+- Cache atualizado para carregar imediatamente o novo JavaScript e CSS do login.
+
+## 3.6.1 — 2026-10-05
+
+- Transição de entrada ampliada para 4,5 segundos, sem cortar a animação.
+- Sequência sincronizada: capacete encaixa na marca, confirmação aparece e o painel abre.
+- Barra de carregamento agora acompanha todo o tempo real da transição.
+
+## 3.6.0 — 2026-10-05
+
+- Home com célula robótica 3D interativa por mouse e toque no lugar do núcleo abstrato.
+- Marca animada no acesso: capacete industrial desce e encaixa na assinatura SteelControl.
+- Núcleo `SC` substituído por identidade validada, com função visual clara.
+- Reconhecimento redesenhado como estação profissional de controle de acesso industrial.
+- Terminologia pública atualizada para identidade, permissão e acesso operacional.
 
 ## 2026-09-03 — IHM industrial supervisionada
 
@@ -140,3 +203,29 @@ Mudanças somente na camada de engenharia/entrega:
 - perfis do SteelControl Edge incluídos opcionalmente;
 - `backups/` ignorado pelo Git;
 - manifesto `CODE_FREEZE.sha256` atualizado após correções validadas de sessão/Edge, corrigindo o Quality Gate do GitHub.
+## 3.4.0 - 2026-10-05
+
+- Home completamente redesenhada como experiência 3D em preto, branco e laranja.
+- Imagem industrial removida; toda a composição visual agora é criada em HTML, CSS e Canvas.
+- Novo núcleo 3D interativo, fluxo operacional, ecossistema em cards, segurança holográfica e seção tecnológica orbital.
+- Movimento responsivo ao ponteiro, animações suaves e tratamento dedicado para celular e redução de movimento.
+## 3.4.1 - 2026-10-05
+
+- Landing 3D ajustada para refletir diretamente os módulos e a identidade do SteelControl.
+- Conteúdo consolidado em português, sem seletor ou troca de idioma na página pública.
+- Dobot, Steel Edge, dashboard dinâmico, Face ID, telemetria, auditoria, desktop e mobile passaram a compor a narrativa visual.
+## 3.5.0 - 2026-10-05
+
+- Fluxo 3D da Home redimensionado para ocupar o painel com quatro módulos legíveis.
+- Seção final compactada para manter proporção adequada em monitores grandes.
+- Login e cadastro receberam cenário 3D SteelControl sem imagem externa.
+- Marca do acesso reduzida ao mascote de capacete, agora com flutuação, órbita e varredura animadas.
+- Confirmação de login e cadastro atualizada para exibir apenas o mascote animado.
+- Seletor de idiomas removido da tela de acesso, mantendo a interface em português.
+## 3.5.1 - 2026-10-05
+
+- Removido o conflito legado que ainda carregava a fotografia industrial no login.
+- Fundo do login e cadastro agora é totalmente 3D, gerado por CSS, com grade, núcleo e órbitas.
+- Mascote removido do núcleo atrás do texto e mantido somente como marca animada do acesso.
+- Movimento do mascote reforçado com flutuação, inclinação, escala, órbita e varredura.
+- Tela de acesso fixada em português para não herdar idioma antigo salvo no navegador.

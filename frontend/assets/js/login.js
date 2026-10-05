@@ -1,4 +1,9 @@
 
+// Mantém o idioma escolhido pelo usuário também nas telas públicas.
+document.documentElement.lang = localStorage.getItem("idiomaSistema") || "pt";
+
+// Mantém a transição visível até a animação industrial terminar por completo.
+const TEMPO_ENTRADA_PAINEL_MS = 4500;
 
 // =========================================================
 // CNPJ — MÁSCARA E VALIDAÇÃO
@@ -338,8 +343,11 @@ function mostrarBoasVindas({ titulo, texto, cadastro = false }) {
   overlay.innerHTML = `
     <div class="access-welcome-card ${cadastro ? "is-register" : ""}">
       <div class="access-welcome-brand">
-        <img src="assets/img/steel-icon.svg" alt="" aria-hidden="true">
-        <span>SteelControl</span>
+        <span class="welcome-logo-assembly" aria-label="SteelControl">
+          <img class="welcome-mascot-body" src="assets/img/steel-mascot-body.svg" alt="">
+          <img class="welcome-hardhat" src="assets/img/steel-hardhat.svg" alt="">
+          <i class="welcome-impact" aria-hidden="true"></i>
+        </span>
       </div>
       <div class="access-welcome-check" aria-hidden="true">
         <i class="fa-solid ${cadastro ? "fa-wand-magic-sparkles" : "fa-check"}"></i>
@@ -359,14 +367,33 @@ function mostrarBoasVindas({ titulo, texto, cadastro = false }) {
   overlay.querySelector("p").textContent =
     texto;
 
-  overlay.querySelector("small").textContent =
+  overlay.querySelector(".access-welcome-loading small").textContent =
     textoAcesso("redirectingWorkspace");
 
   document.body.appendChild(overlay);
 
-  requestAnimationFrame(() => {
-    overlay.classList.add("is-visible");
-  });
+  // Duas renderizações garantem que o navegador veja o estado inicial antes
+  // de iniciar a queda do capacete, inclusive após login muito rápido.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.classList.add("is-visible", "sequence-running");
+
+    const hardhat = overlay.querySelector(".welcome-hardhat");
+    const impact = overlay.querySelector(".welcome-impact");
+
+    hardhat?.animate([
+      { transform:"translateY(-130px) rotate(-16deg)", opacity:0, offset:0 },
+      { opacity:1, offset:.16 },
+      { transform:"translateY(17px) rotate(4deg) scaleY(.87)", opacity:1, offset:.66 },
+      { transform:"translateY(10px) rotate(-2deg) scaleY(1.05)", opacity:1, offset:.8 },
+      { transform:"translateY(14px) rotate(0) scaleY(1)", opacity:1, offset:1 }
+    ], { duration:2100, easing:"cubic-bezier(.18,.88,.22,1)", fill:"forwards" });
+
+    impact?.animate([
+      { opacity:0, transform:"translateX(-50%) scale(.3)" },
+      { opacity:.85, transform:"translateX(-50%) scale(.72)", offset:.25 },
+      { opacity:0, transform:"translateX(-50%) scale(1.45)" }
+    ], { duration:900, delay:1250, easing:"ease-out", fill:"both" });
+  }));
 }
 
 
@@ -487,6 +514,8 @@ function abrirCriarConta() {
   areaCadastro.style.display =
     "block";
 
+  document.body.classList.add("cadastro-ativo");
+
 }
 
 
@@ -497,6 +526,8 @@ function voltarLogin() {
 
   areaLogin.style.display =
     "block";
+
+  document.body.classList.remove("cadastro-ativo");
 
 }
 
@@ -611,7 +642,7 @@ loginForm.addEventListener(
 
         },
 
-        1800
+        TEMPO_ENTRADA_PAINEL_MS
       );
 
 
@@ -1920,7 +1951,7 @@ async function cadastrarFace(
       window.location.href =
         "/app/maquinas";
     },
-    700
+    TEMPO_ENTRADA_PAINEL_MS
   );
 
 }
@@ -1994,7 +2025,7 @@ async function abrirMfaAdministrador(dados) {
         titulo: textoAcesso("loginWelcomeTitle", { nome: sessao.usuario?.nome || "" }),
         texto: textoAcesso("loginWelcomeText")
       });
-      setTimeout(() => { window.location.href = "/app/maquinas"; }, 700);
+      setTimeout(() => { window.location.href = "/app/maquinas"; }, TEMPO_ENTRADA_PAINEL_MS);
     } catch (erro) {
       message.textContent = erro.message || "Não foi possível confirmar o código.";
       message.classList.add("is-error");
@@ -2139,7 +2170,7 @@ async function abrirSegundoFatorFacial(challengeId) {
       });
       setTimeout(() => {
         window.location.href = "/app/maquinas";
-      }, 700);
+      }, TEMPO_ENTRADA_PAINEL_MS);
     } catch (erro) {
       setMessage(erro.message || "Não foi possível confirmar a identidade.", true);
     } finally {
@@ -2270,7 +2301,7 @@ async function autenticarFace(
       window.location.href =
         "/app/maquinas";
     },
-    2000
+    TEMPO_ENTRADA_PAINEL_MS
   );
 
 }

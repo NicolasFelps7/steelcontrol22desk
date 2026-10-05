@@ -17,6 +17,7 @@
 
   <link rel="stylesheet" href="assets/css/industrial-command-center.css?v=20260907_COMMAND_CENTER_FINAL">
   <link rel="stylesheet" href="assets/css/facial-command-center.css?v=20260928_FACE_HUD_V12">
+  <link href="assets/css/login-3d.css?v=20261005_HARDHAT_ALIGN_365" rel="stylesheet"/>
 
 </head>
 <body class="login-shell" data-i18n-page-title="loginPageTitle">
@@ -31,7 +32,9 @@
 <header class="top-login">
 <!-- LOGO -->
 <a class="brand" href="/app/home" title="Voltar para o início">
-<img alt="SteelControl" class="logo-img" src="assets/img/steelcontrol-login-brand.png?v=20260901_LOGIN_BRAND"/>
+<span class="brand-lockup brand-static" aria-label="SteelControl">
+  <img alt="" class="brand-static-icon" src="assets/img/steel-icon.svg"/>
+</span>
 </a>
 <div class="top-actions">
 <!-- VOLTAR AO SITE -->
@@ -41,36 +44,6 @@
               Site
             </span>
 </a>
-<!-- IDIOMA -->
-<div class="language-box">
-<button class="language-btn" onclick="abrirIdiomas()" type="button">
-<i class="fa-solid fa-globe"></i>
-<span id="idiomaAtual">
-                PT
-              </span>
-<i class="fa-solid fa-chevron-down"></i>
-</button>
-<div class="language-menu" id="languageMenu">
-<button onclick="trocarIdioma('pt')" type="button">
-                PT - Português
-              </button>
-<button onclick="trocarIdioma('en')" type="button">
-                EN - English
-              </button>
-<button onclick="trocarIdioma('es')" type="button">
-                ES - Español
-              </button>
-<button onclick="trocarIdioma('fr')" type="button">
-                FR - Français
-              </button>
-<button onclick="trocarIdioma('de')" type="button">
-                DE - Deutsch
-              </button>
-<button onclick="trocarIdioma('it')" type="button">
-                IT - Italiano
-              </button>
-</div>
-</div>
 </div>
 </header>
 <!-- ===================================================
@@ -423,27 +396,36 @@
          PAINEL DIREITO
     ====================================================== -->
 <section class="image-area">
+<div class="auth-3d-grid" aria-hidden="true"></div>
+<div class="auth-3d-scene" aria-hidden="true">
+  <div class="auth-orbit auth-orbit-one"><i></i></div>
+  <div class="auth-orbit auth-orbit-two"><i></i></div>
+  <div class="auth-orbit auth-orbit-three"><i></i></div>
+  <div class="auth-core auth-identity-core"><i class="fa-solid fa-user-shield"></i><span>OPERADOR</span><small>IDENTIDADE VALIDADA</small></div>
+  <div class="auth-data auth-data-one"><small>STEEL EDGE</small><strong>ONLINE</strong><span>12 ms</span></div>
+  <div class="auth-data auth-data-two"><small>SEGURANÇA</small><strong>ATIVA</strong><span>acesso protegido</span></div>
+  <div class="auth-data auth-data-three"><small>TELEMETRIA</small><strong>24/7</strong><span>sincronizada</span></div>
+</div>
 <!-- CONTEÚDO PRINCIPAL -->
 <div class="industrial-message">
 <div class="industrial-badge">
 <span></span>
 
-          SteelControl Gestão Industrial
+          CENTRAL INDUSTRIAL CONECTADA
 
         </div>
 <h2>
 
-          Sua operação industrial
+          Controle sua operação
           <span>
-            conectada
+            em tempo real
           </span>
-          em um só lugar.
+          com segurança.
 
         </h2>
 <p>
 
-          Mais controle, mais segurança e mais
-          informação para decisões melhores.
+          Desktop, mobile e Edge sincronizados em uma experiência industrial completa.
 
         </p>
 </div>
@@ -456,7 +438,7 @@
 <div class="image-bottom">
 <i class="fa-solid fa-shield-halved"></i>
 
-        Tecnologia para ambientes industriais
+        STEELCONTROL • ACESSO INDUSTRIAL SEGURO
 
       </div>
 </section>
@@ -474,8 +456,8 @@
       <div class="face-command-brand">
         <span class="face-command-brand-icon"><i class="fa-solid fa-face-viewfinder"></i></span>
         <span>
-          <strong data-i18n="reconhecimentoFacial">Reconhecimento facial</strong>
-          <small>STEELCONTROL • BIOMETRIC SECURITY CORE</small>
+          <strong>Controle de acesso industrial</strong>
+          <small>STEELCONTROL • OPERATOR AUTHENTICATION</small>
         </span>
       </div>
       <span class="face-command-state" id="faceCommandState">
@@ -487,9 +469,9 @@
     <div class="face-command-layout">
       <section class="face-camera-console">
         <div class="face-flutter-header face-command-heading">
-          <span class="face-flutter-kicker" data-i18n="reconhecimentoFacial">Reconhecimento facial</span>
-          <h2 data-i18n="facePrepareTitulo">Prepare-se para o reconhecimento facial</h2>
-          <p data-i18n="facePrepareTexto">Centralize seu rosto no enquadramento. A validação acontece automaticamente.</p>
+          <span class="face-flutter-kicker">IDENTIFICAÇÃO DO OPERADOR</span>
+          <h2>Validação segura para acesso à operação</h2>
+          <p>Posicione-se diante da câmera. O SteelControl confirma identidade e prova de vida automaticamente.</p>
         </div>
 
         <div class="face-oval-shell face-command-camera-shell">
@@ -572,6 +554,6 @@
 <canvas id="captureCanvas" style="display:none"></canvas>
 <!-- SCRIPTS -->
 <script src="assets/js/config.js?v=20260907_LOGO_DARK_FIX"></script>
-<script src="assets/js/login.js?v=20260908_FACE_MULTI_TEMPLATE_2FA_V13"></script>
+<script src="assets/js/login.js?v=20261005_HARDHAT_ALIGN_365"></script>
 </body>
 </html>
