@@ -1,0 +1,552 @@
+/* SteelControl biometric terminal — presentation only; capture logic remains unchanged. */
+.face-command-modal {
+  --face-orange: #f28c00;
+  --face-orange-soft: rgba(242, 140, 0, .16);
+  --face-green: #22c779;
+  --face-ink: #070a0c;
+  --face-panel: rgba(11, 16, 19, .88);
+}
+
+.face-command-modal.ativo,
+.face-command-modal.active,
+.face-command-modal[aria-hidden="false"] {
+  padding: 0 !important;
+  background: #050708 !important;
+  backdrop-filter: none !important;
+}
+
+.face-command-modal .biometric-gate {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: var(--face-ink) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+.face-command-modal .biometric-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(242, 140, 0, .48), transparent 20%) top left / 190px 2px no-repeat,
+    linear-gradient(180deg, rgba(242, 140, 0, .48), transparent 20%) top left / 2px 190px no-repeat,
+    linear-gradient(270deg, rgba(242, 140, 0, .28), transparent 20%) bottom right / 190px 2px no-repeat,
+    linear-gradient(0deg, rgba(242, 140, 0, .28), transparent 20%) bottom right / 2px 190px no-repeat;
+}
+
+.face-command-modal .biometric-gate-header {
+  position: absolute !important;
+  inset: 0 0 auto !important;
+  z-index: 40 !important;
+  min-height: 88px !important;
+  padding: 18px clamp(22px, 3.2vw, 54px) !important;
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(3, 5, 6, .97), rgba(3, 5, 6, .72) 72%, transparent) !important;
+  color: #fff !important;
+}
+
+.face-command-modal .face-command-brand { gap: 13px !important; }
+.face-command-modal .face-command-brand-icon {
+  width: 48px !important;
+  height: 48px !important;
+  border: 1px solid rgba(242, 140, 0, .52) !important;
+  border-radius: 12px !important;
+  background: #f28c00 !important;
+  box-shadow: 0 0 0 5px rgba(242, 140, 0, .09), 0 12px 30px rgba(0, 0, 0, .32) !important;
+}
+.face-command-modal .face-command-brand-icon img {
+  width: 29px;
+  height: 29px;
+  display: block;
+  object-fit: contain;
+}
+.face-command-modal .face-command-brand strong {
+  color: #fff !important;
+  font-size: 15px !important;
+  letter-spacing: .02em !important;
+}
+.face-command-modal .face-command-brand small {
+  color: rgba(255, 255, 255, .58) !important;
+  font-size: 10px !important;
+  letter-spacing: .15em !important;
+}
+
+.face-command-modal .face-command-state,
+.face-command-modal .face-command-close {
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  background: rgba(13, 18, 22, .72) !important;
+  color: rgba(255, 255, 255, .86) !important;
+  backdrop-filter: blur(18px) !important;
+}
+.face-command-modal .face-command-state { margin-right: 52px !important; }
+.face-command-modal .face-command-close {
+  top: 22px !important;
+  right: clamp(18px, 2.5vw, 38px) !important;
+  z-index: 60 !important;
+}
+
+.face-command-modal .biometric-gate-layout {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: #050708 !important;
+}
+
+.face-command-modal .biometric-gate-camera {
+  position: absolute !important;
+  inset: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #050708 !important;
+}
+
+.face-command-modal .biometric-camera-heading {
+  position: absolute !important;
+  z-index: 24 !important;
+  top: 108px !important;
+  left: clamp(24px, 3.2vw, 54px) !important;
+  right: clamp(24px, 3.2vw, 54px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #fff !important;
+}
+.face-command-modal .biometric-camera-heading h3 { color: #fff !important; font-size: clamp(19px, 2vw, 29px) !important; }
+.face-command-modal .face-flutter-kicker { color: #ffad38 !important; }
+.face-command-modal .biometric-live {
+  color: #d8ffe9 !important;
+  border: 1px solid rgba(34, 199, 121, .38) !important;
+  background: rgba(3, 38, 23, .62) !important;
+}
+
+.face-command-modal .biometric-viewfinder,
+.face-command-modal .camera-container.face-tech-camera {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #06090b !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+.face-command-modal .camera-container.face-tech-camera::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, transparent 18%, rgba(2, 4, 5, .13) 48%, rgba(2, 4, 5, .76) 100%),
+    linear-gradient(180deg, rgba(2, 4, 5, .16), transparent 42%, rgba(2, 4, 5, .66));
+}
+.face-command-modal .camera-container video,
+.face-command-modal .camera-container canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+}
+
+.face-command-modal .biometric-face-frame {
+  position: absolute !important;
+  z-index: 10 !important;
+  top: 49% !important;
+  left: 50% !important;
+  width: clamp(230px, 25vw, 360px) !important;
+  height: clamp(300px, 51vh, 500px) !important;
+  transform: translate(-50%, -50%) !important;
+  border: 2px solid rgba(255, 174, 56, .9) !important;
+  border-radius: 48% 48% 44% 44% / 39% 39% 56% 56% !important;
+  background: rgba(242, 140, 0, .025) !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, .13), inset 0 0 42px rgba(242, 140, 0, .08), 0 0 38px rgba(242, 140, 0, .15) !important;
+}
+.face-command-modal .biometric-face-frame::before,
+.face-command-modal .biometric-face-frame::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: inherit;
+}
+.face-command-modal .biometric-face-frame::after { inset: 13%; border-color: rgba(242, 140, 0, .16); }
+.face-command-modal .biometric-face-frame span {
+  position: absolute !important;
+  left: 8% !important;
+  right: 8% !important;
+  top: 20% !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, #ffc46d, transparent) !important;
+  box-shadow: 0 0 18px rgba(242, 140, 0, .9) !important;
+  animation: steel-face-scan 2.6s ease-in-out infinite !important;
+}
+@keyframes steel-face-scan { 0%, 100% { top: 18%; opacity: .45; } 50% { top: 80%; opacity: 1; } }
+
+.face-command-modal .camera-loading {
+  z-index: 18 !important;
+  color: #fff !important;
+  background: rgba(5, 8, 10, .9) !important;
+}
+.face-command-modal .face-command-status,
+.face-command-modal .camera-status {
+  position: absolute !important;
+  z-index: 25 !important;
+  left: clamp(24px, 3.2vw, 54px) !important;
+  bottom: 196px !important;
+  width: min(430px, calc(100vw - 48px)) !important;
+  margin: 0 !important;
+  padding: 13px 16px !important;
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  border-radius: 14px !important;
+  background: rgba(8, 13, 16, .74) !important;
+  color: #fff !important;
+  backdrop-filter: blur(18px) !important;
+}
+.face-command-modal .face-command-status strong,
+.face-command-modal .face-command-status span,
+.face-command-modal .camera-status strong,
+.face-command-modal .camera-status span { color: #fff !important; }
+.face-command-modal .face-command-progress,
+.face-command-modal .face-command-enroll-progress {
+  position: absolute !important;
+  z-index: 25 !important;
+  left: clamp(24px, 3.2vw, 54px) !important;
+  right: clamp(24px, 3.2vw, 54px) !important;
+  bottom: 174px !important;
+  margin: 0 !important;
+}
+
+.face-command-modal .biometric-gate-copy {
+  position: absolute !important;
+  z-index: 30 !important;
+  inset: auto 0 0 !important;
+  min-height: 166px !important;
+  padding: 30px clamp(24px, 3.2vw, 54px) 24px !important;
+  display: grid !important;
+  grid-template-columns: minmax(235px, .72fr) minmax(460px, 1.5fr) minmax(210px, .7fr) !important;
+  grid-template-rows: auto auto 1fr !important;
+  gap: 5px clamp(20px, 3vw, 52px) !important;
+  align-items: center !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, .1) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(7, 10, 12, .74), rgba(7, 10, 12, .98) 34%) !important;
+  color: #fff !important;
+  backdrop-filter: blur(24px) !important;
+}
+.face-command-modal .biometric-eyebrow { grid-column: 1; grid-row: 1; color: #ffa82f !important; }
+.face-command-modal .biometric-gate-copy > h2 { grid-column: 1; grid-row: 2; margin: 0 !important; color: #fff !important; font-size: clamp(19px, 1.5vw, 25px) !important; }
+.face-command-modal .biometric-gate-copy > p:not(.biometric-privacy):not(.camera-help) { grid-column: 1; grid-row: 3; margin: 2px 0 0 !important; color: rgba(255, 255, 255, .62) !important; font-size: 12px !important; }
+.face-command-modal .biometric-gate-steps {
+  grid-column: 2 !important;
+  grid-row: 1 / 4 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+.face-command-modal .face-validation-step {
+  min-height: 55px !important;
+  padding: 9px 11px !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, .035) !important;
+  color: rgba(255, 255, 255, .72) !important;
+}
+.face-command-modal .face-validation-step.active {
+  border-color: rgba(242, 140, 0, .68) !important;
+  background: rgba(242, 140, 0, .12) !important;
+  color: #fff !important;
+}
+.face-command-modal .face-validation-step strong { color: inherit !important; font-size: 12px !important; }
+.face-command-modal .face-validation-step small { color: rgba(255, 255, 255, .48) !important; font-size: 10px !important; }
+.face-command-modal .face-validation-step-icon { background: rgba(242, 140, 0, .15) !important; color: #ffac36 !important; }
+.face-command-modal .biometric-privacy,
+.face-command-modal .biometric-consent {
+  grid-column: 3 !important;
+  grid-row: 1 / 4 !important;
+  margin: 0 !important;
+  padding: 14px !important;
+  border: 1px solid rgba(255, 255, 255, .1) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .035) !important;
+  color: rgba(255, 255, 255, .64) !important;
+  font-size: 11px !important;
+}
+
+.face-command-modal .face-command-field {
+  grid-column: 1 !important;
+  grid-row: 4 !important;
+  margin: 8px 0 0 !important;
+}
+.face-command-modal .face-command-field label,
+.face-command-modal .face-command-field small { color: rgba(255, 255, 255, .62) !important; }
+.face-command-modal .face-command-field input {
+  border-color: rgba(255, 255, 255, .14) !important;
+  background: rgba(255, 255, 255, .06) !important;
+  color: #fff !important;
+}
+.face-command-modal .biometric-gate-enroll .biometric-gate-copy { min-height: 210px !important; grid-template-rows: auto auto auto 1fr !important; }
+.face-command-modal .biometric-gate-enroll .face-command-status { bottom: 240px !important; }
+.face-command-modal .biometric-gate-enroll .face-command-enroll-progress { bottom: 218px !important; }
+.face-command-modal .biometric-gate-enroll .biometric-consent { grid-row: 1 / 3 !important; }
+.face-command-modal .biometric-gate-enroll .face-command-help { grid-column: 3 !important; grid-row: 3 / 5 !important; align-self: end !important; }
+
+@media (max-width: 1050px) {
+  .face-command-modal .biometric-gate-copy { grid-template-columns: minmax(220px, .8fr) minmax(410px, 1.5fr) !important; }
+  .face-command-modal .biometric-privacy,
+  .face-command-modal .biometric-consent,
+  .face-command-modal .face-command-help { display: none !important; }
+}
+
+@media (max-width: 760px) {
+  .face-command-modal .biometric-gate-header { min-height: 74px !important; padding: 13px 16px !important; }
+  .face-command-modal .face-command-brand-icon { width: 42px !important; height: 42px !important; }
+  .face-command-modal .face-command-state { display: none !important; }
+  .face-command-modal .face-command-close { top: 15px !important; right: 14px !important; }
+  .face-command-modal .biometric-camera-heading { top: 82px !important; left: 16px !important; right: 16px !important; }
+  .face-command-modal .biometric-face-frame { top: 43% !important; width: min(61vw, 285px) !important; height: min(42vh, 380px) !important; }
+  .face-command-modal .face-command-status,
+  .face-command-modal .camera-status { left: 16px !important; bottom: 242px !important; width: calc(100vw - 32px) !important; }
+  .face-command-modal .face-command-progress,
+  .face-command-modal .face-command-enroll-progress { left: 16px !important; right: 16px !important; bottom: 226px !important; }
+  .face-command-modal .biometric-gate-copy,
+  .face-command-modal .biometric-gate-enroll .biometric-gate-copy {
+    min-height: 218px !important;
+    max-height: 38vh !important;
+    overflow-y: auto !important;
+    padding: 18px 16px !important;
+    display: block !important;
+  }
+  .face-command-modal .biometric-gate-copy > h2 { margin-top: 4px !important; font-size: 19px !important; }
+  .face-command-modal .biometric-gate-copy > p:not(.biometric-privacy):not(.camera-help) { display: none !important; }
+  .face-command-modal .biometric-gate-steps { margin-top: 12px !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .face-command-modal .face-validation-step { min-height: 48px !important; }
+  .face-command-modal .face-validation-step small { display: none !important; }
+  .face-command-modal .face-command-field { margin-top: 10px !important; }
+  .face-command-modal .biometric-gate-enroll .face-command-status { bottom: 250px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-command-modal .biometric-face-frame span { animation: none !important; top: 50% !important; }
+}
+
+/* Desktop workstation: fixed two-column terminal that always fits the monitor. */
+@media (min-width: 900px) and (min-height: 620px) {
+  .face-command-modal.ativo,
+  .face-command-modal.active,
+  .face-command-modal[aria-hidden="false"] {
+    overflow: hidden !important;
+  }
+
+  .face-command-modal .biometric-gate-header {
+    min-height: 76px !important;
+    height: 76px !important;
+    padding: 13px 26px !important;
+    border-bottom: 1px solid rgba(255,255,255,.09) !important;
+    background: #090d10 !important;
+  }
+  .face-command-modal .face-command-brand-icon {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+  }
+  .face-command-modal .face-command-brand-icon img { width: 26px; height: 26px; }
+  .face-command-modal .face-command-close { top: 15px !important; right: 20px !important; }
+  .face-command-modal .face-command-state { margin-right: 54px !important; }
+
+  .face-command-modal .biometric-gate-layout {
+    top: 76px !important;
+    display: grid !important;
+    grid-template-columns: clamp(300px, 25vw, 380px) minmax(0, 1fr) !important;
+    min-height: 0 !important;
+    height: calc(100dvh - 76px) !important;
+    overflow: hidden !important;
+  }
+
+  .face-command-modal .biometric-gate-copy,
+  .face-command-modal .biometric-gate-enroll .biometric-gate-copy {
+    position: relative !important;
+    inset: auto !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 100% !important;
+    padding: clamp(24px, 4vh, 42px) 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    overflow-y: auto !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(255,255,255,.09) !important;
+    background:
+      linear-gradient(145deg, rgba(242,140,0,.06), transparent 30%),
+      #0b1013 !important;
+    backdrop-filter: none !important;
+  }
+  .face-command-modal .biometric-gate-copy::after {
+    content: "STEELCONTROL / BIOMETRIA";
+    margin-top: auto;
+    padding-top: 22px;
+    color: rgba(255,255,255,.26);
+    font: 700 9px/1.2 "Segoe UI", sans-serif;
+    letter-spacing: .18em;
+  }
+  .face-command-modal .biometric-eyebrow,
+  .face-command-modal .biometric-gate-copy > h2,
+  .face-command-modal .biometric-gate-copy > p:not(.biometric-privacy):not(.camera-help),
+  .face-command-modal .face-command-field,
+  .face-command-modal .biometric-gate-steps,
+  .face-command-modal .biometric-privacy,
+  .face-command-modal .biometric-consent,
+  .face-command-modal .face-command-help {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  .face-command-modal .biometric-gate-copy > h2 {
+    margin-top: 10px !important;
+    font: 700 clamp(22px, 2vw, 29px)/1.08 "Segoe UI Variable Display", "Segoe UI", sans-serif !important;
+    letter-spacing: -.035em !important;
+  }
+  .face-command-modal .biometric-gate-copy > p:not(.biometric-privacy):not(.camera-help) {
+    margin-top: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  .face-command-modal .biometric-gate-steps {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+    margin-top: clamp(18px, 3vh, 30px) !important;
+  }
+  .face-command-modal .face-validation-step {
+    min-height: 52px !important;
+    padding: 9px 11px !important;
+  }
+  .face-command-modal .biometric-privacy,
+  .face-command-modal .biometric-consent,
+  .face-command-modal .face-command-help {
+    display: flex !important;
+    margin-top: 14px !important;
+    padding: 11px 12px !important;
+    font-size: 10px !important;
+  }
+  .face-command-modal .biometric-consent { order: 8; }
+  .face-command-modal .face-command-help { order: 9; }
+  .face-command-modal .face-command-field { margin-top: 16px !important; }
+
+  .face-command-modal .biometric-gate-camera {
+    position: relative !important;
+    inset: auto !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 18px !important;
+    background: #06090b !important;
+  }
+  .face-command-modal .biometric-camera-heading {
+    top: 26px !important;
+    left: 38px !important;
+    right: 38px !important;
+  }
+  .face-command-modal .biometric-camera-heading h3 {
+    font: 650 clamp(20px, 2vw, 28px)/1.1 "Segoe UI Variable Display", "Segoe UI", sans-serif !important;
+  }
+  .face-command-modal .biometric-viewfinder,
+  .face-command-modal .camera-container.face-tech-camera {
+    inset: 18px !important;
+    width: calc(100% - 36px) !important;
+    height: calc(100% - 36px) !important;
+    border-radius: 18px !important;
+  }
+  .face-command-modal .camera-container video,
+  .face-command-modal .camera-container canvas { border-radius: 18px !important; }
+  .face-command-modal .camera-container video { object-fit: contain !important; background: #050708 !important; }
+
+  .face-command-modal .biometric-face-frame {
+    top: 48% !important;
+    width: clamp(210px, 20vw, 310px) !important;
+    height: clamp(280px, 48vh, 430px) !important;
+  }
+  .face-command-modal .face-command-status,
+  .face-command-modal .camera-status,
+  .face-command-modal .biometric-gate-enroll .face-command-status {
+    left: 38px !important;
+    bottom: 40px !important;
+    width: min(410px, calc(100% - 76px)) !important;
+    padding: 11px 14px !important;
+  }
+  .face-command-modal .face-command-progress,
+  .face-command-modal .face-command-enroll-progress,
+  .face-command-modal .biometric-gate-enroll .face-command-enroll-progress {
+    left: 38px !important;
+    right: 38px !important;
+    bottom: 27px !important;
+    width: auto !important;
+    height: 4px !important;
+    min-height: 4px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 99px !important;
+    overflow: hidden !important;
+    background: rgba(255,255,255,.14) !important;
+    box-shadow: none !important;
+  }
+  .face-command-modal .face-command-progress > span {
+    display: block !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: #f28c00 !important;
+  }
+  .face-command-modal .face-command-enroll-progress .progress-info {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: 12px !important;
+    width: 100% !important;
+    color: #fff !important;
+  }
+  .face-command-modal .face-command-enroll-progress .progress-bar {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 4px !important;
+    background: transparent !important;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 720px) {
+  .face-command-modal .biometric-gate-copy,
+  .face-command-modal .biometric-gate-enroll .biometric-gate-copy { padding: 20px !important; }
+  .face-command-modal .biometric-gate-copy > h2 { font-size: 21px !important; }
+  .face-command-modal .biometric-gate-steps { margin-top: 14px !important; }
+  .face-command-modal .face-validation-step { min-height: 44px !important; }
+  .face-command-modal .face-validation-step small { display: none !important; }
+  .face-command-modal .biometric-privacy,
+  .face-command-modal .face-command-help { display: none !important; }
+}

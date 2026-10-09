@@ -1,3 +1,41 @@
+# 2026-10-09 — Tema, idiomas e biometria unificados V3.9.8
+- Logo padrão do SteelControl corrigida no modo escuro sem alterar as cores de logos institucionais enviadas pelas empresas.
+- Dashboard dinâmico reorganizado, sempre visível e acompanhado de uma explicação em três etapas e cobertura de sinais ativos.
+- Dashboard dinâmico, painel Dobot, cadastro de máquinas e terminal biométrico passam a respeitar Português, Inglês, Espanhol, Francês, Alemão e Italiano.
+- Cadastro facial de funcionários unificado ao procedimento do administrador: enquadramento frontal, prova de vida, retorno frontal e proteção da credencial.
+- Cartão do usuário conectado compactado para uma proporção profissional em monitores e telas menores.
+- Cache das páginas atualizado para aplicar imediatamente os novos estilos e traduções.
+
+# 2026-10-07 — HOME fornecida pelo usuário V3.9.2
+- HOME substituída pelo modelo enviado pelo usuário, sem a camada visual adicional da versão anterior.
+- Seção e botão do GitHub removidos integralmente.
+- Acessos reais ao login do SteelControl preservados no cabeçalho e no destaque principal.
+- Three.js continua hospedado localmente para funcionamento sem CDN.
+- Fallbacks tipográficos profissionais adicionados para Windows sem alterar o desenho original.
+
+# 2026-10-07 — Correção visual desktop V3.9.1
+- Facial ajustada para monitor: painel lateral e câmera contida sem rolagem vertical.
+- Removida a faixa branca indevida do progresso biométrico.
+- Vídeo passa a preservar o enquadramento completo, evitando ampliação excessiva do rosto.
+- HOME volta ao tema escuro SteelControl, eliminando o conflito de cores da revisão anterior.
+- Tipografia padronizada com fontes locais profissionais, legíveis e disponíveis no Windows.
+
+# 2026-10-07 — Configurador e experiência biométrica V3.9
+- Cadastro manual reorganizado em módulos industriais claros, responsivos e com seleção visível.
+- Configuração salva deixa de ser descartada quando o diagnóstico ainda não publicou metadados.
+- Indicadores escolhidos aparecem imediatamente no dashboard; ausência de telemetria é exibida como “Não informado”.
+- Ativação do painel sugere automaticamente os módulos do perfil da máquina quando nenhuma opção foi marcada.
+- Login e cadastro facial redesenhados como terminal biométrico SteelControl em tela cheia, sem alterar captura ou segurança.
+- HOME refinada com marca SteelControl, linguagem visual industrial e acabamento preto, branco e laranja.
+
+# 2026-10-07 — Nova landing page industrial 3D
+- HOME substituída pela landing page fornecida, com identidade preta, branca e laranja.
+- Célula Dobot em WebGL, movimento pick-and-place, partículas, leitura de juntas e transições por scroll.
+- Telas reais do painel, controle e equipamentos incorporadas à apresentação do produto.
+- Three.js hospedado localmente para manter a abertura independente de CDN.
+- Botões principais conectados à rota real `/app/login` e idioma do sistema preservado.
+- Backend, telemetria, comandos, dashboards e regras industriais não foram alterados.
+
 # 2026-10-05 — Landing 3D industrial V3
 - Seção “Sobre o projeto” transformada em uma experiência cinematográfica e tecnológica.
 - Núcleo industrial 3D criado em Canvas, com partículas em profundidade e interação com o ponteiro.
@@ -229,3 +267,67 @@ Mudanças somente na camada de engenharia/entrega:
 - Mascote removido do núcleo atrás do texto e mantido somente como marca animada do acesso.
 - Movimento do mascote reforçado com flutuação, inclinação, escala, órbita e varredura.
 - Tela de acesso fixada em português para não herdar idioma antigo salvo no navegador.
+# 3.6.6 — Área de equipamentos responsiva
+
+- Corrige o posicionamento da lista de equipamentos, que podia ficar comprimida no canto esquerdo.
+- Os cartões agora usam toda a largura disponível e mantêm altura e ações alinhadas.
+- Reorganiza busca e filtros em desktop, tablet e celular sem alterar a lógica de cadastro ou monitoramento.
+# 3.7.0 — Central de ativos e biometria profissional
+
+- Nova apresentação institucional da marca no topo, com placa escura e assinatura laranja.
+- Tela de máquinas reorganizada como central de ativos: equipamentos cadastrados aparecem antes das ferramentas de cadastro e descoberta.
+- Hero, indicadores, filtros e cartões de equipamentos receberam hierarquia mais compacta e profissional.
+- Dashboard dinâmico passa a abrir por padrão e agrupa módulos em uma grade operacional responsiva.
+- Reconhecimento e cadastro facial ganharam um novo visual de estação biométrica, mantendo a lógica existente.
+
+# 3.7.1 — Tema, marca e cabine biométrica
+
+- Restaura a marca correta no tema claro: placa clara e símbolo preto, conforme a referência.
+- No tema escuro, a marca passa automaticamente para placa preta e símbolo branco.
+- Corrige cartões brancos e textos sem contraste na tela de máquinas em modo escuro.
+- Reforça a grade responsiva dos equipamentos para evitar cartões comprimidos.
+- Substitui a facial clara anterior por uma cabine biométrica industrial escura, com câmera, leitura e validação integradas.
+
+# 3.7.2 — Terminal corporativo de biometria
+
+- Refaz a estrutura HTML da autenticação facial, deixando de usar o antigo formato HUD.
+- Novo fluxo dividido entre orientação do operador e visor independente da câmera.
+- Etapas numeradas, privacidade simplificada, progresso discreto e foco na identificação.
+- Cadastro facial da empresa passa a utilizar o mesmo padrão profissional.
+- Mantém os IDs e eventos usados pela câmera, prova de vida e backend.
+
+# 2026-10-07 — Braço 3D restaurado V3.9.6
+
+- Corrigida a referência da coreografia WebGL para a nova seção `acesso`.
+- O erro que interrompia o Three.js antes do primeiro frame foi removido.
+- Braço robótico 3D e animação por rolagem restaurados na HOME.
+
+# 2026-10-07 — Landing 3D focada no SteelControl V3.9.5
+
+- CTAs "Solicitar demonstração" substituídos por "Entrar" com rota `/app/login`.
+- Bloco final reformulado como acesso à plataforma industrial SteelControl.
+- Textos e código legado de demonstração/GitHub removidos da HOME.
+- Traduções em português e inglês atualizadas para o novo fluxo de entrada.
+
+# 2026-10-07 — Landing 3D integrada ao front-end V3.9.4
+
+- Landing conectada ao sistema de idioma já usado pelo SteelControl.
+- CTAs de demonstração traduzidos sem alterar o visual 3D enviado.
+- Ação final integrada à rota real `/app/login`.
+- Tradução antiga do botão do GitHub removida definitivamente.
+
+# 2026-10-07 — Landing 3D fiel ao modelo V3.9.3
+
+- Estrutura completa do `SteelControl(3).html` restaurada na HOME.
+- Navegação, hero, demonstrações, benefícios, fluxo, segurança e bloco final mantêm o desenho enviado.
+- Botão do GitHub substituído por acesso seguro ao login, preservando o layout original.
+- Three.js permanece local, mantendo a mesma experiência 3D sem depender de CDN.
+
+# 2026-10-09 — Nova HOME 3D integrada V3.9.7
+
+- HOME substituída pela landing enviada com célula industrial WebGL interativa.
+- Robô, CNC, esteira, impressora 3D, tanque e CLP apresentados no ambiente 3D.
+- Botões principais conectados diretamente à rota real `/app/login`.
+- GitHub, formulário de contato e dependências externas removidos.
+- Conteúdo e navegação adaptados ao SteelControl, preservando desktop, mobile e Edge.
+

@@ -210,7 +210,9 @@ function prepararLogoEmpresaParaTema(img) {
 const API_URL = window.STEELCONTROL_API_URL;
 
 const MAX_FACE_SAMPLES = 1;
-const FRAMES_NECESSARIOS = 4;
+// Mantém o mesmo rito do cadastro do administrador: dois frames frontais,
+// movimento de prova de vida e dois frames no retorno frontal.
+const FRAMES_NECESSARIOS = 2;
 
 
 // =====================================================
@@ -496,11 +498,20 @@ function definirLogoEmpresa(logoUrl) {
       "removerLogoBtn"
     );
 
+  const logoBox =
+    imagem?.closest(
+      ".company-logo-box"
+    );
+
   if (!imagem) {
     return;
   }
 
   if (!logoUrl) {
+    logoBox?.classList.add(
+      "has-default-logo"
+    );
+
     imagem.hidden = true;
     imagem.removeAttribute(
       "src"
@@ -526,6 +537,10 @@ function definirLogoEmpresa(logoUrl) {
   imagem.crossOrigin = "anonymous";
 
   imagem.onload = () => {
+    logoBox?.classList.remove(
+      "has-default-logo"
+    );
+
     prepararLogoEmpresaParaTema(imagem);
     imagem.hidden = false;
 
@@ -540,6 +555,10 @@ function definirLogoEmpresa(logoUrl) {
   };
 
   imagem.onerror = () => {
+    logoBox?.classList.add(
+      "has-default-logo"
+    );
+
     imagem.hidden = true;
 
     if (placeholder) {
@@ -5142,17 +5161,19 @@ function atualizarProgresso() {
 }
 
 
-function atualizarEtapasCadastroFacial(percentual = 0, forcarSeguro = false) {
+function atualizarEtapasCadastroFacial(_percentual = 0, forcarSeguro = false) {
   const etapas = Array.from(document.querySelectorAll("[data-enroll-step]"));
   if (!etapas.length) return;
 
+  const indicePorEtapa = {
+    frontal: 0,
+    movimento: 1,
+    retorno: 2
+  };
+
   const indiceAtual = forcarSeguro
-    ? 2
-    : percentual >= 100
-      ? 2
-      : percentual > 0
-        ? 1
-        : 0;
+    ? 3
+    : (indicePorEtapa[etapaCadastroFacial] ?? 0);
 
   etapas.forEach((item, indice) => {
     item.classList.toggle("complete", indice < indiceAtual);

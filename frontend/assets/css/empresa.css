@@ -541,6 +541,45 @@ button {
   font-weight: 600;
 }
 
+.current-session-card {
+  display: grid;
+  grid-template-columns: minmax(250px, .7fr) minmax(360px, 1fr);
+  align-items: center;
+  gap: 28px;
+  padding: 24px 28px;
+}
+
+.current-session-card .section-header {
+  margin: 0;
+}
+
+.current-session-card .logged-user {
+  width: 100%;
+  max-width: 720px;
+  justify-self: end;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.current-session-card .logged-avatar {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  font-size: 17px;
+}
+
+@media (max-width: 900px) {
+  .current-session-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .current-session-card .logged-user {
+    max-width: none;
+    justify-self: stretch;
+  }
+}
+
 
 /* =====================================================
    NOVO FUNCIONÁRIO

@@ -56,6 +56,63 @@ let carregarMaquinasPromise = null;
 const MAQUINAS_CACHE_KEY = "steelcontrol.maquinas.cache.v2";
 const MAQUINAS_FETCH_TIMEOUT_MS = 8000;
 
+const DASHBOARD_MACHINE_PROFILES = {
+  "Braço robótico": { id: "ROBOT", title: "Robótica e manipulação", description: "Produção, segurança, manutenção e consumo do braço.", modules: ["production", "safety", "maintenance", "energy"] },
+  "Robô industrial": { id: "ROBOT", title: "Robótica industrial", description: "Eficiência, produção, intertravamentos, manutenção e energia.", modules: ["efficiency", "production", "safety", "maintenance", "energy"] },
+  "Esteira industrial": { id: "CONVEYOR", title: "Movimentação e fluxo", description: "Ritmo de produção, segurança, manutenção e consumo.", modules: ["production", "safety", "maintenance", "energy"] },
+  "Prensa": { id: "PRESS", title: "Prensa industrial", description: "OEE, produção, proteções, manutenção e energia.", modules: ["efficiency", "production", "safety", "maintenance", "energy"] },
+  "Torno": { id: "LATHE", title: "Usinagem e torno", description: "OEE, programa, qualidade, ferramenta e segurança.", modules: ["efficiency", "production", "safety", "maintenance", "energy"] },
+  "CNC": { id: "CNC", title: "Centro de usinagem CNC", description: "OEE, programa, peças, ferramenta, alarmes e energia.", modules: ["efficiency", "production", "safety", "maintenance", "energy"] },
+  "Solda": { id: "WELDING", title: "Célula de soldagem", description: "Produção, proteções, manutenção e utilidades.", modules: ["production", "safety", "maintenance", "energy"] },
+  "Corte": { id: "CUTTING", title: "Máquina de corte", description: "Eficiência, produção, segurança, ferramenta e energia.", modules: ["efficiency", "production", "safety", "maintenance", "energy"] },
+  "Embalagem": { id: "PACKAGING", title: "Linha de embalagem", description: "OEE, contagem, qualidade, segurança e manutenção.", modules: ["efficiency", "production", "safety", "maintenance"] },
+  "Impressora 3D": { id: "PRINTER_3D", title: "Manufatura aditiva", description: "Trabalho, progresso, condição, manutenção e energia.", modules: ["production", "safety", "maintenance", "energy"] },
+  "Outro": { id: "CUSTOM", title: "Equipamento personalizado", description: "Escolha manualmente somente os grupos de indicadores necessários.", modules: [] }
+};
+
+function perfilDashboardPorTipo(tipo) {
+  return DASHBOARD_MACHINE_PROFILES[String(tipo || "").trim()] || null;
+}
+
+function atualizarResumoDashboard() {
+  const enabled = document.getElementById("dashboardEnabledInput");
+  const inputs = [...document.querySelectorAll('input[name="dashboardModule"]')];
+  const tipo = document.getElementById("tipoInput")?.value || "";
+  const perfil = perfilDashboardPorTipo(tipo);
+  const ativo = Boolean(enabled?.checked);
+  inputs.forEach(input => { input.disabled = !ativo; });
+  const quantidade = inputs.filter(input => input.checked).length;
+  const status = document.getElementById("dashboardProfileStatus");
+  const title = document.getElementById("dashboardProfileTitle");
+  const description = document.getElementById("dashboardProfileDescription");
+  if (status) status.textContent = !ativo ? "Desativado" : `${quantidade} ${quantidade === 1 ? "módulo" : "módulos"}`;
+  if (title) title.textContent = perfil?.title || "Painel sob medida";
+  if (description) description.textContent = perfil?.description || "Escolha o tipo do equipamento para receber uma recomendação de indicadores.";
+}
+
+function aplicarPerfilDashboard({ preserveSaved = false, dashboard = null } = {}) {
+  const perfil = perfilDashboardPorTipo(document.getElementById("tipoInput")?.value);
+  const enabled = document.getElementById("dashboardEnabledInput");
+  const inputs = [...document.querySelectorAll('input[name="dashboardModule"]')];
+  const salvos = Array.isArray(dashboard?.modules) ? dashboard.modules : [];
+  const modulos = preserveSaved ? salvos : (perfil?.modules || []);
+  if (enabled) enabled.checked = preserveSaved ? dashboard?.enabled === true : Boolean(perfil);
+  inputs.forEach(input => { input.checked = modulos.includes(input.value); });
+  atualizarResumoDashboard();
+}
+
+function configuracaoDashboard() {
+  const tipo = document.getElementById("tipoInput")?.value || "";
+  const perfil = perfilDashboardPorTipo(tipo);
+  return {
+    enabled: Boolean(document.getElementById("dashboardEnabledInput")?.checked),
+    profile: perfil?.id || "CUSTOM",
+    machineType: tipo || null,
+    modules: [...document.querySelectorAll('input[name="dashboardModule"]:checked')].map(input => input.value),
+    schema: "steelcontrol-dashboard-v1"
+  };
+}
+
 function lerCacheMaquinas() {
   try {
     const cache = JSON.parse(sessionStorage.getItem(MAQUINAS_CACHE_KEY) || "null");
@@ -651,6 +708,7 @@ function fecharFormularioMaquina() {
   atualizarAjudaModoOperacao();
   atualizarPainelDobot();
   atualizarPerfilControlador();
+  aplicarPerfilDashboard();
 
   const botaoSalvar =
     formMaquina?.querySelector(
@@ -812,6 +870,8 @@ function preencherBracoRobotico() {
 
     tipo.value =
       "Braço robótico";
+
+    aplicarPerfilDashboard();
 
   }
 
@@ -1563,6 +1623,7 @@ function sincronizarTipoComControlador(origem) {
     } else if (tipo.value === "Impressora 3D") {
       tipo.value = "Outro";
     }
+    aplicarPerfilDashboard();
   } finally {
     sincronizandoTipoControlador = false;
   }
@@ -1570,6 +1631,21 @@ function sincronizarTipoComControlador(origem) {
 
 document.getElementById("tipoInput")?.addEventListener("change", () => sincronizarTipoComControlador("tipo"));
 document.getElementById("controladorInput")?.addEventListener("change", () => sincronizarTipoComControlador("controlador"));
+document.getElementById("tipoInput")?.addEventListener("change", () => aplicarPerfilDashboard());
+document.getElementById("dashboardEnabledInput")?.addEventListener("change", event => {
+  if (event.target.checked) {
+    const marcados = document.querySelectorAll('input[name="dashboardModule"]:checked');
+    if (!marcados.length) {
+      const perfil = perfilDashboardPorTipo(document.getElementById("tipoInput")?.value);
+      document.querySelectorAll('input[name="dashboardModule"]').forEach(input => {
+        input.checked = Boolean(perfil?.modules?.includes(input.value));
+      });
+    }
+  }
+  atualizarResumoDashboard();
+});
+document.querySelectorAll('input[name="dashboardModule"]').forEach(input => input.addEventListener("change", atualizarResumoDashboard));
+aplicarPerfilDashboard();
 
 function criarCardMaquina(
   maquina
@@ -2180,6 +2256,9 @@ function editarMaquina(
   const hmiRemote = document.getElementById("hmiRemoteEnabledInput");
   if (hmiRemote) hmiRemote.checked = Boolean(maquina.integracaoMeta?.hmi?.remoteControlEnabled);
 
+  const dashboard = maquina.integracaoMeta?.dashboard;
+  aplicarPerfilDashboard({ preserveSaved: Boolean(dashboard), dashboard });
+
   atualizarAjudaModoOperacao();
   atualizarPainelDobot();
   atualizarPerfilControlador();
@@ -2660,31 +2739,43 @@ formMaquina
           ? Number(unitIdValor)
           : null;
 
-      const integracaoMeta = controlador === "DOBOT_MAGICIAN"
-        ? { dobot: {
+      const maquinaAtual = Number.isInteger(maquinaEditandoId)
+        ? maquinas.find(item => Number(item.id) === Number(maquinaEditandoId))
+        : null;
+      const metaAtual = maquinaAtual?.integracaoMeta || {};
+      const integracaoMeta = {
+        ...metaAtual,
+        dashboard: { ...(metaAtual.dashboard || {}), ...configuracaoDashboard() }
+      };
+      delete integracaoMeta.dobot;
+      delete integracaoMeta.impressora3d;
+      delete integracaoMeta.hmi;
+
+      if (controlador === "DOBOT_MAGICIAN") {
+        integracaoMeta.dobot = {
             enabled: true,
             mode: String(document.getElementById("dobotModeInput")?.value || "MOCK").toUpperCase(),
             port: String(document.getElementById("dobotPortInput")?.value || "AUTO").trim().toUpperCase(),
             baudRate: Number(document.getElementById("dobotBaudInput")?.value || 115200),
             remoteControlEnabled: Boolean(document.getElementById("dobotAllowMotionInput")?.checked),
             externalSensors: { temperature: false, vibration: false, current: false }
-          }}
-        : controlador === "IMPRESSORA_3D"
-          ? { impressora3d: {
+          };
+      } else if (controlador === "IMPRESSORA_3D") {
+        integracaoMeta.impressora3d = {
               enabled: true,
               schema: "steelcontrol-printer3d-v1",
               technology: "AUTO",
               ecosystem: "AUTO",
               readOnly: true
-            }}
-          : controlador
-            ? { hmi: {
+            };
+      } else if (controlador) {
+        integracaoMeta.hmi = {
                 enabled: true,
                 remoteControlEnabled: modoSimulacao
                   ? false
                   : Boolean(document.getElementById("hmiRemoteEnabledInput")?.checked)
-              }}
-            : null;
+              };
+      }
 
 
       if (
@@ -2720,6 +2811,18 @@ formMaquina
 
         return;
 
+      }
+
+      if (
+        document.getElementById("dashboardEnabledInput")?.checked &&
+        !document.querySelector('input[name="dashboardModule"]:checked')
+      ) {
+        mensagemMaquina.textContent =
+          "Selecione ao menos um módulo para o painel inteligente ou desative o painel.";
+        mensagemMaquina.className =
+          "mensagem-maquina erro";
+        document.getElementById("dashboardProfileDetails")?.setAttribute("open", "");
+        return;
       }
 
       if (

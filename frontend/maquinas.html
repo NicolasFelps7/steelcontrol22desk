@@ -18,7 +18,7 @@
 
   <link
     rel="stylesheet"
-    href="assets/css/maquinas.css?v=20260903_DISCOVERY_UI_PRO"
+    href="assets/css/maquinas.css?v=20261007_MACHINE_PANEL_380"
   >
 
   <link rel="stylesheet" href="assets/vendor/steel-icons/steel-icons.css?v=1">
@@ -36,7 +36,8 @@
   <link rel="stylesheet" href="assets/css/industrial-theme.css?v=20260907_COLOR_TYPO_V3">
 
 
-  <link rel="stylesheet" href="assets/css/desktop-layout.css?v=20260918_FIXED_SMALL_MACHINE_CARDS_V12">
+  <link rel="stylesheet" href="assets/css/desktop-layout.css?v=20261005_EQUIPMENT_AREA_366">
+  <link rel="stylesheet" href="assets/css/steelcontrol-refinement.css?v=20261007_BIOMETRIC_GATE_372">
 
 </head>
 
@@ -549,8 +550,39 @@
           </div>
         </details>
 
+        <details class="form-disclosure dashboard-profile-details" id="dashboardProfileDetails">
+          <summary>
+            <span class="disclosure-icon"><i class="fa-solid fa-table-cells-large"></i></span>
+            <span class="disclosure-copy">
+              <strong>Painel inteligente da máquina</strong>
+              <small>O tipo escolhido define quais grupos de indicadores entram no dashboard</small>
+            </span>
+            <span class="dashboard-profile-status" id="dashboardProfileStatus">Configurar tipo</span>
+            <i class="fa-solid fa-chevron-down disclosure-arrow"></i>
+          </summary>
 
-
+          <div class="form-disclosure-content">
+            <div class="dashboard-profile-intro">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <div>
+                <strong id="dashboardProfileTitle">Painel sob medida</strong>
+                <p id="dashboardProfileDescription">Escolha o tipo de equipamento acima. O SteelControl recomendará somente os indicadores úteis para ele.</p>
+              </div>
+              <label class="dashboard-enable-switch">
+                <input id="dashboardEnabledInput" type="checkbox">
+                <span>Ativar painel</span>
+              </label>
+            </div>
+            <div class="dashboard-module-grid" id="dashboardModuleGrid">
+              <label><input type="checkbox" name="dashboardModule" value="efficiency"><span><i class="fa-solid fa-gauge-high"></i><b>Eficiência e OEE</b><small>Disponibilidade, desempenho, qualidade e ciclo</small></span></label>
+              <label><input type="checkbox" name="dashboardModule" value="production"><span><i class="fa-solid fa-industry"></i><b>Produção e qualidade</b><small>Ordem, lote, peças boas e refugos</small></span></label>
+              <label><input type="checkbox" name="dashboardModule" value="safety"><span><i class="fa-solid fa-shield-halved"></i><b>Segurança e processo</b><small>Intertravamentos, modo e alarmes</small></span></label>
+              <label><input type="checkbox" name="dashboardModule" value="maintenance"><span><i class="fa-solid fa-screwdriver-wrench"></i><b>Manutenção</b><small>Horas, MTBF, MTTR e vida da ferramenta</small></span></label>
+              <label><input type="checkbox" name="dashboardModule" value="energy"><span><i class="fa-solid fa-bolt"></i><b>Energia e utilidades</b><small>Potência, consumo e ar comprimido</small></span></label>
+            </div>
+            <p class="dashboard-profile-note"><i class="fa-solid fa-circle-info"></i> O painel só exibirá valores realmente publicados pelo Edge ou controlador. Você pode ajustar os módulos recomendados.</p>
+          </div>
+        </details>
 
 
         <div class="form-section-title connection-title">
@@ -1074,9 +1106,9 @@
 
 
 
-  <script src="assets/js/config.js?v=20260907_LOGO_DARK_FIX"></script>
+  <script src="assets/js/config.js?v=20261009_I18N_FULL"></script>
 
-  <script src="assets/js/maquinas.js?v=20260918_DIRECT_PRINTER3D_V11"></script>
+  <script src="assets/js/maquinas.js?v=20261007_MACHINE_PANEL_380"></script>
 
 </body>
 

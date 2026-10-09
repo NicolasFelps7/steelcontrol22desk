@@ -26,13 +26,8 @@
   gap: 12px;
   padding: 16px 18px 14px;
   border-bottom: 1px solid #dce2e6;
-  cursor: pointer;
-  list-style: none;
+  cursor: default;
 }
-.industrial-dynamic-head::-webkit-details-marker { display: none; }
-.industrial-dynamic-dashboard:not([open]) .industrial-dynamic-head { border-bottom: 0; }
-.industrial-dynamic-chevron { color: #7b8790; transition: transform .2s ease; }
-.industrial-dynamic-dashboard[open] .industrial-dynamic-chevron { transform: rotate(180deg); }
 .industrial-dynamic-guide {
   display: flex;
   align-items: flex-start;
@@ -43,10 +38,15 @@
   border-radius: 8px;
   background: rgba(201, 130, 18, .06);
   color: #68757e;
-  font-size: 9.5px;
+  font-size: 10.5px;
   line-height: 1.4;
 }
 .industrial-dynamic-guide i { color: #b36f0b; margin-top: 1px; }
+.industrial-dynamic-guide > div { display: grid; gap: 5px; }
+.industrial-dynamic-guide strong { color: inherit; font-size: 11px; }
+.industrial-dynamic-guide ol { display: flex; flex-wrap: wrap; gap: 5px 20px; margin: 0; padding: 0; list-style: none; }
+.industrial-dynamic-guide li { color: inherit; }
+.industrial-dynamic-guide small { color: inherit; opacity: .82; font-size: 9.5px; }
 
 .industrial-dynamic-icon,
 .industrial-section-icon,
@@ -173,4 +173,5 @@ html[data-theme="dark"] .industrial-dynamic-guide { border-color: rgba(201,130,1
   .industrial-coverage { grid-column: 1 / -1; width: 100%; display: flex; justify-content: space-between; align-items: center; }
   .industrial-kpi-grid { grid-template-columns: 1fr; }
   .industrial-sections { padding-inline: 10px; }
+  .industrial-dynamic-guide ol { display: grid; gap: 4px; }
 }

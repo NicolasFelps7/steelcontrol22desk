@@ -1,0 +1,801 @@
+/* SteelControl 3.7 — refinamento visual de marca, ativos, telemetria e biometria. */
+:root {
+  --scr-accent: #d57b08;
+  --scr-accent-strong: #f28a00;
+  --scr-ink: #11171b;
+  --scr-panel: #ffffff;
+  --scr-soft: #f3f5f6;
+  --scr-line: #d5dce0;
+  --scr-muted: #697781;
+}
+
+/* Marca institucional: remove o aspecto de ícone solto em um quadrado branco. */
+.page-machines .brand-symbol,
+.page-company .company-top-symbol,
+.dashboard-shell .logo > img,
+.login-shell .brand-static {
+  position: relative !important;
+  overflow: hidden !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  flex: 0 0 48px !important;
+  padding: 10px !important;
+  border: 1px solid #323c42 !important;
+  border-radius: 11px !important;
+  background: linear-gradient(145deg, #1b2328, #0d1114) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 7px 18px rgba(12,17,20,.13) !important;
+}
+
+.page-machines .brand-symbol::after,
+.page-company .company-top-symbol::after,
+.login-shell .brand-static::after {
+  content: "";
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--scr-accent-strong);
+  box-shadow: 0 0 0 3px rgba(242,138,0,.13);
+}
+
+.page-machines .brand-symbol img,
+.page-company .company-top-symbol img,
+.dashboard-shell .logo > img,
+.login-shell .brand-static-icon {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Central de ativos: lista primeiro, configuração e descoberta depois. */
+.page-machines .page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 22px 28px !important;
+  background: #eef1f2;
+}
+
+.page-machines .topbar { order: 1; min-height: 76px !important; margin: 0 !important; padding: 12px 18px !important; border-radius: 14px !important; }
+.page-machines .hero { order: 2; }
+.page-machines .summary-grid { order: 3; }
+.page-machines .machines-section { order: 4; }
+.page-machines .cadastro-maquina-box { order: 5; }
+.page-machines .device-discovery-box { order: 6; }
+
+.page-machines .hero {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 30px 34px !important;
+  grid-template-columns: minmax(0, 1fr) 170px !important;
+  border: 1px solid #303a40 !important;
+  border-left: 3px solid var(--scr-accent) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 36px 36px,
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 36px 36px,
+    radial-gradient(circle at 88% 20%, rgba(213,123,8,.20), transparent 26%),
+    #141a1e !important;
+  box-shadow: 0 18px 42px rgba(18,27,32,.12) !important;
+}
+
+.page-machines .hero h1 { max-width: 850px; font-size: clamp(30px, 3.1vw, 46px) !important; letter-spacing: -1.4px !important; }
+.page-machines .hero p { max-width: 780px; margin-top: 10px !important; color: #b7c2c8 !important; font-size: 12px !important; line-height: 1.6 !important; }
+.page-machines .hero-features { margin-top: 16px !important; }
+.page-machines .hero-features span { border-radius: 6px !important; background: #1d252a !important; color: #dce3e6 !important; }
+.page-machines .hero-features i { color: #eca43c !important; }
+.page-machines .hero-icon { display: grid !important; place-items: center; }
+.page-machines .hero-icon-circle {
+  width: 112px !important;
+  height: 112px !important;
+  border: 1px solid #49555c !important;
+  border-radius: 14px !important;
+  background: linear-gradient(145deg, #242e34, #171e22) !important;
+  color: #e09325 !important;
+  font-size: 40px !important;
+  box-shadow: inset 0 0 0 8px rgba(255,255,255,.015) !important;
+}
+
+.page-machines .summary-grid {
+  margin: -1px 0 0 !important;
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid #cbd3d8;
+  border-radius: 11px;
+  background: #cbd3d8;
+  box-shadow: 0 8px 25px rgba(26,37,43,.05);
+}
+.page-machines .summary-card { min-height: 80px !important; padding: 15px 17px !important; background: #fff !important; border: 0 !important; }
+.page-machines .summary-icon { width: 38px !important; height: 38px !important; border-radius: 8px !important; background: #f3f5f6 !important; }
+
+.page-machines .machines-section,
+.page-machines .cadastro-maquina-box,
+.page-machines .device-discovery-box {
+  margin: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(24,34,40,.055) !important;
+}
+
+.page-machines .machines-section { padding: 22px !important; border-top: 3px solid var(--scr-accent) !important; }
+.page-machines .machines-section-header { margin: 0 0 18px !important; padding: 0 0 17px !important; }
+.page-machines .machines-section-header h2 { font-size: 25px !important; letter-spacing: -.55px !important; }
+.page-machines .machines-section-header p { font-size: 11px !important; }
+.page-machines .section-label { color: #b96800 !important; letter-spacing: .14em !important; }
+
+.page-machines .search-machine,
+.page-machines .machine-filters select { height: 44px !important; border-radius: 8px !important; background: #f7f8f8 !important; }
+.page-machines .search-machine:focus-within,
+.page-machines .machine-filters select:focus { border-color: #c47b12 !important; box-shadow: 0 0 0 3px rgba(196,123,18,.10) !important; }
+
+.page-machines .maquina-card {
+  border-radius: 10px !important;
+  border-top: 1px solid #d1d8dc !important;
+  border-left: 3px solid #4d5b63 !important;
+  box-shadow: 0 7px 20px rgba(23,34,40,.055) !important;
+}
+.page-machines .maquina-card::before { display: none !important; }
+.page-machines .maquina-card:hover { border-left-color: var(--scr-accent) !important; box-shadow: 0 12px 28px rgba(23,34,40,.10) !important; }
+.page-machines .machine-icon { border-radius: 9px !important; background: #182025 !important; border-color: #303b42 !important; color: #f0a13a !important; }
+.page-machines .machine-card-btn { border-radius: 7px !important; }
+
+.page-machines .cadastro-header,
+.page-machines .device-discovery-header { padding-bottom: 0 !important; }
+.page-machines .cadastro-maquina-box:not(:has(.form-maquina.active)),
+.page-machines .device-discovery-box { background: #f9fafb !important; }
+
+/* Dashboard inteligente: módulos visíveis, compactos e claramente agrupados. */
+.industrial-dynamic-mount { margin: 14px 0 20px !important; }
+.industrial-dynamic-dashboard {
+  border-radius: 11px !important;
+  border-color: #cbd4d9 !important;
+  box-shadow: 0 12px 30px rgba(23,34,40,.06) !important;
+}
+.industrial-dynamic-dashboard::before { height: 4px !important; background: linear-gradient(90deg, #d47b09, #f2a039 38%, #445158 38%) !important; }
+.industrial-dynamic-head { min-height: 86px; padding: 17px 20px !important; background: linear-gradient(90deg, #fff, #f7f8f8) !important; }
+.industrial-dynamic-head h3 { font-size: 21px !important; letter-spacing: -.4px; }
+.industrial-dynamic-icon { border-radius: 8px !important; background: #171e22 !important; color: #f1a33c !important; border-color: #303a40 !important; }
+.industrial-dynamic-guide { margin: 14px 16px 0 !important; }
+.industrial-sections { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; padding: 14px 16px 16px !important; }
+.industrial-section { align-self: start; overflow: hidden; border: 1px solid #d9e0e3 !important; border-radius: 9px; background: #fbfcfc; }
+.industrial-section summary { min-height: 68px !important; padding: 8px 11px !important; }
+.industrial-section[open] summary { border-bottom: 1px solid #e0e5e8; background: #f4f6f7; }
+.industrial-section[open] { grid-column: 1 / -1; }
+.industrial-section[open] .industrial-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.industrial-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; padding: 10px !important; }
+.industrial-kpi { min-height: 76px !important; background: #fff !important; }
+
+/* Estação biométrica: visual limpo e industrial, com a câmera como elemento principal. */
+.face-command-modal { background: rgba(9,14,17,.76) !important; backdrop-filter: blur(14px) saturate(.8) !important; }
+.face-command-card {
+  --face-bg: #edf0f1;
+  --face-panel: #ffffff;
+  --face-panel-2: #f2f4f5;
+  --face-line: #cfd7db;
+  --face-text: #131a1e;
+  --face-muted: #65737c;
+  --face-accent: #c87509;
+  width: min(1120px, calc(100vw - 44px)) !important;
+  max-width: 1120px !important;
+  border: 1px solid #657078 !important;
+  border-radius: 16px !important;
+  background: #edf0f1 !important;
+  box-shadow: 0 35px 100px rgba(0,0,0,.38) !important;
+}
+.face-command-topbar { min-height: 72px !important; background: #151c20 !important; border-color: #303a40 !important; border-radius: 15px 15px 0 0 !important; }
+.face-command-brand-icon { background: #20292e !important; border-color: #3b474e !important; color: #efa13a !important; }
+.face-command-brand strong { color: #f5f7f8 !important; }
+.face-command-brand small { color: #93a0a7 !important; }
+.face-command-close { background: #20292e !important; border-color: #3b474e !important; color: #eef2f4 !important; }
+.face-command-layout { grid-template-columns: minmax(0, 1.65fr) minmax(310px, .82fr) !important; gap: 14px !important; padding: 14px !important; }
+.face-camera-console,
+.face-validation-console { border-radius: 11px !important; background: #fff !important; border-color: #cfd7db !important; }
+.face-camera-console { padding: 16px !important; }
+.face-validation-console { padding: 16px !important; }
+.face-command-heading h2,
+.face-command-card .face-command-heading h2 { color: #141b1f !important; font-size: 25px !important; }
+.face-command-heading p,
+.face-command-card .face-command-heading p { color: #687780 !important; }
+.face-command-card .camera-container.face-tech-camera,
+.face-enroll-card .camera-container.face-tech-camera {
+  aspect-ratio: 16 / 9 !important;
+  border: 5px solid #182025 !important;
+  border-radius: 12px !important;
+  background: #0b1013 !important;
+  box-shadow: 0 0 0 1px #3a454b, inset 0 0 60px rgba(0,0,0,.36) !important;
+}
+.face-tech-guide { inset: 12% 31% !important; border: 1px solid rgba(239,161,58,.36) !important; border-radius: 45% !important; }
+.face-tech-corner { border-color: #f2a03a !important; }
+.face-scan-line { background: linear-gradient(90deg, transparent, #f4a340, transparent) !important; }
+.face-command-status,
+.face-command-card .face-status.face-status-flutter,
+.face-enroll-card .camera-status.face-command-status { background: #f4f6f7 !important; border-color: #d4dce0 !important; }
+.face-command-status strong,
+.face-command-card .face-command-status strong,
+.face-enroll-card .face-command-status strong { color: #182126 !important; }
+.face-command-status span,
+.face-command-card .face-command-status span,
+.face-enroll-card .face-command-status span { color: #6b7880 !important; }
+.face-validation-title { border-color: #d8dfe2 !important; }
+.face-validation-title strong { color: #172025 !important; }
+.face-validation-title span { color: #697780 !important; }
+.face-validation-step { min-height: 58px !important; border-color: #d7dee2 !important; background: #f6f8f8 !important; }
+.face-validation-step strong { color: #192126 !important; }
+.face-validation-step small { color: #6b7880 !important; }
+.face-validation-step-icon { background: #e9edef !important; color: #64727a !important; }
+.face-validation-step.active { border-color: #d9a052 !important; background: #fff8ee !important; }
+.face-command-security,
+.face-command-card .face-security.face-command-security,
+.face-command-consent,
+.face-command-help { background: #f4f6f7 !important; border-color: #d6dde1 !important; color: #697780 !important; }
+.face-command-field label { color: #263137 !important; }
+.face-command-field input { background: #fff !important; border-color: #cfd7db !important; color: #172025 !important; }
+
+html[data-theme="escuro"] .page-machines .page,
+html[data-theme="dark"] .page-machines .page { background: #0e1316; }
+html[data-theme="escuro"] .page-machines .summary-grid,
+html[data-theme="dark"] .page-machines .summary-grid { background: #30383d; border-color: #30383d; }
+html[data-theme="escuro"] .page-machines .summary-card,
+html[data-theme="dark"] .page-machines .summary-card { background: #171d21 !important; }
+html[data-theme="escuro"] .page-machines .search-machine,
+html[data-theme="escuro"] .page-machines .machine-filters select,
+html[data-theme="dark"] .page-machines .search-machine,
+html[data-theme="dark"] .page-machines .machine-filters select { background: #20272b !important; }
+html[data-theme="escuro"] .industrial-dynamic-head,
+html[data-theme="dark"] .industrial-dynamic-head { background: linear-gradient(90deg, #171e22, #1c2428) !important; }
+html[data-theme="escuro"] .industrial-section,
+html[data-theme="dark"] .industrial-section { background: #1c2428 !important; border-color: #344047 !important; }
+html[data-theme="escuro"] .industrial-section[open] summary,
+html[data-theme="dark"] .industrial-section[open] summary { background: #202a2f !important; border-color: #344047 !important; }
+html[data-theme="escuro"] .industrial-kpi,
+html[data-theme="dark"] .industrial-kpi { background: #20282d !important; }
+
+@media (max-width: 980px) {
+  .page-machines .hero { grid-template-columns: 1fr !important; }
+  .page-machines .hero-icon { display: none !important; }
+  .industrial-sections { grid-template-columns: 1fr !important; }
+  .face-command-layout { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 700px) {
+  .page-machines .page { padding: 10px !important; gap: 10px !important; }
+  .page-machines .hero { padding: 24px 20px !important; }
+  .page-machines .hero h1 { font-size: 31px !important; }
+  .page-machines .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .page-machines .machines-section { padding: 16px !important; }
+  .industrial-dynamic-head { grid-template-columns: 42px minmax(0,1fr) !important; }
+  .industrial-coverage { grid-column: 1 / -1; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .industrial-kpi-grid { grid-template-columns: 1fr !important; }
+  .industrial-section[open] .industrial-kpi-grid { grid-template-columns: 1fr !important; }
+  .face-command-card { width: calc(100vw - 20px) !important; }
+  .face-tech-guide { inset: 11% 20% !important; }
+}
+
+/* =====================================================================
+   V3.7.1 — correções finais de tema e nova estação biométrica
+   ===================================================================== */
+
+/* Marca pedida: placa clara + símbolo preto no tema branco. */
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .page-machines .brand-symbol,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .page-company .company-top-symbol,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .dashboard-shell .logo > img,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .login-shell .brand-static {
+  padding: 9px !important;
+  border-color: #d7dfe3 !important;
+  background: #f6f8f9 !important;
+  box-shadow: 0 7px 18px rgba(26,38,45,.07) !important;
+}
+
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .page-machines .brand-symbol img,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .page-company .company-top-symbol img,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .dashboard-shell .logo > img,
+html:not([data-theme="escuro"]):not([data-theme="dark"]) .login-shell .brand-static-icon {
+  filter: none !important;
+}
+
+.page-machines .brand-symbol::after,
+.page-company .company-top-symbol::after,
+.login-shell .brand-static::after { display: none !important; }
+
+html[data-theme="escuro"] .page-machines .brand-symbol,
+html[data-theme="dark"] .page-machines .brand-symbol,
+html[data-theme="escuro"] .page-company .company-top-symbol,
+html[data-theme="dark"] .page-company .company-top-symbol,
+html[data-theme="escuro"] .dashboard-shell .logo > img,
+html[data-theme="dark"] .dashboard-shell .logo > img,
+html[data-theme="escuro"] .login-shell .brand-static,
+html[data-theme="dark"] .login-shell .brand-static {
+  border-color: #343e44 !important;
+  background: #101619 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="escuro"] .page-machines .brand-symbol img,
+html[data-theme="dark"] .page-machines .brand-symbol img,
+html[data-theme="escuro"] .page-company .company-top-symbol img,
+html[data-theme="dark"] .page-company .company-top-symbol img,
+html[data-theme="escuro"] .dashboard-shell .logo > img,
+html[data-theme="dark"] .dashboard-shell .logo > img,
+html[data-theme="escuro"] .login-shell .brand-static-icon,
+html[data-theme="dark"] .login-shell .brand-static-icon {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Corrige todos os painéis claros que vazavam para o tema escuro. */
+html[data-theme="escuro"] .page-machines .topbar,
+html[data-theme="dark"] .page-machines .topbar,
+html[data-theme="escuro"] .page-machines .machines-section,
+html[data-theme="dark"] .page-machines .machines-section,
+html[data-theme="escuro"] .page-machines .cadastro-maquina-box,
+html[data-theme="dark"] .page-machines .cadastro-maquina-box,
+html[data-theme="escuro"] .page-machines .cadastro-maquina-box:not(:has(.form-maquina.active)),
+html[data-theme="dark"] .page-machines .cadastro-maquina-box:not(:has(.form-maquina.active)),
+html[data-theme="escuro"] .page-machines .device-discovery-box,
+html[data-theme="dark"] .page-machines .device-discovery-box {
+  background: #171d21 !important;
+  border-color: #333d43 !important;
+  color: #f2f5f6 !important;
+}
+
+html[data-theme="escuro"] .page-machines .cadastro-header h2,
+html[data-theme="dark"] .page-machines .cadastro-header h2,
+html[data-theme="escuro"] .page-machines .device-discovery-header h2,
+html[data-theme="dark"] .page-machines .device-discovery-header h2,
+html[data-theme="escuro"] .page-machines .machines-section-header h2,
+html[data-theme="dark"] .page-machines .machines-section-header h2 {
+  color: #f2f5f6 !important;
+}
+
+html[data-theme="escuro"] .page-machines .cadastro-header p,
+html[data-theme="dark"] .page-machines .cadastro-header p,
+html[data-theme="escuro"] .page-machines .device-discovery-header p,
+html[data-theme="dark"] .page-machines .device-discovery-header p,
+html[data-theme="escuro"] .page-machines .machines-section-header p,
+html[data-theme="dark"] .page-machines .machines-section-header p {
+  color: #9eabb2 !important;
+}
+
+.page-machines .maquinas-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr)) !important;
+  align-items: stretch !important;
+}
+.page-machines .maquina-card { width: 100% !important; max-width: none !important; }
+
+/* Facial V2 — cabine biométrica escura, sem o antigo painel branco. */
+.face-command-card,
+html[data-theme="escuro"] .face-command-card,
+html[data-theme="dark"] .face-command-card {
+  --face-bg: #0c1114;
+  --face-panel: #11181c;
+  --face-panel-2: #182126;
+  --face-line: #344047;
+  --face-text: #f3f6f7;
+  --face-muted: #98a5ac;
+  --face-accent: #ed941f;
+  overflow: hidden !important;
+  border: 1px solid #48545b !important;
+  border-top: 3px solid #dc8212 !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px) 0 0 / 30px 30px,
+    linear-gradient(rgba(255,255,255,.014) 1px, transparent 1px) 0 0 / 30px 30px,
+    #0c1114 !important;
+  color: #f3f6f7 !important;
+}
+
+.face-command-topbar,
+html[data-theme="escuro"] .face-command-topbar,
+html[data-theme="dark"] .face-command-topbar {
+  min-height: 76px !important;
+  border-bottom: 1px solid #303b41 !important;
+  border-radius: 0 !important;
+  background: rgba(16,23,27,.96) !important;
+}
+
+.face-command-layout,
+.face-enroll-card .face-enroll-layout {
+  grid-template-columns: minmax(0, 1.72fr) minmax(320px, .78fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+}
+
+.face-camera-console,
+.face-validation-console,
+html[data-theme="escuro"] .face-camera-console,
+html[data-theme="escuro"] .face-validation-console,
+html[data-theme="dark"] .face-camera-console,
+html[data-theme="dark"] .face-validation-console {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.face-camera-console { padding: 24px !important; }
+.face-validation-console {
+  padding: 24px 20px !important;
+  border-left: 1px solid #303b41 !important;
+  background: rgba(19,27,31,.86) !important;
+}
+
+.face-command-heading .face-flutter-kicker { color: #f0a03b !important; }
+.face-command-heading h2,
+.face-command-card .face-command-heading h2 { color: #f4f7f8 !important; font-size: 27px !important; }
+.face-command-heading p,
+.face-command-card .face-command-heading p { color: #98a5ac !important; }
+
+.face-command-card .camera-container.face-tech-camera,
+.face-enroll-card .camera-container.face-tech-camera {
+  min-height: 390px !important;
+  aspect-ratio: 16 / 9 !important;
+  border: 1px solid #46535a !important;
+  border-radius: 8px !important;
+  background:
+    radial-gradient(circle at center, rgba(230,133,19,.09), transparent 35%),
+    #050809 !important;
+  box-shadow: inset 0 0 0 8px #0d1316, inset 0 0 80px rgba(0,0,0,.6) !important;
+}
+
+.face-tech-guide {
+  inset: 10% 32% !important;
+  border: 1px solid rgba(237,148,31,.52) !important;
+  border-radius: 50% 50% 45% 45% / 42% 42% 55% 55% !important;
+  box-shadow: 0 0 45px rgba(220,130,18,.08), inset 0 0 30px rgba(220,130,18,.04);
+}
+.face-tech-guide::before,
+.face-tech-guide::after {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  border: 1px dashed rgba(237,148,31,.14);
+  border-radius: 50%;
+}
+.face-tech-guide::after { inset: -34px; opacity: .5; }
+
+.face-sensor-strip {
+  margin-top: 10px !important;
+  padding: 8px !important;
+  border: 1px solid #344047 !important;
+  border-radius: 8px !important;
+  background: #10171b !important;
+}
+.face-sensor-item { border-color: #303b41 !important; background: #161e23 !important; }
+
+.face-command-status,
+.face-command-card .face-status.face-status-flutter,
+.face-enroll-card .camera-status.face-command-status {
+  background: #11191d !important;
+  border-color: #344047 !important;
+}
+.face-command-status strong,
+.face-command-card .face-command-status strong,
+.face-enroll-card .face-command-status strong { color: #f2f5f6 !important; }
+.face-command-status span,
+.face-command-card .face-command-status span,
+.face-enroll-card .face-command-status span { color: #98a5ac !important; }
+
+.face-validation-title { padding: 0 0 17px !important; border-color: #344047 !important; }
+.face-validation-title strong { color: #f2f5f6 !important; }
+.face-validation-title span { color: #8f9da5 !important; }
+.face-validation-step {
+  min-height: 68px !important;
+  border-color: #334047 !important;
+  border-left: 3px solid #46545c !important;
+  border-radius: 7px !important;
+  background: #151e23 !important;
+}
+.face-validation-step strong { color: #edf2f4 !important; }
+.face-validation-step small { color: #8f9da5 !important; }
+.face-validation-step-icon { background: #202a30 !important; color: #9aa7ae !important; }
+.face-validation-step.active {
+  border-color: #6b4a20 !important;
+  border-left-color: #e38a18 !important;
+  background: linear-gradient(90deg, rgba(227,138,24,.10), #151e23 55%) !important;
+}
+.face-validation-step.complete { border-left-color: #28ad70 !important; background: #13231d !important; }
+
+.face-command-security,
+.face-command-card .face-security.face-command-security,
+.face-command-consent,
+.face-command-help {
+  background: #11191d !important;
+  border-color: #344047 !important;
+  color: #94a2aa !important;
+}
+.face-command-field label { color: #dde5e8 !important; }
+.face-command-field input { background: #0f161a !important; border-color: #3a474e !important; color: #f3f6f7 !important; }
+.face-command-close { border-radius: 7px !important; }
+
+@media (max-width: 900px) {
+  .face-command-layout,
+  .face-enroll-card .face-enroll-layout { grid-template-columns: 1fr !important; }
+  .face-validation-console { border-left: 0 !important; border-top: 1px solid #303b41 !important; }
+  .face-command-card .camera-container.face-tech-camera,
+  .face-enroll-card .camera-container.face-tech-camera { min-height: 0 !important; }
+}
+
+/* =====================================================================
+   V3.7.2 — novo conceito: terminal corporativo de credenciamento
+   A estrutura foi refeita no HTML; estas regras não reutilizam o HUD antigo.
+   ===================================================================== */
+.face-command-modal .biometric-gate {
+  width: min(980px, calc(100vw - 40px)) !important;
+  max-width: 980px !important;
+  overflow: hidden !important;
+  border: 1px solid #cbd3d7 !important;
+  border-top: 0 !important;
+  border-radius: 18px !important;
+  background: #f4f6f7 !important;
+  color: #172026 !important;
+  box-shadow: 0 32px 90px rgba(0,0,0,.35) !important;
+}
+
+.biometric-gate .biometric-gate-header {
+  min-height: 70px !important;
+  padding: 13px 66px 13px 18px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #d5dde1 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+}
+.biometric-gate .face-command-brand-icon {
+  width: 40px !important;
+  height: 40px !important;
+  flex-basis: 40px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: #171e22 !important;
+  color: #f2a13a !important;
+}
+.biometric-gate .face-command-brand strong { color: #172026 !important; font-size: 15px !important; }
+.biometric-gate .face-command-brand small { color: #75828a !important; font-size: 7.5px !important; }
+.biometric-gate .face-command-state {
+  border-color: #ead1ad !important;
+  background: #fff7eb !important;
+  color: #9b5c09 !important;
+}
+.biometric-gate .face-command-close {
+  top: 16px !important;
+  right: 16px !important;
+  border-color: #d2dade !important;
+  background: #f3f5f6 !important;
+  color: #263138 !important;
+}
+
+.biometric-gate .biometric-gate-layout,
+.biometric-gate.face-enroll-card .biometric-gate-layout {
+  display: grid !important;
+  grid-template-columns: 330px minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  background: #f4f6f7 !important;
+}
+
+.biometric-gate .biometric-gate-copy {
+  min-width: 0;
+  padding: 34px 28px !important;
+  border: 0 !important;
+  border-right: 1px solid #303a40 !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(circle at 10% 0, rgba(221,130,17,.17), transparent 32%),
+    linear-gradient(160deg, #1a2227, #101619 72%) !important;
+  color: #f4f6f7 !important;
+}
+.biometric-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #e99a34;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .16em;
+}
+.biometric-gate-copy > h2 {
+  margin: 18px 0 10px !important;
+  color: #ffffff !important;
+  font-size: 28px !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.8px !important;
+}
+.biometric-gate-copy > p {
+  margin: 0 0 24px !important;
+  color: #a7b2b8 !important;
+  font-size: 11px !important;
+  line-height: 1.55 !important;
+}
+
+.biometric-gate .biometric-gate-steps {
+  display: grid !important;
+  gap: 5px !important;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step {
+  position: relative;
+  min-height: 58px !important;
+  padding: 9px 8px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  opacity: .5;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: 47px;
+  width: 1px;
+  height: 20px;
+  background: #455158;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step.active,
+.biometric-gate .biometric-gate-steps .face-validation-step.complete {
+  opacity: 1;
+  background: rgba(255,255,255,.045) !important;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step-icon {
+  width: 32px !important;
+  height: 32px !important;
+  flex: 0 0 32px !important;
+  border: 1px solid #47535a !important;
+  border-radius: 50% !important;
+  background: #20292e !important;
+  color: #b2bcc1 !important;
+  font-size: 9px !important;
+  font-weight: 900;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step.active .face-validation-step-icon {
+  border-color: #e08a1b !important;
+  background: #e08a1b !important;
+  color: #151a1d !important;
+}
+.biometric-gate .biometric-gate-steps .face-validation-step.complete .face-validation-step-icon {
+  border-color: #2db777 !important;
+  background: #183c2d !important;
+  color: #5ee0a2 !important;
+}
+.biometric-gate .biometric-gate-steps strong { color: #f0f3f4 !important; font-size: 10.5px !important; }
+.biometric-gate .biometric-gate-steps small { color: #929fa6 !important; font-size: 8.7px !important; }
+
+.biometric-gate .biometric-privacy {
+  margin-top: 22px !important;
+  border: 0 !important;
+  background: rgba(255,255,255,.045) !important;
+  color: #9ca9af !important;
+}
+.biometric-gate .biometric-consent { margin-top: 18px !important; }
+.biometric-gate .biometric-consent span { color: #aab5ba !important; }
+.biometric-gate .face-command-field label { color: #e4eaed !important; }
+.biometric-gate .face-command-field input {
+  border-color: #46535a !important;
+  background: #0d1316 !important;
+  color: #f4f7f8 !important;
+}
+.biometric-gate .face-command-field small { color: #87959c !important; }
+
+.biometric-gate .biometric-gate-camera {
+  min-width: 0;
+  padding: 26px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #f4f6f7 !important;
+}
+.biometric-camera-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 14px !important;
+}
+.biometric-camera-heading > div { min-width: 0; }
+.biometric-camera-heading h3 {
+  margin: 3px 0 0;
+  color: #172026;
+  font-size: 18px;
+  letter-spacing: -.3px;
+}
+.biometric-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  color: #16784a;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+.biometric-live i { width: 7px; height: 7px; border-radius: 50%; background: #24b66e; box-shadow: 0 0 0 4px rgba(36,182,110,.1); }
+
+.biometric-gate .biometric-viewfinder { padding: 0 !important; }
+.biometric-gate .camera-container.face-tech-camera {
+  position: relative !important;
+  min-height: 0 !important;
+  aspect-ratio: 4 / 3 !important;
+  overflow: hidden !important;
+  border: 1px solid #222c31 !important;
+  border-radius: 12px !important;
+  background: #080c0e !important;
+  box-shadow: 0 16px 35px rgba(19,28,33,.16) !important;
+}
+.biometric-face-frame {
+  position: absolute;
+  z-index: 6;
+  inset: 12% 27%;
+  pointer-events: none;
+  border: 2px solid rgba(236,148,37,.78);
+  border-radius: 46% 46% 42% 42% / 38% 38% 55% 55%;
+  box-shadow: 0 0 0 999px rgba(4,7,8,.20), 0 0 30px rgba(236,148,37,.10);
+}
+.biometric-face-frame span {
+  position: absolute;
+  left: 14%; right: 14%; top: 18%; bottom: 12%;
+  border: 1px dashed rgba(255,255,255,.2);
+  border-radius: 50%;
+}
+.biometric-face-frame i {
+  position: absolute;
+  left: 8%; right: 8%; top: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #f1a03a, transparent);
+  box-shadow: 0 0 10px rgba(241,160,58,.7);
+  animation: biometricGateScan 2.3s ease-in-out infinite alternate;
+}
+@keyframes biometricGateScan { to { transform: translateY(230px); } }
+
+.biometric-gate .face-command-status,
+.biometric-gate .face-status.face-status-flutter,
+.biometric-gate .camera-status.face-command-status {
+  margin-top: 12px !important;
+  border-color: #d5dde1 !important;
+  background: #ffffff !important;
+}
+.biometric-gate .face-command-status strong { color: #1d272c !important; }
+.biometric-gate .face-command-status span { color: #6f7d85 !important; }
+.biometric-gate .face-command-progress,
+.biometric-gate .face-command-enroll-progress .progress-bar { background: #dce2e5 !important; }
+
+html[data-theme="escuro"] .face-command-modal .biometric-gate,
+html[data-theme="dark"] .face-command-modal .biometric-gate { border-color: #39454b !important; background: #12191d !important; }
+html[data-theme="escuro"] .biometric-gate .biometric-gate-header,
+html[data-theme="dark"] .biometric-gate .biometric-gate-header { border-color: #323d43 !important; background: #151d21 !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-brand strong,
+html[data-theme="dark"] .biometric-gate .face-command-brand strong { color: #f2f5f6 !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-state,
+html[data-theme="dark"] .biometric-gate .face-command-state { border-color: #5b431f !important; background: #261e13 !important; color: #f0a03a !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-close,
+html[data-theme="dark"] .biometric-gate .face-command-close { border-color: #3a464c !important; background: #20292e !important; color: #edf2f4 !important; }
+html[data-theme="escuro"] .biometric-gate .biometric-gate-layout,
+html[data-theme="dark"] .biometric-gate .biometric-gate-layout,
+html[data-theme="escuro"] .biometric-gate .biometric-gate-camera,
+html[data-theme="dark"] .biometric-gate .biometric-gate-camera { background: #12191d !important; }
+html[data-theme="escuro"] .biometric-camera-heading h3,
+html[data-theme="dark"] .biometric-camera-heading h3 { color: #f1f4f5 !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-status,
+html[data-theme="dark"] .biometric-gate .face-command-status { border-color: #364249 !important; background: #182126 !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-status strong,
+html[data-theme="dark"] .biometric-gate .face-command-status strong { color: #f2f5f6 !important; }
+html[data-theme="escuro"] .biometric-gate .face-command-status span,
+html[data-theme="dark"] .biometric-gate .face-command-status span { color: #96a4ab !important; }
+
+@media (max-width: 820px) {
+  .biometric-gate .biometric-gate-layout,
+  .biometric-gate.face-enroll-card .biometric-gate-layout { grid-template-columns: 1fr !important; }
+  .biometric-gate .biometric-gate-copy { border-right: 0 !important; border-bottom: 1px solid #303a40 !important; }
+  .biometric-gate .biometric-gate-camera { padding: 18px !important; }
+}
+
+@media (max-width: 520px) {
+  .face-command-modal .biometric-gate { width: calc(100vw - 18px) !important; border-radius: 12px !important; }
+  .biometric-gate .biometric-gate-copy { padding: 25px 20px !important; }
+  .biometric-gate-copy > h2 { font-size: 24px !important; }
+  .biometric-gate .camera-container.face-tech-camera { aspect-ratio: 3 / 4 !important; }
+  .biometric-camera-heading { align-items: flex-start !important; }
+  .biometric-face-frame { inset: 12% 15%; }
+}
+
+
+
