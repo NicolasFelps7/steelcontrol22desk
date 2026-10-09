@@ -68,7 +68,7 @@ mantêm apenas o bit 0 após confirmarem a limpeza podem executar HOME e a fila
 validada; o valor bruto continua registrado em `rawAlarms`. Qualquer outro bit
 permanece bloqueante.
 
-Na versão 2.1.7, a fila autenticada e auditável continua no SteelControl, mas
+Na versão 2.1.8, a fila autenticada e auditável continua no SteelControl, mas
 HOME, PTP e efetuadores são enviados ao protocolo serial em modo imediato. Isso
 evita que determinados firmwares Magician/Lite aceitem o item sem avançar a fila
 interna. O Edge só conclui PTP depois de confirmar movimento e posição pela pose

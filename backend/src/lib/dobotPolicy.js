@@ -11,6 +11,7 @@ const TTL_MS = Object.freeze({
   DOBOT_CLEAR_ALARMS: 10_000,
   DOBOT_HOME: 8_000,
   DOBOT_PTP: 5_000,
+  DOBOT_ROTATE: 8_000,
   DOBOT_SUCTION_ON: 5_000,
   DOBOT_SUCTION_OFF: 5_000,
   DOBOT_GRIPPER_OPEN: 5_000,
@@ -28,6 +29,29 @@ export function expiraEmComandoDobot(comando, agora = Date.now()) {
 }
 
 export function validarPayloadDobot(comando, payload = {}) {
+  if (comando === "DOBOT_ROTATE") {
+    const delta = Number(payload?.delta);
+    if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 20) {
+      const erro = new Error("Informe uma rotação entre -20° e 20° por comando.");
+      erro.statusCode = 400;
+      throw erro;
+    }
+
+    const velocidade = Number(payload?.velocidade ?? 20);
+    if (
+      !Number.isFinite(velocidade) ||
+      velocidade < DOBOT_LIMITS.velocidade.min ||
+      velocidade > DOBOT_LIMITS.velocidade.max
+    ) {
+      const erro = new Error(
+        `Velocidade fora do limite seguro (${DOBOT_LIMITS.velocidade.min}% a ${DOBOT_LIMITS.velocidade.max}%).`
+      );
+      erro.statusCode = 400;
+      throw erro;
+    }
+
+    return { delta, velocidade };
+  }
   if (comando !== "DOBOT_PTP") return {};
   const resultado = {};
 

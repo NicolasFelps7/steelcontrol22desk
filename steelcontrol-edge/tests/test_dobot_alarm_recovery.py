@@ -64,8 +64,8 @@ class ImmediateMotionProbe(DobotMagicianAdapter):
     def _get_pose(self):
         self.pose_reads += 1
         if self.pose_reads == 1:
-            return {"x": 150.0, "y": 150.0, "z": 100.0, "r": 0.0}
-        return {"x": 155.0, "y": 150.0, "z": 100.0, "r": 0.0}
+            return {"x": 150.0, "y": 150.0, "z": 100.0, "r": 0.0, "j1": 10.0, "j2": 20.0, "j3": 30.0, "j4": 40.0}
+        return {"x": 155.0, "y": 150.0, "z": 100.0, "r": 0.0, "j1": 10.0, "j2": 20.0, "j3": 30.0, "j4": 45.0}
 
 
 class DobotAlarmRecoveryTests(unittest.TestCase):
@@ -91,6 +91,15 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
 
         home = next(item for item in driver.commands if item[0] == 31)
         self.assertFalse(home[2])
+
+    def test_rotate_uses_joint_mode_and_preserves_other_joints(self):
+        driver = ImmediateMotionProbe()
+
+        driver.execute_command("DOBOT_ROTATE", {"delta": 5, "velocidade": 20})
+
+        ptp = next(item for item in driver.commands if item[0] == 84)
+        self.assertEqual(ptp[3][0], 4)
+        self.assertEqual(struct.unpack("<4f", ptp[3][1:]), (10.0, 20.0, 30.0, 45.0))
 
     def test_alarm_zero_is_cleared_without_force_stop(self):
         driver = RecoveryProbe([[0], []])

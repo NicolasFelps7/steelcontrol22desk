@@ -38,3 +38,14 @@ test("comandos Dobot recebem TTL curto", () => {
   assert.equal(expiraEmComandoDobot("DOBOT_PTP", start), "2026-09-21T00:00:05.000Z");
   assert.equal(expiraEmComandoDobot("DOBOT_STOP", start), "2026-09-21T00:00:15.000Z");
 });
+
+test("rotação incremental aceita somente passo e velocidade seguros", () => {
+  assert.deepEqual(
+    validarPayloadDobot("DOBOT_ROTATE", { delta: -5, velocidade: 20 }),
+    { delta: -5, velocidade: 20 }
+  );
+  assert.throws(
+    () => validarPayloadDobot("DOBOT_ROTATE", { delta: 30, velocidade: 20 }),
+    /rotação entre/
+  );
+});

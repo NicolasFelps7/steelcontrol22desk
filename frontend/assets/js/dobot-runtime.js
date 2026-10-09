@@ -324,6 +324,20 @@
     }[direction];
     if (!delta) return;
     try {
+      if (delta.r) {
+        setJogBusy(true, `${direction.toUpperCase()} • ${step}°`);
+        const executed = await manualCommand("DOBOT_ROTATE", {
+          delta: delta.r,
+          velocidade: speed
+        }, { silent: true });
+        if (executed) {
+          const confirmed = await refreshDiagnosticPose();
+          setJogBusy(false, confirmed
+            ? `Rotação confirmada • X ${n(confirmed.x, 1)}  Y ${n(confirmed.y, 1)}  Z ${n(confirmed.z, 1)}  R ${n(confirmed.r, 1)}`
+            : "Rotação confirmada");
+        } else setJogBusy(false, "Rotação não executada");
+        return;
+      }
       setJogBusy(true, `Lendo posição real • ${direction.toUpperCase()}`);
       const pose = await refreshDiagnosticPose();
       if (!pose) throw new Error("A posição real do Dobot não está disponível.");

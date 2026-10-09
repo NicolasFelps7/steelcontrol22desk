@@ -18,6 +18,7 @@ import {
   criarComandoIhm,
   criarComandoDobot,
   salvarPontosAutomaticosDobot,
+  obterAutomaticoDobot,
   statusComandoDobot,
   criarComandoImpressora3D
 } from "./machine.controller.js";
@@ -37,6 +38,8 @@ machineRoutes.post("/:id/liberar-seguranca", liberarSeguranca);
 machineRoutes.post("/:id/ihm/comandos", criarComandoIhm);
 machineRoutes.post("/:id/comandos", criarComandoDobot);
 machineRoutes.put("/:id/dobot/automatic-points", salvarPontosAutomaticosDobot);
+machineRoutes.get("/:id/dobot/automatico", obterAutomaticoDobot);
+machineRoutes.put("/:id/dobot/automatico", salvarPontosAutomaticosDobot);
 machineRoutes.get("/:id/comandos/:comandoId", statusComandoDobot);
 machineRoutes.post("/:id/impressora3d/comandos", criarComandoImpressora3D);
 machineRoutes.post("/:id/demonstracao", demonstracao);

@@ -1244,7 +1244,66 @@ export async function criarComandoDobot(req, res, next) {
     next(erro);
   }
 }
+export async function obterAutomaticoDobot(req, res, next) {
+  try {
+    const id = Number(req.params.id);
 
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        mensagem: "Identificador da máquina inválido."
+      });
+    }
+
+    const maquina = await prisma.maquina.findFirst({
+      where: whereEmpresa(req, id)
+    });
+
+    if (!maquina) {
+      return res.status(404).json({
+        mensagem: "Máquina não encontrada."
+      });
+    }
+
+    if (String(maquina.controlador || "").toUpperCase() !== "DOBOT_MAGICIAN") {
+      return res.status(409).json({
+        mensagem: "Este equipamento não está configurado como Dobot Magician."
+      });
+    }
+
+    const meta =
+      maquina.integracaoMeta &&
+      typeof maquina.integracaoMeta === "object" &&
+      !Array.isArray(maquina.integracaoMeta)
+        ? maquina.integracaoMeta
+        : {};
+
+    const dobot =
+      meta.dobot &&
+      typeof meta.dobot === "object" &&
+      !Array.isArray(meta.dobot)
+        ? meta.dobot
+        : {};
+
+    const points =
+      dobot.automaticPoints &&
+      typeof dobot.automaticPoints === "object" &&
+      !Array.isArray(dobot.automaticPoints)
+        ? dobot.automaticPoints
+        : {};
+
+    const revision =
+      typeof dobot.automaticPointsRevision === "string"
+        ? dobot.automaticPointsRevision
+        : null;
+
+    return res.json({
+      points,
+      revision
+    });
+  } catch (erro) {
+    next(erro);
+  }
+}
 export async function salvarPontosAutomaticosDobot(req, res, next) {
   try {
     const id = Number(req.params.id);

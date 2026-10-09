@@ -12,7 +12,7 @@ from edge_runtime import EdgeRuntimeManager
 from adapters import infer_driver
 from edge_discovery import EdgeDiscoveryService
 
-APP_TITLE='SteelControl Edge'; APP_VERSION='2.1.7'; INSTANCE_PORT=4212
+APP_TITLE='SteelControl Edge'; APP_VERSION='2.1.8'; INSTANCE_PORT=4212
 BG='#0d1318'; PANEL='#151d24'; PANEL2='#1b252e'; INPUT='#0f171d'; TEXT='#edf3f7'; MUTED='#93a4b3'; ACCENT='#32c36c'; WARN='#e4ab42'; DANGER='#e35d63'; BORDER='#2a3944'; BLUE='#4aa3ff'
 
 class App(tk.Tk):

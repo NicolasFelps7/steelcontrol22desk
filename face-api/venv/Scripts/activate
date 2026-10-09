@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\nicol\Downloads\steelcontrol22desk\face-api\venv"
+VIRTUAL_ENV="C:\Users\48856683873\steelcontrol22desk\face-api\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

@@ -8,6 +8,7 @@ ALARM_DESCRIPTIONS={
     18:"alvo fora do alcance ou dos limites das juntas",
 }
 DOBOT_LIMITS={"x":(-320.0,320.0),"y":(-320.0,320.0),"z":(-20.0,250.0),"r":(-180.0,180.0),"velocidade":(1.0,60.0)}
+ROTATION_STEP_LIMIT=20.0
 
 def validate_ptp(payload):
     values={}
@@ -23,6 +24,15 @@ def validate_ptp(payload):
     if speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
     values["velocidade"]=speed
     return values
+def validate_rotation(payload):
+    try:delta=float(payload["delta"])
+    except (KeyError,TypeError,ValueError):raise AdapterError("Passo de rotação inválido.")
+    if delta==0 or abs(delta)>ROTATION_STEP_LIMIT:raise AdapterError(f"Rotação por comando deve ficar entre {-ROTATION_STEP_LIMIT:g}° e {ROTATION_STEP_LIMIT:g}° e não pode ser zero.")
+    try:speed=float(payload.get("velocidade",20))
+    except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
+    low,high=DOBOT_LIMITS["velocidade"]
+    if speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
+    return {"delta":delta,"velocidade":speed}
 def checksum(payload:bytes)->int:return (-sum(payload))&0xFF
 def packet(command_id:int,rw:int=0,queued:bool=False,params:bytes=b"")->bytes:
     ctrl=(1 if rw else 0)|(2 if queued else 0); payload=bytes([command_id,ctrl])+params
@@ -175,6 +185,12 @@ class DobotMagicianAdapter(BaseAdapter):
         state=self._exchange(cid,0,False)[2:]
         if len(state)>=2 and (bool(state[0])!=bool(enabled) or bool(state[1])!=bool(on)):
             raise AdapterError('O Dobot processou a fila, mas o efetuador não confirmou o estado solicitado.')
+    def _recover_rejected_motion(self,alarms):
+        try:
+            self._recover_alarms()
+            return " O Edge limpou o estado de falha; mova no sentido oposto ou escolha outro alvo."
+        except AdapterError:
+            return " Pressione PARAR e Limpar alarmes; se persistir, reposicione o braço com segurança e reinicie-o."
     def _get_pose(self):
         p=self._exchange(10,0,False)[2:]
         if len(p)<32:raise AdapterError("Resposta GetPose incompleta.")
@@ -212,13 +228,33 @@ class DobotMagicianAdapter(BaseAdapter):
                 last=self._get_pose()
                 alarms=self._blocking_alarms()
                 if alarms:
-                    raise AdapterError(f"Dobot rejeitou o alvo PTP X={x:.2f} Y={y:.2f} Z={z:.2f} R={r:.2f}: {self._describe_alarms(alarms)}. Pressione PARAR, limpe os alarmes e ensine novamente este ponto.")
+                    recovery=self._recover_rejected_motion(alarms)
+                    raise AdapterError(f"Dobot rejeitou o alvo PTP X={x:.2f} Y={y:.2f} Z={z:.2f} R={r:.2f}: {self._describe_alarms(alarms)}.{recovery}")
                 moved=moved or any(abs(last[k]-before[k])>0.3 for k in ('x','y','z','r'))
                 if abs(last['x']-x)<=1.5 and abs(last['y']-y)<=1.5 and abs(last['z']-z)<=1.5 and abs(last['r']-r)<=2.0:
                     self.last_motion_target=None;self.cycles+=1;self.production+=1;return
             if not moved:
                 raise AdapterError('Dobot aceitou o PTP, mas não iniciou movimento. Verifique alarmes/intertravamentos e a faixa do alvo.')
             raise AdapterError(f"Dobot não atingiu o alvo PTP. Atual: X={last['x']:.2f} Y={last['y']:.2f} Z={last['z']:.2f} R={last['r']:.2f}")
+        if command=="DOBOT_ROTATE":
+            rotation=validate_rotation(payload)
+            self._ensure_motion_ready();self._set_speed(rotation['velocidade'])
+            before=self._get_pose();target_j4=before['j4']+rotation['delta']
+            # MOVJ_ANGLE (modo 4) altera somente J4. Usar MOVJ_XYZ para girar
+            # o efetuador fazia alguns firmwares recalcularem a postura inteira
+            # e deslocarem X/Y, além de aproximar outras juntas dos limites.
+            self._exchange(84,1,False,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
+            deadline=time.monotonic()+8.0;last=before
+            while time.monotonic()<deadline:
+                time.sleep(.12);last=self._get_pose();alarms=self._blocking_alarms()
+                if alarms:
+                    recovery=self._recover_rejected_motion(alarms)
+                    raise AdapterError(f"Dobot recusou a rotação de J4: {self._describe_alarms(alarms)}.{recovery}")
+                if abs(last['j4']-target_j4)<=1.5:
+                    self.cycles+=1;return
+            if abs(last['j4']-before['j4'])<=0.3:
+                raise AdapterError("Dobot aceitou a rotação, mas a junta J4 não iniciou movimento.")
+            raise AdapterError(f"Dobot não concluiu a rotação. J4 atual={last['j4']:.2f}°, alvo={target_j4:.2f}°.")
         if command=="DOBOT_SUCTION_ON":self._exchange(62,1,False,bytes([1,1]));self._verify_effector(62,True,True);self.suction=True;return
         if command=="DOBOT_SUCTION_OFF":self._exchange(62,1,False,bytes([0,0]));self._verify_effector(62,False,False);self.suction=False;return
         if command=="DOBOT_GRIPPER_OPEN":self._exchange(63,1,False,bytes([1,0]));self._verify_effector(63,True,False);self.gripper=False;return
