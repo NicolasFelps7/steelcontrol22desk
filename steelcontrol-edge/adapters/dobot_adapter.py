@@ -1,5 +1,5 @@
 from __future__ import annotations
-import struct, time
+import math, struct, time
 from .base import BaseAdapter, AdapterError
 
 HEADER=b"\xAA\xAA"
@@ -7,7 +7,9 @@ ALARM_DESCRIPTIONS={
     0:"reinicialização pendente",
     18:"alvo fora do alcance ou dos limites das juntas",
 }
-DOBOT_LIMITS={"x":(-320.0,320.0),"y":(-320.0,320.0),"z":(-20.0,250.0),"r":(-180.0,180.0),"velocidade":(1.0,60.0)}
+DOBOT_LIMITS={"x":(-290.0,290.0),"y":(-290.0,290.0),"z":(-10.0,220.0),"r":(-180.0,180.0),"velocidade":(1.0,60.0)}
+RADIAL_LIMITS=(80.0,290.0)
+J4_LIMITS=(-135.0,135.0)
 ROTATION_STEP_LIMIT=20.0
 
 def validate_ptp(payload):
@@ -18,6 +20,9 @@ def validate_ptp(payload):
         low,high=DOBOT_LIMITS[key]
         if value<low or value>high:raise AdapterError(f"{key.upper()} fora do envelope seguro ({low:g} a {high:g}).")
         values[key]=value
+    radius=math.hypot(values["x"],values["y"])
+    if radius<RADIAL_LIMITS[0] or radius>RADIAL_LIMITS[1]:
+        raise AdapterError(f"Movimento bloqueado antes de acionar o Dobot: raio XY {radius:.1f} mm fora da área preventiva ({RADIAL_LIMITS[0]:g} a {RADIAL_LIMITS[1]:g} mm). Mova no sentido oposto.")
     try:speed=float(payload.get("velocidade",30))
     except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
     low,high=DOBOT_LIMITS["velocidade"]
@@ -140,7 +145,16 @@ class DobotMagicianAdapter(BaseAdapter):
         self._exchange(83,1,False,struct.pack('<2f',speed,speed))
     def _ensure_motion_ready(self):
         alarms=self._blocking_alarms()
-        if alarms:raise AdapterError(f"Dobot possui alarme(s) ativo(s): {self._describe_alarms(alarms)}. Clique em Limpar alarmes; se persistir, coloque o braço em uma posição segura dentro da área de trabalho e reinicie-o.")
+        if not alarms:return
+        # Alarmes transitórios deixados por STOP/boot são recuperados pelo
+        # próprio Edge. Um alarme real nunca é ignorado: o movimento só segue
+        # depois de ClearAllAlarmsState ser confirmado e a fila reinicializada.
+        try:self._recover_alarms()
+        except AdapterError as error:
+            raise AdapterError(f"Dobot possui alarme(s) ativo(s): {self._describe_alarms(alarms)}. A recuperação automática não foi confirmada: {error}") from error
+        remaining=self._blocking_alarms()
+        if remaining:
+            raise AdapterError(f"Dobot continua com alarme(s) ativo(s): {self._describe_alarms(remaining)}. Reposicione o braço com segurança antes de tentar novamente.")
     def _blocking_alarms(self,alarms=None):
         alarms=self._alarms() if alarms is None else list(alarms)
         # Alguns firmwares do Magician/Lite mantêm o bit 0 visível mesmo após
@@ -224,7 +238,7 @@ class DobotMagicianAdapter(BaseAdapter):
             self._exchange(84,1,False,bytes([1])+struct.pack('<4f',x,y,z,r))
             deadline=time.monotonic()+12.0; moved=False; last=before
             while time.monotonic()<deadline:
-                time.sleep(.15)
+                time.sleep(.06)
                 last=self._get_pose()
                 alarms=self._blocking_alarms()
                 if alarms:
@@ -240,13 +254,15 @@ class DobotMagicianAdapter(BaseAdapter):
             rotation=validate_rotation(payload)
             self._ensure_motion_ready();self._set_speed(rotation['velocidade'])
             before=self._get_pose();target_j4=before['j4']+rotation['delta']
+            if target_j4<J4_LIMITS[0] or target_j4>J4_LIMITS[1]:
+                raise AdapterError(f"Rotação bloqueada antes de acionar o Dobot: J4 alvo {target_j4:.1f}° fora da faixa preventiva ({J4_LIMITS[0]:g}° a {J4_LIMITS[1]:g}°). Gire no sentido oposto.")
             # MOVJ_ANGLE (modo 4) altera somente J4. Usar MOVJ_XYZ para girar
             # o efetuador fazia alguns firmwares recalcularem a postura inteira
             # e deslocarem X/Y, além de aproximar outras juntas dos limites.
             self._exchange(84,1,False,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
             deadline=time.monotonic()+8.0;last=before
             while time.monotonic()<deadline:
-                time.sleep(.12);last=self._get_pose();alarms=self._blocking_alarms()
+                time.sleep(.06);last=self._get_pose();alarms=self._blocking_alarms()
                 if alarms:
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot recusou a rotação de J4: {self._describe_alarms(alarms)}.{recovery}")

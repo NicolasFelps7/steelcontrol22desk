@@ -1310,18 +1310,41 @@ document
       const formatos = [
         "image/png",
         "image/jpeg",
-        "image/webp"
+        "image/webp",
+        "image/gif",
+        "image/avif",
+        "image/bmp",
+        "image/x-ms-bmp"
+      ];
+
+      const extensao =
+        String(arquivo.name || "")
+          .split(".")
+          .pop()
+          .toLowerCase();
+
+      const extensoesPermitidas = [
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "gif",
+        "avif",
+        "bmp"
       ];
 
 
       if (
         !formatos.includes(
           arquivo.type
+        ) &&
+        !extensoesPermitidas.includes(
+          extensao
         )
       ) {
 
         notificarEmpresa(
-          "Selecione uma imagem PNG, JPG ou WEBP.",
+          "Selecione uma imagem PNG, JPG, WEBP, GIF, AVIF ou BMP.",
           "warning",
           "Formato não suportado"
         );

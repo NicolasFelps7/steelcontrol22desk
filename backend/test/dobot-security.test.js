@@ -33,6 +33,17 @@ test("PTP aceita somente envelope e velocidade seguros", () => {
   );
 });
 
+test("PTP bloqueia cantos inalcançáveis antes de alarmar o hardware", () => {
+  assert.throws(
+    () => validarPayloadDobot("DOBOT_PTP", { x: 290, y: 290, z: 100, r: 0, velocidade: 20 }),
+    /área cartesiana preventiva/
+  );
+  assert.throws(
+    () => validarPayloadDobot("DOBOT_PTP", { x: 20, y: 20, z: 100, r: 0, velocidade: 20 }),
+    /área cartesiana preventiva/
+  );
+});
+
 test("comandos Dobot recebem TTL curto", () => {
   const start = Date.parse("2026-09-21T00:00:00.000Z");
   assert.equal(expiraEmComandoDobot("DOBOT_PTP", start), "2026-09-21T00:00:05.000Z");

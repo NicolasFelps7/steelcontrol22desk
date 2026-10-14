@@ -69,6 +69,25 @@ class ImmediateMotionProbe(DobotMagicianAdapter):
 
 
 class DobotAlarmRecoveryTests(unittest.TestCase):
+    def test_ptp_outside_radial_envelope_is_blocked_before_serial_motion(self):
+        driver = ImmediateMotionProbe()
+
+        with self.assertRaisesRegex(AdapterError, "bloqueado antes"):
+            driver.execute_command("DOBOT_PTP", {
+                "x": 290, "y": 290, "z": 100, "r": 0, "velocidade": 20,
+            })
+
+        self.assertFalse(any(item[0] == 84 for item in driver.commands))
+
+    def test_rotation_near_joint_limit_is_blocked_before_serial_motion(self):
+        driver = ImmediateMotionProbe()
+        driver._get_pose = lambda: {"x": 150.0, "y": 150.0, "z": 100.0, "r": 0.0, "j1": 10.0, "j2": 20.0, "j3": 30.0, "j4": 134.0}
+
+        with self.assertRaisesRegex(AdapterError, "bloqueada antes"):
+            driver.execute_command("DOBOT_ROTATE", {"delta": 5, "velocidade": 20})
+
+        self.assertFalse(any(item[0] == 84 for item in driver.commands))
+
     def test_queue_index_reads_uint64(self):
         response = bytes([246, 0]) + struct.pack("<Q", 2**40 + 7)
         self.assertEqual(DobotMagicianAdapter._queue_index(response), 2**40 + 7)
@@ -110,6 +129,15 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
         self.assertFalse(driver.queue_stopped)
         self.assertNotIn(242, driver.commands)
         self.assertEqual(driver.commands[:3], [241, 245, 21])
+
+    def test_motion_ready_recovers_transient_alarm_automatically(self):
+        driver = RecoveryProbe([[0], []])
+
+        driver._ensure_motion_ready()
+
+        self.assertTrue(driver.initialized)
+        self.assertFalse(driver.queue_stopped)
+        self.assertEqual(driver._blocking_alarms(), [])
 
     def test_persistent_startup_bit_is_acknowledged_only_after_clear(self):
         driver = RecoveryProbe([[0]])

@@ -72,6 +72,40 @@ import {
 const MAX_FACE_SAMPLES = 1;
 
 
+function detectarMimeLogo(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 12) return null;
+
+  if (
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  ) return "image/jpeg";
+
+  if (
+    buffer.subarray(0, 8).equals(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    )
+  ) return "image/png";
+
+  if (
+    buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buffer.subarray(8, 12).toString("ascii") === "WEBP"
+  ) return "image/webp";
+
+  const cabecalho = buffer.subarray(0, 6).toString("ascii");
+  if (cabecalho === "GIF87a" || cabecalho === "GIF89a") return "image/gif";
+
+  if (buffer[0] === 0x42 && buffer[1] === 0x4d) return "image/bmp";
+
+  if (buffer.subarray(4, 8).toString("ascii") === "ftyp") {
+    const marcas = buffer.subarray(8, Math.min(buffer.length, 40)).toString("ascii");
+    if (marcas.includes("avif") || marcas.includes("avis")) return "image/avif";
+  }
+
+  return null;
+}
+
+
 // =========================================================
 // VERIFICAR ADMINISTRADOR
 // =========================================================
@@ -917,9 +951,18 @@ export async function uploadLogo(
     }
 
     const mime =
-      String(
-        req.file.mimetype || ""
-      ).trim();
+      detectarMimeLogo(
+        req.file.buffer
+      );
+
+    if (!mime) {
+      return res
+        .status(415)
+        .json({
+          mensagem:
+            "O arquivo não é uma imagem PNG, JPG, WEBP, GIF, AVIF ou BMP válida."
+        });
+    }
 
     const logoUrl =
       `/empresa/logo/${req.auth.empresaId}?v=${Date.now()}`;

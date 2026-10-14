@@ -128,9 +128,14 @@ export async function criar(
         80
       );
 
+    // O responsável vem da sessão validada pelo backend. Além de simplificar
+    // Desktop e Mobile, impede que alguém registre a manutenção em nome de
+    // outra pessoa alterando o corpo da requisição.
     const tecnico =
       limparTexto(
-        req.body?.tecnico,
+        req.auth?.nome ||
+          req.auth?.email ||
+          `Usuário ${req.auth?.usuarioId || "autenticado"}`,
         120
       );
 

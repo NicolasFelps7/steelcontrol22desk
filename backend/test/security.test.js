@@ -210,3 +210,26 @@ test(
     );
   }
 );
+
+test(
+  "rate limit pode separar tráfego autenticado do Edge e do painel",
+  () => {
+    const limiter = criarRateLimit({
+      janelaMs: 10_000,
+      limite: 1,
+      prefixo: `test-segment-${Date.now()}`,
+      segmento: req => req.path.startsWith("/device/") ? "device" : "interactive"
+    });
+    const base = {
+      headers: {},
+      socket: { remoteAddress: "127.0.0.40" },
+      body: {}
+    };
+    let chamadas = 0;
+
+    limiter({ ...base, path: "/device/15/comandos/proximo" }, criarResposta(), () => chamadas++);
+    limiter({ ...base, path: "/maquinas/15/comandos/20" }, criarResposta(), () => chamadas++);
+
+    assert.equal(chamadas, 2);
+  }
+);

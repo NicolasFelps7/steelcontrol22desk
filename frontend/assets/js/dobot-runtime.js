@@ -39,6 +39,9 @@
   let taughtPoints = loadTaughtPoints();
   let automatic = { running: false, paused: false, stopRequested: false, completed: 0, total: 1 };
   let jogBusy = false;
+  let jogPose = null;
+  let jogHoldDirection = null;
+  let jogHoldGeneration = 0;
   let connectionOnline = false;
 
   async function fetchAuth(url, options = {}) {
@@ -65,8 +68,10 @@
     connectionOnline = online;
     document.querySelectorAll("[data-dobot-command], [data-dobot-jog], [data-dobot-capture]").forEach(button => {
       const manualLocked = automatic.running && !button.matches('[data-dobot-command="DOBOT_STOP"]');
-      const jogLocked = button.matches("[data-dobot-jog]") && jogBusy;
-      button.disabled = !online || manualLocked || jogLocked;
+      // O movimento em andamento continua protegido por jogBusy. Manter o
+      // botão pressionado habilitado evita que o navegador dispare
+      // pointercancel entre dois passos do movimento contínuo.
+      button.disabled = !online || manualLocked;
     });
     if (dom.jogStep) dom.jogStep.disabled = !online || jogBusy;
     if (dom.jogSpeed) dom.jogSpeed.disabled = !online || jogBusy;
@@ -204,6 +209,7 @@
     if (!isDobot()) return;
     const data = lastExtras?.dobot || {};
     const online = hasFreshRealConnection(data);
+    if (!jogBusy && !jogHoldDirection) jogPose = currentPose();
     setControlsAvailability(online);
     if (dom.name) dom.name.textContent = machine?.nome || "Dobot Magician";
     if (dom.badge) {
@@ -271,7 +277,7 @@
       if (["FALHOU", "CANCELADO", "EXPIRADO"].includes(status)) {
         throw new Error(`O Edge informou ${status.toLowerCase()} para ${data.comando || "o comando"}. Consulte Diagnóstico / logs.`);
       }
-      await delay(250);
+      await delay(70);
     }
     throw new Error("O Edge não confirmou a execução do comando dentro do tempo esperado.");
   }
@@ -302,7 +308,7 @@
 
   function setJogBusy(busy, message) {
     jogBusy = busy;
-    document.querySelectorAll("[data-dobot-jog]").forEach(button => { button.disabled = !connectionOnline || busy; });
+    document.querySelectorAll("[data-dobot-jog]").forEach(button => { button.disabled = !connectionOnline || automatic.running; });
     if (dom.jogStep) dom.jogStep.disabled = !connectionOnline || busy;
     if (dom.jogSpeed) dom.jogSpeed.disabled = !connectionOnline || busy;
     if (dom.jogTarget && message) dom.jogTarget.textContent = message;
@@ -311,18 +317,20 @@
   async function jog(direction) {
     if (automatic.running) {
       window.SteelUI?.toast?.({ tipo: "warning", titulo: "Manual intertravado", mensagem: "O ciclo automático ainda está parando." });
-      return;
+      return false;
     }
-    if (jogBusy) return;
+    if (jogBusy) return false;
     const step = Math.max(1, Math.min(20, Number(dom.jogStep?.value) || 5));
     const speed = Math.max(1, Math.min(40, Number(dom.jogSpeed?.value) || 20));
     const delta = {
-      "x+": { x: step }, "x-": { x: -step },
-      "y+": { y: step }, "y-": { y: -step },
+      // O desenho usa a visão frontal do operador; o referencial nativo do
+      // Dobot cresce no sentido oposto nos eixos horizontais.
+      "x+": { x: -step }, "x-": { x: step },
+      "y+": { y: -step }, "y-": { y: step },
       "z+": { z: step }, "z-": { z: -step },
       "r+": { r: step }, "r-": { r: -step }
     }[direction];
-    if (!delta) return;
+    if (!delta) return false;
     try {
       if (delta.r) {
         setJogBusy(true, `${direction.toUpperCase()} • ${step}°`);
@@ -331,15 +339,22 @@
           velocidade: speed
         }, { silent: true });
         if (executed) {
-          const confirmed = await refreshDiagnosticPose();
+          const base = jogPose || currentPose();
+          const confirmed = base ? { ...base, r: base.r + delta.r } : null;
+          jogPose = confirmed;
           setJogBusy(false, confirmed
             ? `Rotação confirmada • X ${n(confirmed.x, 1)}  Y ${n(confirmed.y, 1)}  Z ${n(confirmed.z, 1)}  R ${n(confirmed.r, 1)}`
             : "Rotação confirmada");
-        } else setJogBusy(false, "Rotação não executada");
-        return;
+          // Sincroniza a pose real sem segurar o próximo desenho da interface.
+          refreshDiagnosticPose().then(pose => { if (pose && !jogBusy) jogPose = pose; }).catch(() => {});
+          return true;
+        }
+        jogPose = null;
+        setJogBusy(false, "Rotação não executada");
+        return false;
       }
-      setJogBusy(true, `Lendo posição real • ${direction.toUpperCase()}`);
-      const pose = await refreshDiagnosticPose();
+      setJogBusy(true, `${direction.toUpperCase()} • preparando movimento`);
+      const pose = jogPose || currentPose() || await refreshDiagnosticPose();
       if (!pose) throw new Error("A posição real do Dobot não está disponível.");
       const target = {
         x: pose.x + (delta.x || 0), y: pose.y + (delta.y || 0),
@@ -348,13 +363,35 @@
       setJogBusy(true, `${direction.toUpperCase()} • ${step}${direction.startsWith("r") ? "°" : " mm"}`);
       const executed = await manualCommand("DOBOT_PTP", target, { silent: true });
       if (executed) {
-        await refreshDiagnosticPose();
+        jogPose = { x: target.x, y: target.y, z: target.z, r: target.r };
         setJogBusy(false, `Posição confirmada • X ${n(target.x, 1)}  Y ${n(target.y, 1)}  Z ${n(target.z, 1)}  R ${n(target.r, 1)}`);
-      } else setJogBusy(false, "Movimento não executado");
+        return true;
+      }
+      jogPose = null;
+      setJogBusy(false, "Movimento não executado");
+      return false;
     } catch (error) {
+      jogPose = null;
       setJogBusy(false, "Falha no movimento");
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Controle jog", mensagem: error.message });
+      return false;
     }
+  }
+
+  async function startJogHold(direction) {
+    if (jogHoldDirection || automatic.running || !connectionOnline) return;
+    jogHoldDirection = direction;
+    const generation = ++jogHoldGeneration;
+    while (jogHoldDirection === direction && generation === jogHoldGeneration && connectionOnline && !automatic.running) {
+      const moved = await jog(direction);
+      if (!moved) break;
+    }
+    if (generation === jogHoldGeneration) jogHoldDirection = null;
+  }
+
+  function stopJogHold() {
+    jogHoldDirection = null;
+    jogHoldGeneration += 1;
   }
 
   function reachedTarget(actual, target) {
@@ -504,7 +541,34 @@
     await manualCommand(commandName);
   }));
 
-  document.querySelectorAll("[data-dobot-jog]").forEach(button => button.addEventListener("click", () => jog(button.dataset.dobotJog)));
+  document.querySelectorAll("[data-dobot-jog]").forEach(button => {
+    let handledByPointer = false;
+    button.addEventListener("pointerdown", event => {
+      if (button.disabled) return;
+      event.preventDefault();
+      handledByPointer = true;
+      button.setPointerCapture?.(event.pointerId);
+      startJogHold(button.dataset.dobotJog);
+    });
+    button.addEventListener("pointerup", () => {
+      stopJogHold();
+      window.setTimeout(() => { handledByPointer = false; }, 0);
+    });
+    button.addEventListener("pointercancel", () => {
+      stopJogHold();
+      handledByPointer = false;
+    });
+    button.addEventListener("lostpointercapture", stopJogHold);
+    button.addEventListener("click", event => {
+      event.preventDefault();
+      if (handledByPointer) {
+        handledByPointer = false;
+        return;
+      }
+      jog(button.dataset.dobotJog);
+    });
+  });
+  window.addEventListener("blur", stopJogHold);
   dom.jogSpeed?.addEventListener("input", () => { if (dom.jogSpeedValue) dom.jogSpeedValue.textContent = `${dom.jogSpeed.value}%`; });
 
   dom.manualMode?.addEventListener("click", async () => {

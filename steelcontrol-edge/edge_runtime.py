@@ -7,7 +7,9 @@ from edge_client import SteelControlClient
 from edge_profiles import MachineProfile
 from printer3d_normalizer import normalize_printer3d_telemetry
 
-COMMAND_POLL_SECONDS = 0.1
+# Vinte consultas por segundo deixam o comando local perceptivelmente imediato
+# sem criar uma fila paralela ou retirar a confirmação segura do equipamento.
+COMMAND_POLL_SECONDS = 0.075
 
 class MachineRuntime:
     def __init__(self, profile:MachineProfile, log:Callable[[str,str],None], status:Callable[[str,str,dict],None]):
@@ -63,7 +65,7 @@ class MachineRuntime:
                 # Para ensino e confirmação de movimentos do Dobot, a pose
                 # precisa chegar quase em tempo real. Outros controladores
                 # continuam respeitando o intervalo configurado.
-                interval=0.25 if driver=='DOBOT_MAGICIAN' else max(0.5,float(self.profile.interval_ms)/1000.0)
+                interval=0.20 if driver=='DOBOT_MAGICIAN' else max(0.5,float(self.profile.interval_ms)/1000.0)
                 while not self.stop_event.is_set():
                     cycle=time.time()
                     if cycle-last_hb>=10:
@@ -82,7 +84,7 @@ class MachineRuntime:
                             try:self.adapter.execute_command(name,payload); c.confirm(cid,'CONCLUIDO'); command_executed=True; self.log(f"Comando concluído: {name}")
                             except Exception as e:c.confirm(cid,'FALHOU'); self.log(f"Comando falhou: {name} | {e}")
                     # A leitura periódica continua respeitando o intervalo configurado,
-                    # mas comandos são buscados independentemente a cada 100 ms. Após
+                    # mas comandos são buscados independentemente a cada 75 ms. Após
                     # um comando, publicamos o novo estado imediatamente.
                     now=time.time()
                     if command_executed or now>=next_telemetry:

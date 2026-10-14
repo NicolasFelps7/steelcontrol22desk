@@ -71,7 +71,14 @@ const uploadLogoMiddleware =
       const tiposPermitidos = [
         "image/jpeg",
         "image/png",
-        "image/webp"
+        "image/webp",
+        "image/gif",
+        "image/avif",
+        "image/bmp",
+        "image/x-ms-bmp",
+        // Alguns seletores Android não informam o MIME. A assinatura real é
+        // validada pelo controller antes da persistência.
+        "application/octet-stream"
       ];
 
       if (
@@ -81,7 +88,7 @@ const uploadLogoMiddleware =
       ) {
         return callback(
           new Error(
-            "Use uma imagem JPG, PNG ou WEBP."
+            "Use uma imagem PNG, JPG, WEBP, GIF, AVIF ou BMP."
           )
         );
       }

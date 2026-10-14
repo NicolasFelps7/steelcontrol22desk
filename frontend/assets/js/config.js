@@ -753,6 +753,15 @@ const PT = {
   nomeTecnico:
     "Nome do técnico",
 
+  responsavelAutenticado:
+    "Responsável autenticado",
+
+  responsavelSessaoAjuda:
+    "Identificado pela conta conectada",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF ou BMP • até 5 MB",
+
   nomeTecnicoPlaceholder:
     "Digite o nome do técnico",
 
@@ -1819,6 +1828,15 @@ const EN = {
   nomeTecnico:
     "Technician name",
 
+  responsavelAutenticado:
+    "Authenticated operator",
+
+  responsavelSessaoAjuda:
+    "Identified by the signed-in account",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF, or BMP • up to 5 MB",
+
   nomeTecnicoPlaceholder:
     "Enter technician name",
 
@@ -2852,6 +2870,15 @@ const ES = {
   nomeTecnico:
     "Nombre del técnico",
 
+  responsavelAutenticado:
+    "Responsable autenticado",
+
+  responsavelSessaoAjuda:
+    "Identificado por la cuenta conectada",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF o BMP • hasta 5 MB",
+
   nomeTecnicoPlaceholder:
     "Introduce el nombre del técnico",
 
@@ -3699,6 +3726,15 @@ const FR = {
   nomeTecnico:
     "Nom du technicien",
 
+  responsavelAutenticado:
+    "Responsable authentifié",
+
+  responsavelSessaoAjuda:
+    "Identifié par le compte connecté",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF ou BMP • jusqu’à 5 Mo",
+
   descricao:
     "Description",
 
@@ -4450,6 +4486,15 @@ const DE = {
   nomeTecnico:
     "Name des Technikers",
 
+  responsavelAutenticado:
+    "Authentifizierter Verantwortlicher",
+
+  responsavelSessaoAjuda:
+    "Durch das angemeldete Konto identifiziert",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF oder BMP • bis 5 MB",
+
   descricao:
     "Beschreibung",
 
@@ -5197,6 +5242,15 @@ const IT = {
 
   nomeTecnico:
     "Nome del tecnico",
+
+  responsavelAutenticado:
+    "Responsabile autenticato",
+
+  responsavelSessaoAjuda:
+    "Identificato dall'account connesso",
+
+  logoFormatsHelp:
+    "PNG, JPG, WEBP, GIF, AVIF o BMP • fino a 5 MB",
 
   descricao:
     "Descrizione",
@@ -7092,7 +7146,7 @@ Object.assign(STEEL_LITERAL_I18N, {
     en: "Industrial Management",
     es: "Gestión Industrial",
     fr: "Gestion Industrielle",
-    de: "Industriemanagement",
+    de: "Industrielles Management",
     it: "Gestione Industriale"
   },
   "CNPJ:": {
@@ -7454,6 +7508,608 @@ Object.assign(STEEL_LITERAL_I18N, {
   "A câmera é ativada somente durante esta validação.": steelL("The camera is active only during this validation.", "La cámara se activa solo durante esta validación.", "La caméra n'est activée que pendant cette validation.", "Die Kamera ist nur während dieser Prüfung aktiv.", "La fotocamera si attiva solo durante questa verifica.")
 });
 
+// Landing page atual. Mantém a apresentação comercial no mesmo idioma
+// selecionado no restante do Desktop, sem duplicar uma segunda camada de i18n.
+Object.assign(STEEL_LITERAL_I18N, {
+  "Sistema": steelL("System", "Sistema", "Système", "System", "Sistema"),
+  "Máquinas": steelL("Machines", "Máquinas", "Machines", "Maschinen", "Macchine"),
+  "Benefícios": steelL("Benefits", "Beneficios", "Avantages", "Vorteile", "Vantaggi"),
+  "Como funciona": steelL("How it works", "Cómo funciona", "Fonctionnement", "So funktioniert es", "Come funziona"),
+  "Segurança": steelL("Security", "Seguridad", "Sécurité", "Sicherheit", "Sicurezza"),
+  "Entrar": steelL("Sign in", "Entrar", "Se connecter", "Anmelden", "Accedi"),
+  "Toda a sua fábrica num só painel.": steelL("Your entire factory in one dashboard.", "Toda su fábrica en un solo panel.", "Toute votre usine sur un seul tableau de bord.", "Ihre gesamte Fabrik in einem Dashboard.", "Tutta la fabbrica in un'unica dashboard."),
+  "O SteelControl conecta robôs, CNCs, esteiras, impressoras 3D, CLPs e sensores num só lugar. Acompanhe a produção em tempo real, comande equipamentos com segurança e aja antes da parada.": steelL("SteelControl connects robots, CNCs, conveyors, 3D printers, PLCs and sensors in one place. Monitor production in real time, control equipment safely and act before downtime.", "SteelControl conecta robots, CNC, cintas, impresoras 3D, PLC y sensores en un solo lugar. Supervise la producción en tiempo real, controle equipos con seguridad y actúe antes de una parada.", "SteelControl connecte robots, CNC, convoyeurs, imprimantes 3D, automates et capteurs en un seul endroit. Suivez la production en temps réel, commandez les équipements en sécurité et intervenez avant l'arrêt.", "SteelControl verbindet Roboter, CNC-Anlagen, Förderbänder, 3D-Drucker, SPS und Sensoren an einem Ort. Überwachen Sie die Produktion in Echtzeit, steuern Sie Anlagen sicher und handeln Sie vor einem Stillstand.", "SteelControl collega robot, CNC, nastri, stampanti 3D, PLC e sensori in un unico ambiente. Monitora la produzione in tempo reale, controlla le macchine in sicurezza e intervieni prima del fermo."),
+  "Ver o sistema": steelL("See the system", "Ver el sistema", "Voir le système", "System ansehen", "Vedi il sistema"),
+  "Desktop, mobile e Edge conectados à mesma operação industrial.": steelL("Desktop, mobile and Edge connected to the same industrial operation.", "Desktop, móvil y Edge conectados a la misma operación industrial.", "Desktop, mobile et Edge connectés à la même exploitation industrielle.", "Desktop, Mobile und Edge mit demselben Industriebetrieb verbunden.", "Desktop, mobile ed Edge collegati alla stessa operazione industriale."),
+  "Robô articulado": steelL("Articulated robot", "Robot articulado", "Robot articulé", "Knickarmroboter", "Robot articolato"),
+  "Fresadora CNC": steelL("CNC milling machine", "Fresadora CNC", "Fraiseuse CNC", "CNC-Fräsmaschine", "Fresatrice CNC"),
+  "Tanque de processo": steelL("Process tank", "Tanque de proceso", "Cuve de procédé", "Prozesstank", "Serbatoio di processo"),
+  "Impressora 3D": steelL("3D printer", "Impresora 3D", "Imprimante 3D", "3D-Drucker", "Stampante 3D"),
+  "Esteira": steelL("Conveyor", "Cinta transportadora", "Convoyeur", "Förderband", "Nastro trasportatore"),
+  "Painel de CLP": steelL("PLC panel", "Panel PLC", "Armoire automate", "SPS-Schaltschrank", "Pannello PLC"),
+  "Conectada": steelL("Connected", "Conectada", "Connectée", "Verbunden", "Connessa"),
+  "Ilustração 3D": steelL("3D illustration", "Ilustración 3D", "Illustration 3D", "3D-Illustration", "Illustrazione 3D"),
+  "Robôs": steelL("Robots", "Robots", "Robots", "Roboter", "Robot"),
+  "Esteiras": steelL("Conveyors", "Cintas", "Convoyeurs", "Förderbänder", "Nastri"),
+  "Impressoras 3D": steelL("3D printers", "Impresoras 3D", "Imprimantes 3D", "3D-Drucker", "Stampanti 3D"),
+  "CLP e IHM": steelL("PLC and HMI", "PLC y HMI", "Automate et IHM", "SPS und HMI", "PLC e HMI"),
+  "Tanques e sensores": steelL("Tanks and sensors", "Tanques y sensores", "Cuves et capteurs", "Tanks und Sensoren", "Serbatoi e sensori"),
+  "Veja o sistema funcionando.": steelL("See the system in action.", "Vea el sistema en funcionamiento.", "Découvrez le système en action.", "Erleben Sie das System im Einsatz.", "Guarda il sistema in azione."),
+  "Telas reais do SteelControl para acompanhar máquinas, comandos, produção e segurança. Aqui, um Dobot Magician.": steelL("Real SteelControl screens for monitoring machines, commands, production and safety. Shown here with a Dobot Magician.", "Pantallas reales de SteelControl para supervisar máquinas, comandos, producción y seguridad. Aquí, un Dobot Magician.", "Écrans réels de SteelControl pour suivre machines, commandes, production et sécurité. Ici, un Dobot Magician.", "Echte SteelControl-Ansichten zur Überwachung von Maschinen, Befehlen, Produktion und Sicherheit. Hier mit einem Dobot Magician.", "Schermate reali di SteelControl per monitorare macchine, comandi, produzione e sicurezza. Qui, un Dobot Magician."),
+  "Painel do Dobot": steelL("Dobot dashboard", "Panel del Dobot", "Tableau du Dobot", "Dobot-Dashboard", "Dashboard Dobot"),
+  "Posição do efetuador, ângulos das juntas, ventosa e garra. O que o equipamento não envia aparece como \"Não instalado\", sem leitura inventada.": steelL("End-effector position, joint angles, suction cup and gripper. Data not sent by the equipment appears as \"Not installed\", with no fabricated readings.", "Posición del efector, ángulos de las articulaciones, ventosa y pinza. Lo que el equipo no envía aparece como \"No instalado\", sin lecturas inventadas.", "Position de l'effecteur, angles des articulations, ventouse et pince. Les données non transmises apparaissent comme \"Non installé\", sans valeur inventée.", "Endeffektorposition, Gelenkwinkel, Sauger und Greifer. Nicht gelieferte Daten erscheinen als \"Nicht installiert\", ohne erfundene Messwerte.", "Posizione dell'effettore, angoli dei giunti, ventosa e pinza. I dati non inviati appaiono come \"Non installato\", senza valori inventati."),
+  "Controle do robô": steelL("Robot control", "Control del robot", "Commande du robot", "Robotersteuerung", "Controllo robot"),
+  "Movimento cartesiano assistido e ciclo de pick-and-place por pontos ensinados. O botão PARAR fica disponível durante toda a operação.": steelL("Assisted Cartesian movement and a taught-point pick-and-place cycle. The STOP button remains available throughout operation.", "Movimiento cartesiano asistido y ciclo pick-and-place con puntos enseñados. El botón PARAR permanece disponible durante toda la operación.", "Mouvement cartésien assisté et cycle pick-and-place par points appris. Le bouton ARRÊTER reste disponible pendant toute l'opération.", "Unterstützte kartesische Bewegung und Pick-and-Place-Zyklus mit eingelernten Punkten. STOP bleibt während des gesamten Betriebs verfügbar.", "Movimento cartesiano assistito e ciclo pick-and-place con punti appresi. Il pulsante ARRESTA resta disponibile durante tutta l'operazione."),
+  "Equipamentos": steelL("Equipment", "Equipos", "Équipements", "Anlagen", "Apparecchiature"),
+  "Cadastre máquinas e deixe o SteelControl Edge encontrar equipamentos na rede ou por USB/Serial. O administrador aprova cada cadastro.": steelL("Register machines and let SteelControl Edge discover equipment over the network or USB/Serial. An administrator approves each registration.", "Registre máquinas y permita que SteelControl Edge encuentre equipos en la red o por USB/Serial. Un administrador aprueba cada registro.", "Enregistrez les machines et laissez SteelControl Edge détecter les équipements sur le réseau ou en USB/Série. Un administrateur valide chaque ajout.", "Registrieren Sie Maschinen und lassen Sie SteelControl Edge Anlagen im Netzwerk oder über USB/Seriell finden. Jede Registrierung wird administrativ freigegeben.", "Registra le macchine e lascia che SteelControl Edge trovi i dispositivi in rete o via USB/Seriale. Un amministratore approva ogni registrazione."),
+  "Um painel que se adapta a cada máquina.": steelL("A dashboard that adapts to every machine.", "Un panel que se adapta a cada máquina.", "Un tableau qui s'adapte à chaque machine.", "Ein Dashboard, das sich jeder Maschine anpasst.", "Una dashboard che si adatta a ogni macchina."),
+  "Você não precisa de uma tela nova para cada fabricante. Cada equipamento mostra os indicadores que importam para ele, e o que não envia aparece como \"Não informado\".": steelL("You do not need a new screen for every manufacturer. Each machine shows the indicators that matter to it, and missing signals appear as \"Not provided\".", "No necesita una pantalla nueva para cada fabricante. Cada equipo muestra los indicadores relevantes y lo que no envía aparece como \"No informado\".", "Vous n'avez pas besoin d'un écran par fabricant. Chaque équipement affiche ses indicateurs utiles et les signaux absents apparaissent comme \"Non renseigné\".", "Sie benötigen nicht für jeden Hersteller eine neue Ansicht. Jede Maschine zeigt relevante Kennzahlen; fehlende Signale erscheinen als \"Nicht angegeben\".", "Non serve una schermata diversa per ogni produttore. Ogni macchina mostra gli indicatori rilevanti e i segnali assenti appaiono come \"Non indicato\"."),
+  "Em toda máquina": steelL("On every machine", "En cada máquina", "Sur chaque machine", "Bei jeder Maschine", "Su ogni macchina"),
+  "Específico do equipamento": steelL("Equipment-specific", "Específico del equipo", "Spécifique à l'équipement", "Anlagenspezifisch", "Specifico dell'apparecchiatura"),
+  "Exemplos. Cada máquina define as seções do próprio painel.": steelL("Examples. Each machine defines its own dashboard sections.", "Ejemplos. Cada máquina define las secciones de su propio panel.", "Exemples. Chaque machine définit les sections de son tableau.", "Beispiele. Jede Maschine definiert ihre eigenen Dashboard-Bereiche.", "Esempi. Ogni macchina definisce le sezioni della propria dashboard."),
+  "Menos paradas. Mais controle.": steelL("Less downtime. More control.", "Menos paradas. Más control.", "Moins d'arrêts. Plus de contrôle.", "Weniger Stillstand. Mehr Kontrolle.", "Meno fermi. Più controllo."),
+  "Tudo o que a operação precisa enxergar, num lugar só, sem trocar de equipamento.": steelL("Everything operations need to see, in one place, without replacing equipment.", "Todo lo que la operación necesita ver, en un solo lugar, sin cambiar equipos.", "Tout ce que l'exploitation doit voir, en un seul endroit, sans remplacer les équipements.", "Alles, was der Betrieb sehen muss, an einem Ort, ohne Anlagen auszutauschen.", "Tutto ciò che serve alla produzione, in un unico posto, senza sostituire le macchine."),
+  "Veja a operação inteira": steelL("See the entire operation", "Vea toda la operación", "Visualisez toute l'exploitation", "Den gesamten Betrieb sehen", "Visualizza l'intera operazione"),
+  "Status, temperatura, vibração, corrente, produção, ciclos e energia em tempo real, no desktop e no mobile.": steelL("Status, temperature, vibration, current, production, cycles and energy in real time on desktop and mobile.", "Estado, temperatura, vibración, corriente, producción, ciclos y energía en tiempo real, en desktop y móvil.", "État, température, vibration, courant, production, cycles et énergie en temps réel sur desktop et mobile.", "Status, Temperatur, Vibration, Strom, Produktion, Zyklen und Energie in Echtzeit auf Desktop und Mobilgerät.", "Stato, temperatura, vibrazioni, corrente, produzione, cicli ed energia in tempo reale su desktop e mobile."),
+  "Aja antes da parada": steelL("Act before downtime", "Actúe antes de la parada", "Agissez avant l'arrêt", "Vor dem Stillstand handeln", "Intervieni prima del fermo"),
+  "Conecte o que você já tem": steelL("Connect what you already have", "Conecte lo que ya tiene", "Connectez vos équipements existants", "Vorhandene Anlagen verbinden", "Collega ciò che hai già"),
+  "Ficha técnica": steelL("Technical specifications", "Ficha técnica", "Fiche technique", "Technische Daten", "Scheda tecnica"),
+  "Protocolos": steelL("Protocols", "Protocolos", "Protocoles", "Protokolle", "Protocolli"),
+  "Plataformas": steelL("Platforms", "Plataformas", "Plateformes", "Plattformen", "Piattaforme"),
+  "Acesso": steelL("Access", "Acceso", "Accès", "Zugriff", "Accesso"),
+  "Atualização": steelL("Updates", "Actualización", "Actualisation", "Aktualisierung", "Aggiornamento"),
+  "Dados": steelL("Data", "Datos", "Données", "Daten", "Dati"),
+  "Auditoria": steelL("Audit", "Auditoría", "Audit", "Audit", "Audit"),
+  "Operação": steelL("Operation", "Operación", "Exploitation", "Betrieb", "Operazione"),
+  "Da máquina ao painel, tudo sincronizado.": steelL("From machine to dashboard, everything synchronized.", "De la máquina al panel, todo sincronizado.", "De la machine au tableau, tout est synchronisé.", "Von der Maschine zum Dashboard – alles synchronisiert.", "Dalla macchina alla dashboard, tutto sincronizzato."),
+  "Máquina": steelL("Machine", "Máquina", "Machine", "Maschine", "Macchina"),
+  "Chão de fábrica": steelL("Shop floor", "Planta industrial", "Atelier", "Fertigungsebene", "Reparto produttivo"),
+  "Chave exclusiva por máquina": steelL("Unique key per machine", "Clave exclusiva por máquina", "Clé unique par machine", "Eindeutiger Schlüssel je Maschine", "Chiave univoca per macchina"),
+  "API e dados": steelL("API and data", "API y datos", "API et données", "API und Daten", "API e dati"),
+  "Banco de dados central": steelL("Central database", "Base de datos central", "Base de données centrale", "Zentrale Datenbank", "Database centrale"),
+  "Desktop e mobile": steelL("Desktop and mobile", "Desktop y móvil", "Desktop et mobile", "Desktop und Mobile", "Desktop e mobile"),
+  "Tempo real": steelL("Real time", "Tiempo real", "Temps réel", "Echtzeit", "Tempo reale"),
+  "Controle também é saber quem agiu.": steelL("Control also means knowing who acted.", "Control también significa saber quién actuó.", "Le contrôle, c'est aussi savoir qui a agi.", "Kontrolle bedeutet auch zu wissen, wer gehandelt hat.", "Controllo significa anche sapere chi ha agito."),
+  "Do login ao comando do robô, a operação é protegida por identidade, permissão e rastreabilidade.": steelL("From login to robot commands, operations are protected by identity, permissions and traceability.", "Desde el inicio de sesión hasta los comandos del robot, la operación está protegida por identidad, permisos y trazabilidad.", "De la connexion aux commandes du robot, l'exploitation est protégée par l'identité, les autorisations et la traçabilité.", "Von der Anmeldung bis zum Roboterbefehl wird der Betrieb durch Identität, Berechtigungen und Nachverfolgbarkeit geschützt.", "Dal login ai comandi del robot, le operazioni sono protette da identità, autorizzazioni e tracciabilità."),
+  "Comandos físicos começam bloqueados": steelL("Physical commands start locked", "Los comandos físicos comienzan bloqueados", "Les commandes physiques sont verrouillées par défaut", "Physische Befehle sind zunächst gesperrt", "I comandi fisici partono bloccati"),
+  "O operador libera digitando:": steelL("The operator unlocks by typing:", "El operador desbloquea escribiendo:", "L'opérateur déverrouille en saisissant :", "Der Bediener entsperrt durch Eingabe von:", "L'operatore sblocca digitando:"),
+  "Identidade verificada": steelL("Verified identity", "Identidad verificada", "Identité vérifiée", "Verifizierte Identität", "Identità verificata"),
+  "Comandos autenticados": steelL("Authenticated commands", "Comandos autenticados", "Commandes authentifiées", "Authentifizierte Befehle", "Comandi autenticati"),
+  "Segurança física continua obrigatória": steelL("Physical safety remains mandatory", "La seguridad física sigue siendo obligatoria", "La sécurité physique reste obligatoire", "Physische Sicherheit bleibt verpflichtend", "La sicurezza fisica resta obbligatoria"),
+  "Entre no SteelControl.": steelL("Sign in to SteelControl.", "Entre en SteelControl.", "Connectez-vous à SteelControl.", "Bei SteelControl anmelden.", "Accedi a SteelControl."),
+  "Acesse sua empresa para monitorar equipamentos, controlar operações e acompanhar os dados da fábrica em uma única plataforma.": steelL("Access your company to monitor equipment, control operations and follow factory data in one platform.", "Acceda a su empresa para supervisar equipos, controlar operaciones y seguir los datos de fábrica en una sola plataforma.", "Accédez à votre entreprise pour superviser les équipements, piloter les opérations et suivre les données de l'usine sur une seule plateforme.", "Greifen Sie auf Ihr Unternehmen zu, um Anlagen zu überwachen, Abläufe zu steuern und Fabrikdaten auf einer Plattform zu verfolgen.", "Accedi alla tua azienda per monitorare le macchine, controllare le operazioni e seguire i dati di fabbrica in un'unica piattaforma."),
+  "Sua operação em um só lugar": steelL("Your operation in one place", "Su operación en un solo lugar", "Votre exploitation en un seul endroit", "Ihr Betrieb an einem Ort", "La tua operazione in un unico posto"),
+  "OEE e disponibilidade": steelL("OEE and availability", "OEE y disponibilidad", "OEE et disponibilité", "OEE und Verfügbarkeit", "OEE e disponibilità"),
+  "Tempo de ciclo": steelL("Cycle time", "Tiempo de ciclo", "Temps de cycle", "Zykluszeit", "Tempo ciclo"),
+  "Produção e refugo": steelL("Production and scrap", "Producción y rechazos", "Production et rebuts", "Produktion und Ausschuss", "Produzione e scarti"),
+  "Ordem de produção e lote": steelL("Work order and batch", "Orden de producción y lote", "Ordre de fabrication et lot", "Fertigungsauftrag und Charge", "Ordine di produzione e lotto"),
+  "Segurança: E-stop e porta": steelL("Safety: E-stop and door", "Seguridad: E-stop y puerta", "Sécurité : arrêt d'urgence et porte", "Sicherheit: Not-Halt und Tür", "Sicurezza: E-stop e porta"),
+  "Manutenção e horas de operação": steelL("Maintenance and operating hours", "Mantenimiento y horas de operación", "Maintenance et heures de fonctionnement", "Wartung und Betriebsstunden", "Manutenzione e ore operative"),
+  "Energia": steelL("Energy", "Energía", "Énergie", "Energie", "Energia"),
+  "Pressão de ar": steelL("Air pressure", "Presión de aire", "Pression d'air", "Luftdruck", "Pressione aria"),
+  "Robô": steelL("Robot", "Robot", "Robot", "Roboter", "Robot"),
+  "CLP": steelL("PLC", "PLC", "Automate", "SPS", "PLC"),
+  "Ventosa e garra": steelL("Suction cup and gripper", "Ventosa y pinza", "Ventouse et pince", "Sauger und Greifer", "Ventosa e pinza"),
+  "Fila de comandos": steelL("Command queue", "Cola de comandos", "File de commandes", "Befehlswarteschlange", "Coda comandi"),
+  "Rotação do fuso": steelL("Spindle speed", "Velocidad del husillo", "Vitesse de broche", "Spindeldrehzahl", "Velocità mandrino"),
+  "Vida da ferramenta": steelL("Tool life", "Vida de la herramienta", "Durée de vie de l'outil", "Werkzeugstandzeit", "Vita utensile"),
+  "Carga dos eixos": steelL("Axis load", "Carga de ejes", "Charge des axes", "Achslast", "Carico assi"),
+  "Programa em execução": steelL("Running program", "Programa en ejecución", "Programme en cours", "Laufendes Programm", "Programma in esecuzione"),
+  "Temperatura do bico": steelL("Nozzle temperature", "Temperatura de la boquilla", "Température de la buse", "Düsentemperatur", "Temperatura ugello"),
+  "Temperatura da mesa": steelL("Bed temperature", "Temperatura de la cama", "Température du plateau", "Druckbetttemperatur", "Temperatura piano"),
+  "Progresso da peça": steelL("Part progress", "Progreso de la pieza", "Progression de la pièce", "Bauteilfortschritt", "Avanzamento pezzo"),
+  "Tempo restante": steelL("Time remaining", "Tiempo restante", "Temps restant", "Restzeit", "Tempo rimanente"),
+  "Velocidade da correia": steelL("Belt speed", "Velocidad de la cinta", "Vitesse du convoyeur", "Bandgeschwindigkeit", "Velocità nastro"),
+  "Corrente do motor": steelL("Motor current", "Corriente del motor", "Courant moteur", "Motorstrom", "Corrente motore"),
+  "Contagem de peças": steelL("Part count", "Conteo de piezas", "Comptage des pièces", "Teilezählung", "Conteggio pezzi"),
+  "Sensor de presença": steelL("Presence sensor", "Sensor de presencia", "Capteur de présence", "Präsenzsensor", "Sensore di presenza"),
+  "Nível": steelL("Level", "Nivel", "Niveau", "Füllstand", "Livello"),
+  "Pressão": steelL("Pressure", "Presión", "Pression", "Druck", "Pressione"),
+  "Temperatura do fluido": steelL("Fluid temperature", "Temperatura del fluido", "Température du fluide", "Fluidtemperatur", "Temperatura fluido"),
+  "Estado das válvulas": steelL("Valve status", "Estado de las válvulas", "État des vannes", "Ventilstatus", "Stato valvole"),
+  "Entradas e saídas": steelL("Inputs and outputs", "Entradas y salidas", "Entrées et sorties", "Ein- und Ausgänge", "Ingressi e uscite"),
+  "Alarmes ativos": steelL("Active alarms", "Alarmas activas", "Alarmes actives", "Aktive Alarme", "Allarmi attivi"),
+  "Estado do programa": steelL("Program status", "Estado del programa", "État du programme", "Programmstatus", "Stato programma"),
+  "Tempo de ciclo do CLP": steelL("PLC cycle time", "Tiempo de ciclo del PLC", "Temps de cycle de l'automate", "SPS-Zykluszeit", "Tempo ciclo PLC"),
+  "Limites de atenção e críticos por máquina, alertas, parada de segurança automática e manutenção preventiva por ciclos.": steelL("Warning and critical limits per machine, alerts, automatic safety stops and cycle-based preventive maintenance.", "Límites de advertencia y críticos por máquina, alertas, parada de seguridad automática y mantenimiento preventivo por ciclos.", "Seuils d'alerte et critiques par machine, alertes, arrêt de sécurité automatique et maintenance préventive par cycles.", "Warn- und kritische Grenzwerte je Maschine, Alarme, automatischer Sicherheitsstopp und zyklusbasierte vorbeugende Wartung.", "Limiti di attenzione e critici per macchina, allarmi, arresto automatico di sicurezza e manutenzione preventiva a cicli."),
+  "Robôs, CNC, CLP, ESP32 e gateways, por HTTP, MQTT, Modbus, OPC UA, TCP/IP ou USB/Serial.": steelL("Robots, CNC, PLC, ESP32 and gateways via HTTP, MQTT, Modbus, OPC UA, TCP/IP or USB/Serial.", "Robots, CNC, PLC, ESP32 y gateways por HTTP, MQTT, Modbus, OPC UA, TCP/IP o USB/Serial.", "Robots, CNC, automates, ESP32 et passerelles via HTTP, MQTT, Modbus, OPC UA, TCP/IP ou USB/Série.", "Roboter, CNC, SPS, ESP32 und Gateways über HTTP, MQTT, Modbus, OPC UA, TCP/IP oder USB/Seriell.", "Robot, CNC, PLC, ESP32 e gateway via HTTP, MQTT, Modbus, OPC UA, TCP/IP o USB/Seriale."),
+  "Robôs, CNC, impressoras 3D, esteiras, CLP, ESP32 e gateways": steelL("Robots, CNC, 3D printers, conveyors, PLC, ESP32 and gateways", "Robots, CNC, impresoras 3D, cintas, PLC, ESP32 y gateways", "Robots, CNC, imprimantes 3D, convoyeurs, automates, ESP32 et passerelles", "Roboter, CNC, 3D-Drucker, Förderbänder, SPS, ESP32 und Gateways", "Robot, CNC, stampanti 3D, nastri, PLC, ESP32 e gateway"),
+  "HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP e USB/Serial": steelL("HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP and USB/Serial", "HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP y USB/Serial", "HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP et USB/Série", "HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP und USB/Seriell", "HTTP, MQTT, Modbus TCP/RTU, OPC UA, TCP/IP e USB/Seriale"),
+  "Desktop web e aplicativo mobile": steelL("Web desktop and mobile app", "Desktop web y aplicación móvil", "Application web desktop et mobile", "Web-Desktop und mobile App", "Desktop web e app mobile"),
+  "Senha, MFA e reconhecimento facial, com cargos e permissões por empresa": steelL("Password, MFA and facial recognition, with company roles and permissions", "Contraseña, MFA y reconocimiento facial, con cargos y permisos por empresa", "Mot de passe, MFA et reconnaissance faciale, avec rôles et autorisations par entreprise", "Passwort, MFA und Gesichtserkennung mit Rollen und Berechtigungen je Unternehmen", "Password, MFA e riconoscimento facciale, con ruoli e permessi per azienda"),
+  "Ao vivo, com estado de cada máquina: Conectada, Instável ou Offline": steelL("Live, with each machine shown as Connected, Unstable or Offline", "En vivo, con cada máquina como Conectada, Inestable u Offline", "En direct, avec chaque machine Connectée, Instable ou Hors ligne", "Live, mit Maschinenstatus Verbunden, Instabil oder Offline", "In tempo reale, con ogni macchina Connessa, Instabile o Offline"),
+  "Sinal que a máquina não envia aparece como \"Não informado\"": steelL("Signals not sent by the machine appear as \"Not provided\"", "Las señales no enviadas por la máquina aparecen como \"No informado\"", "Les signaux non transmis apparaissent comme \"Non renseigné\"", "Nicht gelieferte Signale erscheinen als \"Nicht angegeben\"", "I segnali non inviati appaiono come \"Non indicato\""),
+  "Registro de quem executou cada comando e quando": steelL("Record of who executed each command and when", "Registro de quién ejecutó cada comando y cuándo", "Journal de l'auteur et de l'heure de chaque commande", "Protokoll, wer welchen Befehl wann ausgeführt hat", "Registro di chi ha eseguito ogni comando e quando"),
+  "Modo simulação ou equipamento real": steelL("Simulation mode or real equipment", "Modo simulación o equipo real", "Mode simulation ou équipement réel", "Simulationsmodus oder reale Anlage", "Modalità simulazione o macchina reale"),
+  "Robô, impressora 3D, CNC, esteira, CLP, ESP32 ou qualquer equipamento com sensores.": steelL("Robot, 3D printer, CNC, conveyor, PLC, ESP32 or any sensor-equipped machine.", "Robot, impresora 3D, CNC, cinta, PLC, ESP32 o cualquier equipo con sensores.", "Robot, imprimante 3D, CNC, convoyeur, automate, ESP32 ou tout équipement doté de capteurs.", "Roboter, 3D-Drucker, CNC, Förderband, SPS, ESP32 oder jede Maschine mit Sensoren.", "Robot, stampante 3D, CNC, nastro, PLC, ESP32 o qualsiasi macchina con sensori."),
+  "Coleta, valida limites e mantém o equipamento conectado. Um Edge cuida de várias máquinas.": steelL("Collects data, validates limits and keeps equipment connected. One Edge serves multiple machines.", "Recopila datos, valida límites y mantiene el equipo conectado. Un Edge gestiona varias máquinas.", "Collecte les données, valide les limites et maintient les équipements connectés. Un Edge gère plusieurs machines.", "Erfasst Daten, prüft Grenzwerte und hält Anlagen verbunden. Ein Edge betreut mehrere Maschinen.", "Raccoglie dati, convalida i limiti e mantiene le macchine connesse. Un Edge gestisce più macchine."),
+  "Telemetria, alertas, comandos, permissões e auditoria organizados num só lugar.": steelL("Telemetry, alerts, commands, permissions and audit organized in one place.", "Telemetría, alertas, comandos, permisos y auditoría organizados en un solo lugar.", "Télémétrie, alertes, commandes, autorisations et audit réunis en un seul endroit.", "Telemetrie, Alarme, Befehle, Berechtigungen und Audit an einem Ort.", "Telemetria, allarmi, comandi, permessi e audit organizzati in un unico posto."),
+  "A mesma informação em todas as telas, atualizada ao vivo.": steelL("The same information on every screen, updated live.", "La misma información en todas las pantallas, actualizada en vivo.", "Les mêmes informations sur tous les écrans, mises à jour en direct.", "Dieselben Informationen auf allen Bildschirmen, live aktualisiert.", "Le stesse informazioni su ogni schermo, aggiornate in tempo reale."),
+  "Senha, MFA e reconhecimento facial, com cargos e permissões por empresa.": steelL("Password, MFA and facial recognition, with company roles and permissions.", "Contraseña, MFA y reconocimiento facial, con cargos y permisos por empresa.", "Mot de passe, MFA et reconnaissance faciale, avec rôles et autorisations par entreprise.", "Passwort, MFA und Gesichtserkennung mit Rollen und Berechtigungen je Unternehmen.", "Password, MFA e riconoscimento facciale, con ruoli e permessi per azienda."),
+  "O movimento físico só é liberado pelo operador e fica registrado na auditoria.": steelL("Physical movement is released only by the operator and recorded in the audit trail.", "El movimiento físico solo lo libera el operador y queda registrado en la auditoría.", "Le mouvement physique n'est autorisé que par l'opérateur et reste enregistré dans l'audit.", "Physische Bewegung wird nur durch den Bediener freigegeben und im Audit protokolliert.", "Il movimento fisico viene abilitato solo dall'operatore e registrato nell'audit."),
+  "E-stop, Safety PLC e intertravamentos seguem necessários. O SteelControl não os substitui.": steelL("E-stop, Safety PLC and interlocks remain required. SteelControl does not replace them.", "E-stop, Safety PLC y enclavamientos siguen siendo necesarios. SteelControl no los sustituye.", "L'arrêt d'urgence, l'automate de sécurité et les interverrouillages restent obligatoires. SteelControl ne les remplace pas.", "Not-Halt, Safety-SPS und Verriegelungen bleiben erforderlich. SteelControl ersetzt sie nicht.", "E-stop, Safety PLC e interblocchi restano necessari. SteelControl non li sostituisce."),
+  "© 2026 SteelControl. Desktop, mobile e Edge.": steelL("© 2026 SteelControl. Desktop, mobile and Edge.", "© 2026 SteelControl. Desktop, móvil y Edge.", "© 2026 SteelControl. Desktop, mobile et Edge.", "© 2026 SteelControl. Desktop, Mobile und Edge.", "© 2026 SteelControl. Desktop, mobile ed Edge.")
+});
+
+// Cobertura integral dos painéis Desktop. Estes textos aparecem em módulos
+// especializados, estados assíncronos e formulários criados depois que a
+// página carrega; por isso ficam no dicionário literal observado globalmente.
+Object.assign(STEEL_LITERAL_I18N, {
+  "Aguardando status da máquina": steelL("Waiting for machine status", "Esperando el estado de la máquina", "En attente de l'état de la machine", "Warten auf Maschinenstatus", "In attesa dello stato della macchina"),
+  "IHM • PRODUÇÃO ADITIVA": steelL("HMI • ADDITIVE MANUFACTURING", "HMI • FABRICACIÓN ADITIVA", "IHM • FABRICATION ADDITIVE", "HMI • ADDITIVE FERTIGUNG", "HMI • PRODUZIONE ADDITIVA"),
+  "Painel dedicado • aguardando telemetria da impressora.": steelL("Dedicated dashboard • waiting for printer telemetry.", "Panel dedicado • esperando telemetría de la impresora.", "Tableau dédié • en attente de la télémétrie de l'imprimante.", "Spezial-Dashboard • Druckertelemetrie wird erwartet.", "Dashboard dedicata • in attesa della telemetria della stampante."),
+  "IHM EXCLUSIVA 3D": steelL("DEDICATED 3D HMI", "HMI EXCLUSIVA 3D", "IHM 3D DÉDIÉE", "EXKLUSIVE 3D-HMI", "HMI 3D DEDICATA"),
+  "IHM REMOTA": steelL("REMOTE HMI", "HMI REMOTA", "IHM DISTANTE", "REMOTE-HMI", "HMI REMOTA"),
+  "TRABALHO ATUAL": steelL("CURRENT JOB", "TRABAJO ACTUAL", "TRAVAIL ACTUEL", "AKTUELLER AUFTRAG", "LAVORO CORRENTE"),
+  "Sem arquivo": steelL("No file", "Sin archivo", "Aucun fichier", "Keine Datei", "Nessun file"),
+  "Camada": steelL("Layer", "Capa", "Couche", "Schicht", "Strato"),
+  "de --": steelL("of --", "de --", "sur --", "von --", "di --"),
+  "Decorrido": steelL("Elapsed", "Transcurrido", "Écoulé", "Verstrichen", "Trascorso"),
+  "Restante": steelL("Remaining", "Restante", "Restant", "Verbleibend", "Rimanente"),
+  "Conclusão": steelL("Completion", "Finalización", "Achèvement", "Abschluss", "Completamento"),
+  "VISÃO REMOTA": steelL("REMOTE VIEW", "VISTA REMOTA", "VUE DISTANTE", "FERNANSICHT", "VISTA REMOTA"),
+  "Câmera da impressão": steelL("Print camera", "Cámara de impresión", "Caméra d'impression", "Druckkamera", "Fotocamera di stampa"),
+  "Sem câmera": steelL("No camera", "Sin cámara", "Aucune caméra", "Keine Kamera", "Nessuna fotocamera"),
+  "Câmera não informada": steelL("Camera not provided", "Cámara no informada", "Caméra non renseignée", "Kamera nicht angegeben", "Fotocamera non indicata"),
+  "Quando o Edge receber streamUrl ou snapshotUrl, a imagem aparecerá aqui.": steelL("When Edge receives streamUrl or snapshotUrl, the image will appear here.", "Cuando Edge reciba streamUrl o snapshotUrl, la imagen aparecerá aquí.", "Lorsque Edge recevra streamUrl ou snapshotUrl, l'image apparaîtra ici.", "Sobald Edge streamUrl oder snapshotUrl erhält, erscheint das Bild hier.", "Quando Edge riceverà streamUrl o snapshotUrl, l'immagine apparirà qui."),
+  "Atualizar imagem": steelL("Refresh image", "Actualizar imagen", "Actualiser l'image", "Bild aktualisieren", "Aggiorna immagine"),
+  "Abrir câmera": steelL("Open camera", "Abrir cámara", "Ouvrir la caméra", "Kamera öffnen", "Apri fotocamera"),
+  "PROCESSO TÉRMICO": steelL("THERMAL PROCESS", "PROCESO TÉRMICO", "PROCESSUS THERMIQUE", "THERMISCHER PROZESS", "PROCESSO TERMICO"),
+  "Temperaturas da máquina": steelL("Machine temperatures", "Temperaturas de la máquina", "Températures de la machine", "Maschinentemperaturen", "Temperature della macchina"),
+  "Tecnologia: --": steelL("Technology: --", "Tecnología: --", "Technologie : --", "Technologie: --", "Tecnologia: --"),
+  "Bico / extrusor": steelL("Nozzle / extruder", "Boquilla / extrusor", "Buse / extrudeuse", "Düse / Extruder", "Ugello / estrusore"),
+  "Alvo: --": steelL("Target: --", "Objetivo: --", "Cible : --", "Sollwert: --", "Obiettivo: --"),
+  "Mesa": steelL("Bed", "Cama", "Plateau", "Druckbett", "Piatto"),
+  "Câmara / resina": steelL("Chamber / resin", "Cámara / resina", "Chambre / résine", "Kammer / Harz", "Camera / resina"),
+  "PARÂMETROS DE IMPRESSÃO": steelL("PRINT PARAMETERS", "PARÁMETROS DE IMPRESIÓN", "PARAMÈTRES D'IMPRESSION", "DRUCKPARAMETER", "PARAMETRI DI STAMPA"),
+  "Processo em tempo real": steelL("Real-time process", "Proceso en tiempo real", "Processus en temps réel", "Prozess in Echtzeit", "Processo in tempo reale"),
+  "Ventoinha": steelL("Fan", "Ventilador", "Ventilateur", "Lüfter", "Ventola"),
+  "Potência / exposição": steelL("Power / exposure", "Potencia / exposición", "Puissance / exposition", "Leistung / Belichtung", "Potenza / esposizione"),
+  "Material": steelL("Material", "Material", "Matériau", "Material", "Materiale"),
+  "Consumo: --": steelL("Consumption: --", "Consumo: --", "Consommation : --", "Verbrauch: --", "Consumo: --"),
+  "Material restante": steelL("Remaining material", "Material restante", "Matériau restant", "Restmaterial", "Materiale rimanente"),
+  "HISTÓRICO LOCAL": steelL("LOCAL HISTORY", "HISTORIAL LOCAL", "HISTORIQUE LOCAL", "LOKALER VERLAUF", "STORICO LOCALE"),
+  "Tendência térmica": steelL("Thermal trend", "Tendencia térmica", "Tendance thermique", "Temperaturtrend", "Tendenza termica"),
+  "Bico/Processo": steelL("Nozzle/Process", "Boquilla/Proceso", "Buse/Processus", "Düse/Prozess", "Ugello/Processo"),
+  "Mesa/Plataforma": steelL("Bed/Platform", "Cama/Plataforma", "Plateau/Plateforme", "Druckbett/Plattform", "Piatto/Piattaforma"),
+  "Câmara": steelL("Chamber", "Cámara", "Chambre", "Kammer", "Camera"),
+  "IHM DA MÁQUINA": steelL("MACHINE HMI", "HMI DE LA MÁQUINA", "IHM DE LA MACHINE", "MASCHINEN-HMI", "HMI DELLA MACCHINA"),
+  "Estado físico": steelL("Physical status", "Estado físico", "État physique", "Physischer Zustand", "Stato fisico"),
+  "Modo universal": steelL("Universal mode", "Modo universal", "Mode universel", "Universalmodus", "Modalità universale"),
+  "MOVIMENTO": steelL("MOTION", "MOVIMIENTO", "MOUVEMENT", "BEWEGUNG", "MOVIMENTO"),
+  "Posição dos eixos": steelL("Axis position", "Posición de los ejes", "Position des axes", "Achsenposition", "Posizione degli assi"),
+  "CONTROLE DO TRABALHO": steelL("JOB CONTROL", "CONTROL DEL TRABAJO", "CONTRÔLE DU TRAVAIL", "AUFTRAGSSTEUERUNG", "CONTROLLO DEL LAVORO"),
+  "Operação remota": steelL("Remote operation", "Operación remota", "Opération distante", "Fernbetrieb", "Operazione remota"),
+  "Somente monitoramento": steelL("Monitoring only", "Solo monitoreo", "Surveillance uniquement", "Nur Überwachung", "Solo monitoraggio"),
+  "Pausar": steelL("Pause", "Pausar", "Pause", "Pausieren", "Pausa"),
+  "Luz ON": steelL("Light ON", "Luz ON", "Lumière ON", "Licht EIN", "Luce ON"),
+  "Luz OFF": steelL("Light OFF", "Luz OFF", "Lumière OFF", "Licht AUS", "Luce OFF"),
+  "Os comandos só são liberados quando o cadastro habilita controle remoto e o bridge da impressora declara suporte.": steelL("Commands are enabled only when remote control is allowed in registration and the printer bridge reports support.", "Los comandos solo se habilitan cuando el registro permite el control remoto y el bridge de la impresora declara compatibilidad.", "Les commandes ne sont activées que si le contrôle distant est autorisé et si le bridge de l'imprimante le prend en charge.", "Befehle werden nur freigegeben, wenn die Fernsteuerung registriert ist und die Drucker-Bridge Unterstützung meldet.", "I comandi vengono abilitati solo quando il controllo remoto è consentito e il bridge della stampante dichiara il supporto."),
+  "CONEXÃO": steelL("CONNECTION", "CONEXIÓN", "CONNEXION", "VERBINDUNG", "CONNESSIONE"),
+  "Integração da impressora": steelL("Printer integration", "Integración de la impresora", "Intégration de l'imprimante", "Druckerintegration", "Integrazione della stampante"),
+  "Ecossistema": steelL("Ecosystem", "Ecosistema", "Écosystème", "Ökosystem", "Ecosistema"),
+  "Fonte": steelL("Source", "Fuente", "Source", "Quelle", "Fonte"),
+  "Firmware": steelL("Firmware", "Firmware", "Micrologiciel", "Firmware", "Firmware"),
+  "Host / IP": steelL("Host / IP", "Host / IP", "Hôte / IP", "Host / IP", "Host / IP"),
+  "Material usado": steelL("Material used", "Material usado", "Matériau utilisé", "Verwendetes Material", "Materiale usato"),
+  "SEGURANÇA / INTERTRAVAMENTO": steelL("SAFETY / INTERLOCK", "SEGURIDAD / ENCLAVAMIENTO", "SÉCURITÉ / INTERVERROUILLAGE", "SICHERHEIT / VERRIEGELUNG", "SICUREZZA / INTERBLOCCO"),
+  "Monitoramento remoto": steelL("Remote monitoring", "Monitoreo remoto", "Surveillance distante", "Fernüberwachung", "Monitoraggio remoto"),
+  "Nenhum alarme informado pela impressora.": steelL("No alarms reported by the printer.", "La impresora no informó alarmas.", "Aucune alarme signalée par l'imprimante.", "Keine Alarme vom Drucker gemeldet.", "Nessun allarme segnalato dalla stampante."),
+  "Esta IHM é exclusiva para impressoras 3D. Ela se adapta a FDM/FFF, SLA/MSLA/DLP, SLS e equipamentos proprietários, exibindo somente sinais realmente recebidos.": steelL("This HMI is dedicated to 3D printers. It adapts to FDM/FFF, SLA/MSLA/DLP, SLS and proprietary equipment, displaying only signals actually received.", "Esta HMI es exclusiva para impresoras 3D. Se adapta a FDM/FFF, SLA/MSLA/DLP, SLS y equipos propietarios, mostrando solo señales realmente recibidas.", "Cette IHM est dédiée aux imprimantes 3D. Elle s'adapte aux technologies FDM/FFF, SLA/MSLA/DLP, SLS et propriétaires, en n'affichant que les signaux réellement reçus.", "Diese HMI ist für 3D-Drucker ausgelegt. Sie passt sich FDM/FFF, SLA/MSLA/DLP, SLS und proprietären Geräten an und zeigt nur tatsächlich empfangene Signale.", "Questa HMI è dedicata alle stampanti 3D. Si adatta a FDM/FFF, SLA/MSLA/DLP, SLS e sistemi proprietari, mostrando solo i segnali realmente ricevuti."),
+  "Administrador: exclusão de registros habilitada": steelL("Administrator: record deletion enabled", "Administrador: eliminación de registros habilitada", "Administrateur : suppression des enregistrements activée", "Administrator: Löschen von Einträgen aktiviert", "Amministratore: eliminazione dei record abilitata"),
+  "Usuário autenticado": steelL("Authenticated user", "Usuario autenticado", "Utilisateur authentifié", "Authentifizierter Benutzer", "Utente autenticato"),
+  "Buscar eventos de auditoria": steelL("Search audit events", "Buscar eventos de auditoría", "Rechercher des événements d'audit", "Audit-Ereignisse suchen", "Cerca eventi di audit"),
+  "Buscar por usuário, ação ou entidade...": steelL("Search by user, action or entity...", "Buscar por usuario, acción o entidad...", "Rechercher par utilisateur, action ou entité...", "Nach Benutzer, Aktion oder Entität suchen...", "Cerca per utente, azione o entità..."),
+  "Filtrar auditoria por ação": steelL("Filter audit by action", "Filtrar auditoría por acción", "Filtrer l'audit par action", "Audit nach Aktion filtern", "Filtra audit per azione"),
+  "Painel adaptativo do controlador": steelL("Adaptive controller dashboard", "Panel adaptativo del controlador", "Tableau adaptatif du contrôleur", "Adaptives Controller-Dashboard", "Dashboard adattiva del controller"),
+  "PARADA": steelL("STOPPED", "DETENIDA", "ARRÊT", "GESTOPPT", "ARRESTO"),
+  "Representação do processo industrial": steelL("Industrial process representation", "Representación del proceso industrial", "Représentation du processus industriel", "Darstellung des Industrieprozesses", "Rappresentazione del processo industriale"),
+  "AGUARDANDO": steelL("WAITING", "ESPERANDO", "EN ATTENTE", "WARTEN", "IN ATTESA"),
+  "Modo de operação do Dobot": steelL("Dobot operating mode", "Modo de operación del Dobot", "Mode de fonctionnement du Dobot", "Dobot-Betriebsmodus", "Modalità operativa del Dobot"),
+  "Controle manual incremental do Dobot": steelL("Incremental manual Dobot control", "Control manual incremental del Dobot", "Commande manuelle incrémentale du Dobot", "Inkrementelle manuelle Dobot-Steuerung", "Controllo manuale incrementale del Dobot"),
+  "CONTROLE JOG": steelL("JOG CONTROL", "CONTROL JOG", "COMMANDE JOG", "TIPPSTEUERUNG", "CONTROLLO JOG"),
+  "Pronto para movimentar": steelL("Ready to move", "Listo para mover", "Prêt à déplacer", "Bewegungsbereit", "Pronto al movimento"),
+  "Plano X / Y": steelL("X / Y plane", "Plano X / Y", "Plan X / Y", "X-/Y-Ebene", "Piano X / Y"),
+  "Avançar no eixo Y": steelL("Move forward on Y axis", "Avanzar en el eje Y", "Avancer sur l'axe Y", "Auf der Y-Achse vorwärts", "Avanza sull'asse Y"),
+  "Mover no eixo X negativo": steelL("Move on negative X axis", "Mover en el eje X negativo", "Déplacer sur l'axe X négatif", "Auf der negativen X-Achse bewegen", "Muovi sull'asse X negativo"),
+  "Parar imediatamente": steelL("Stop immediately", "Detener inmediatamente", "Arrêter immédiatement", "Sofort stoppen", "Arresta immediatamente"),
+  "Mover no eixo X positivo": steelL("Move on positive X axis", "Mover en el eje X positivo", "Déplacer sur l'axe X positif", "Auf der positiven X-Achse bewegen", "Muovi sull'asse X positivo"),
+  "Recuar no eixo Y": steelL("Move backward on Y axis", "Retroceder en el eje Y", "Reculer sur l'axe Y", "Auf der Y-Achse zurück", "Indietreggia sull'asse Y"),
+  "Altura / Rotação": steelL("Height / Rotation", "Altura / Rotación", "Hauteur / Rotation", "Höhe / Drehung", "Altezza / Rotazione"),
+  "SUBIR": steelL("UP", "SUBIR", "MONTER", "HOCH", "SALI"),
+  "DESCER": steelL("DOWN", "BAJAR", "DESCENDRE", "RUNTER", "SCENDI"),
+  "GIRAR": steelL("ROTATE", "GIRAR", "TOURNER", "DREHEN", "RUOTA"),
+  "Movimentos curtos, limites validados e confirmação da posição real.": steelL("Short moves, validated limits and real-position confirmation.", "Movimientos cortos, límites validados y confirmación de la posición real.", "Mouvements courts, limites validées et confirmation de la position réelle.", "Kurze Bewegungen, geprüfte Grenzen und Bestätigung der Istposition.", "Movimenti brevi, limiti convalidati e conferma della posizione reale."),
+  "Modo manual: use movimentos curtos e mantenha a área do robô livre. PARAR continua disponível durante toda a operação.": steelL("Manual mode: use short moves and keep the robot area clear. STOP remains available throughout the operation.", "Modo manual: use movimientos cortos y mantenga libre el área del robot. DETENER permanece disponible durante toda la operación.", "Mode manuel : effectuez de petits mouvements et gardez la zone du robot dégagée. ARRÊTER reste disponible pendant toute l'opération.", "Manueller Modus: kurze Bewegungen verwenden und Roboterbereich freihalten. STOPP bleibt während des gesamten Betriebs verfügbar.", "Modalità manuale: usa movimenti brevi e mantieni libera l'area del robot. ARRESTA resta disponibile durante tutta l'operazione."),
+  "AUTOMAÇÃO INDUSTRIAL": steelL("INDUSTRIAL AUTOMATION", "AUTOMATIZACIÓN INDUSTRIAL", "AUTOMATISATION INDUSTRIELLE", "INDUSTRIELLE AUTOMATISIERUNG", "AUTOMAZIONE INDUSTRIALE"),
+  "Pronto para ensinar": steelL("Ready to teach", "Listo para enseñar", "Prêt pour l'apprentissage", "Bereit zum Einlernen", "Pronto per l'apprendimento"),
+  "Repetições": steelL("Repetitions", "Repeticiones", "Répétitions", "Wiederholungen", "Ripetizioni"),
+  "Aguardando início": steelL("Waiting to start", "Esperando inicio", "En attente du démarrage", "Warten auf Start", "In attesa dell'avvio"),
+  "PAUSAR": steelL("PAUSE", "PAUSAR", "PAUSE", "PAUSIEREN", "PAUSA"),
+  "O modo automático bloqueia os comandos manuais enquanto o ciclo está ativo. PAUSAR atua entre etapas; PARAR envia DOBOT_STOP imediatamente. Use somente após ensinar pontos sem colisão.": steelL("Automatic mode blocks manual commands while the cycle is active. PAUSE acts between steps; STOP sends DOBOT_STOP immediately. Use only after teaching collision-free points.", "El modo automático bloquea los comandos manuales mientras el ciclo está activo. PAUSAR actúa entre etapas; DETENER envía DOBOT_STOP inmediatamente. Úselo solo después de enseñar puntos sin colisión.", "Le mode automatique bloque les commandes manuelles pendant le cycle. PAUSE agit entre les étapes ; ARRÊTER envoie immédiatement DOBOT_STOP. Utilisez-le uniquement après avoir appris des points sans collision.", "Der Automatikmodus sperrt manuelle Befehle während des Zyklus. PAUSIEREN wirkt zwischen den Schritten; STOPP sendet DOBOT_STOP sofort. Nur nach Einlernen kollisionsfreier Punkte verwenden.", "La modalità automatica blocca i comandi manuali durante il ciclo. PAUSA agisce tra le fasi; ARRESTA invia subito DOBOT_STOP. Usare solo dopo aver appreso punti senza collisioni."),
+  "Idioma do sistema": steelL("System language", "Idioma del sistema", "Langue du système", "Systemsprache", "Lingua del sistema"),
+  "Tema do sistema": steelL("System theme", "Tema del sistema", "Thème du système", "Systemdesign", "Tema del sistema"),
+
+  "Gerenciar empresa e funcionários": steelL("Manage company and employees", "Gestionar empresa y empleados", "Gérer l'entreprise et les employés", "Unternehmen und Mitarbeiter verwalten", "Gestisci azienda e dipendenti"),
+  "Ex: Responsável pela movimentação e pelo posicionamento de peças na linha de automação.": steelL("Example: Responsible for moving and positioning parts on the automation line.", "Ej.: Responsable del movimiento y posicionamiento de piezas en la línea de automatización.", "Ex. : Responsable du déplacement et du positionnement des pièces sur la ligne automatisée.", "Beispiel: Verantwortlich für Bewegung und Positionierung von Teilen in der Automatisierungslinie.", "Es.: Responsabile della movimentazione e del posizionamento dei pezzi sulla linea automatizzata."),
+  "Eficiência e OEE": steelL("Efficiency and OEE", "Eficiencia y OEE", "Efficacité et OEE", "Effizienz und OEE", "Efficienza e OEE"),
+  "Disponibilidade, desempenho, qualidade e ciclo": steelL("Availability, performance, quality and cycle", "Disponibilidad, rendimiento, calidad y ciclo", "Disponibilité, performance, qualité et cycle", "Verfügbarkeit, Leistung, Qualität und Zyklus", "Disponibilità, prestazioni, qualità e ciclo"),
+  "Ordem, lote, peças boas e refugos": steelL("Order, batch, good parts and rejects", "Orden, lote, piezas buenas y rechazos", "Ordre, lot, bonnes pièces et rebuts", "Auftrag, Charge, Gutteile und Ausschuss", "Ordine, lotto, pezzi buoni e scarti"),
+  "Intertravamentos, modo e alarmes": steelL("Interlocks, mode and alarms", "Enclavamientos, modo y alarmas", "Interverrouillages, mode et alarmes", "Verriegelungen, Modus und Alarme", "Interblocchi, modalità e allarmi"),
+  "Horas, MTBF, MTTR e vida da ferramenta": steelL("Hours, MTBF, MTTR and tool life", "Horas, MTBF, MTTR y vida de herramienta", "Heures, MTBF, MTTR et durée de vie de l'outil", "Stunden, MTBF, MTTR und Werkzeugstandzeit", "Ore, MTBF, MTTR e vita utensile"),
+  "Potência, consumo e ar comprimido": steelL("Power, consumption and compressed air", "Potencia, consumo y aire comprimido", "Puissance, consommation et air comprimé", "Leistung, Verbrauch und Druckluft", "Potenza, consumo e aria compressa"),
+  "Impressora 3D universal": steelL("Universal 3D printer", "Impresora 3D universal", "Imprimante 3D universelle", "Universeller 3D-Drucker", "Stampante 3D universale"),
+  "Serial genérica / JSON": steelL("Generic serial / JSON", "Serial genérica / JSON", "Série générique / JSON", "Generische serielle Schnittstelle / JSON", "Seriale generica / JSON"),
+  "DESCOBERTA AUTOMÁTICA": steelL("AUTOMATIC DISCOVERY", "DESCUBRIMIENTO AUTOMÁTICO", "DÉCOUVERTE AUTOMATIQUE", "AUTOMATISCHE ERKENNUNG", "RILEVAMENTO AUTOMATICO"),
+  "Equipamentos encontrados na rede e no Edge": steelL("Equipment found on the network and Edge", "Equipos encontrados en la red y Edge", "Équipements trouvés sur le réseau et Edge", "Im Netzwerk und auf Edge gefundene Geräte", "Apparecchiature trovate in rete e su Edge"),
+  "Descubra equipamentos na rede local e hardware USB/Serial detectado pelo SteelControl Edge. Revise a origem e aprove o cadastro com segurança.": steelL("Discover equipment on the local network and USB/Serial hardware detected by SteelControl Edge. Review the source and securely approve registration.", "Descubra equipos en la red local y hardware USB/Serial detectado por SteelControl Edge. Revise el origen y apruebe el registro de forma segura.", "Découvrez les équipements du réseau local et le matériel USB/Série détecté par SteelControl Edge. Vérifiez la source et approuvez l'enregistrement en toute sécurité.", "Erkennen Sie Geräte im lokalen Netzwerk und von SteelControl Edge gefundene USB-/Seriell-Hardware. Quelle prüfen und Registrierung sicher freigeben.", "Rileva apparecchiature sulla rete locale e hardware USB/Seriale individuato da SteelControl Edge. Verifica l'origine e approva la registrazione in sicurezza."),
+  "Procurar novamente": steelL("Search again", "Buscar de nuevo", "Rechercher à nouveau", "Erneut suchen", "Cerca di nuovo"),
+  "Provisionamento seguro: identificação → aprovação do administrador → credencial exclusiva → monitoramento. START remoto não é habilitado automaticamente.": steelL("Secure provisioning: identification → administrator approval → unique credential → monitoring. Remote START is not enabled automatically.", "Aprovisionamiento seguro: identificación → aprobación del administrador → credencial exclusiva → monitoreo. START remoto no se habilita automáticamente.", "Provisionnement sécurisé : identification → approbation de l'administrateur → identifiant unique → surveillance. Le START distant n'est pas activé automatiquement.", "Sichere Bereitstellung: Identifikation → Administratorfreigabe → eindeutige Berechtigung → Überwachung. Remote-START wird nicht automatisch aktiviert.", "Provisioning sicuro: identificazione → approvazione dell'amministratore → credenziale esclusiva → monitoraggio. Lo START remoto non viene abilitato automaticamente."),
+  "Conexão alternativa por IP": steelL("Alternative IP connection", "Conexión alternativa por IP", "Connexion alternative par IP", "Alternative IP-Verbindung", "Connessione alternativa tramite IP"),
+  "Use o IPv4 local quando a descoberta automática estiver bloqueada pela rede. O equipamento seguirá pela mesma etapa de aprovação segura.": steelL("Use the local IPv4 address when automatic discovery is blocked by the network. The equipment will follow the same secure approval step.", "Use la dirección IPv4 local cuando la red bloquee el descubrimiento automático. El equipo seguirá la misma etapa de aprobación segura.", "Utilisez l'adresse IPv4 locale lorsque la découverte automatique est bloquée par le réseau. L'équipement suivra la même étape d'approbation sécurisée.", "Verwenden Sie die lokale IPv4-Adresse, wenn die automatische Erkennung vom Netzwerk blockiert wird. Das Gerät durchläuft dieselbe sichere Freigabe.", "Usa l'indirizzo IPv4 locale quando il rilevamento automatico è bloccato dalla rete. L'apparecchiatura seguirà la stessa approvazione sicura."),
+  "IP do equipamento": steelL("Equipment IP", "IP del equipo", "IP de l'équipement", "Geräte-IP", "IP apparecchiatura"),
+  "Detectar pelo IP": steelL("Detect by IP", "Detectar por IP", "Détecter par IP", "Über IP erkennen", "Rileva tramite IP"),
+  "Diagnóstico da descoberta": steelL("Discovery diagnostics", "Diagnóstico del descubrimiento", "Diagnostic de découverte", "Erkennungsdiagnose", "Diagnostica del rilevamento"),
+  "Mostra UDP, interfaces e possíveis motivos de falha": steelL("Shows UDP, interfaces and possible failure causes", "Muestra UDP, interfaces y posibles causas de falla", "Affiche UDP, les interfaces et les causes possibles d'échec", "Zeigt UDP, Schnittstellen und mögliche Fehlerursachen", "Mostra UDP, interfacce e possibili cause di errore"),
+  "Carregando diagnóstico da rede...": steelL("Loading network diagnostics...", "Cargando diagnóstico de red...", "Chargement du diagnostic réseau...", "Netzwerkdiagnose wird geladen...", "Caricamento diagnostica di rete..."),
+  "Nenhum equipamento respondeu ainda. Use": steelL("No equipment has responded yet. Use", "Ningún equipo ha respondido todavía. Use", "Aucun équipement n'a encore répondu. Utilisez", "Noch kein Gerät hat geantwortet. Verwenden Sie", "Nessuna apparecchiatura ha ancora risposto. Usa"),
+  ", consulte o diagnóstico ou conecte pelo IP.": steelL(", check diagnostics or connect by IP.", ", consulte el diagnóstico o conéctese por IP.", ", consultez le diagnostic ou connectez-vous par IP.", ", prüfen Sie die Diagnose oder verbinden Sie per IP.", ", consulta la diagnostica o connettiti tramite IP."),
+  "Filtrar equipamentos por tipo": steelL("Filter equipment by type", "Filtrar equipos por tipo", "Filtrer les équipements par type", "Geräte nach Typ filtern", "Filtra apparecchiature per tipo"),
+  "Filtrar equipamentos por status": steelL("Filter equipment by status", "Filtrar equipos por estado", "Filtrer les équipements par état", "Geräte nach Status filtern", "Filtra apparecchiature per stato"),
+
+  "Voltar para o início": steelL("Back to home", "Volver al inicio", "Retour à l'accueil", "Zur Startseite", "Torna alla home"),
+  "OPERADOR": steelL("OPERATOR", "OPERADOR", "OPÉRATEUR", "BEDIENER", "OPERATORE"),
+  "IDENTIDADE VALIDADA": steelL("IDENTITY VERIFIED", "IDENTIDAD VALIDADA", "IDENTITÉ VALIDÉE", "IDENTITÄT BESTÄTIGT", "IDENTITÀ CONVALIDATA"),
+  "ONLINE": steelL("ONLINE", "EN LÍNEA", "EN LIGNE", "ONLINE", "ONLINE"),
+  "SEGURANÇA": steelL("SECURITY", "SEGURIDAD", "SÉCURITÉ", "SICHERHEIT", "SICUREZZA"),
+  "acesso protegido": steelL("protected access", "acceso protegido", "accès protégé", "geschützter Zugriff", "accesso protetto"),
+  "sincronizada": steelL("synchronized", "sincronizada", "synchronisée", "synchronisiert", "sincronizzata"),
+  "CENTRAL INDUSTRIAL CONECTADA": steelL("CONNECTED INDUSTRIAL CENTER", "CENTRAL INDUSTRIAL CONECTADA", "CENTRE INDUSTRIEL CONNECTÉ", "VERNETZTE INDUSTRIEZENTRALE", "CENTRALE INDUSTRIALE CONNESSA"),
+  "Controle sua operação": steelL("Control your operation", "Controle su operación", "Pilotez votre activité", "Steuern Sie Ihren Betrieb", "Controlla la tua operazione"),
+  "Desktop, mobile e Edge sincronizados em uma experiência industrial completa.": steelL("Desktop, mobile and Edge synchronized in one complete industrial experience.", "Desktop, móvil y Edge sincronizados en una experiencia industrial completa.", "Desktop, mobile et Edge synchronisés dans une expérience industrielle complète.", "Desktop, Mobile und Edge in einer vollständigen Industrieumgebung synchronisiert.", "Desktop, mobile ed Edge sincronizzati in un'esperienza industriale completa."),
+  "STEELCONTROL • ACESSO INDUSTRIAL SEGURO": steelL("STEELCONTROL • SECURE INDUSTRIAL ACCESS", "STEELCONTROL • ACCESO INDUSTRIAL SEGURO", "STEELCONTROL • ACCÈS INDUSTRIEL SÉCURISÉ", "STEELCONTROL • SICHERER INDUSTRIEZUGRIFF", "STEELCONTROL • ACCESSO INDUSTRIALE SICURO"),
+  "STEELCONTROL • ACESSO PROTEGIDO": steelL("STEELCONTROL • PROTECTED ACCESS", "STEELCONTROL • ACCESO PROTEGIDO", "STEELCONTROL • ACCÈS PROTÉGÉ", "STEELCONTROL • GESCHÜTZTER ZUGRIFF", "STEELCONTROL • ACCESSO PROTETTO"),
+  "Acesso autorizado": steelL("Access authorized", "Acceso autorizado", "Accès autorisé", "Zugriff autorisiert", "Accesso autorizzato"),
+  "Identidade validada com segurança.": steelL("Identity securely verified.", "Identidad validada de forma segura.", "Identité validée en toute sécurité.", "Identität sicher bestätigt.", "Identità convalidata in sicurezza."),
+  "LEITURA AO VIVO": steelL("LIVE READING", "LECTURA EN VIVO", "LECTURE EN DIRECT", "LIVE-ANZEIGE", "LETTURA IN TEMPO REALE"),
+
+  "Localização da empresa": steelL("Company location", "Ubicación de la empresa", "Localisation de l'entreprise", "Unternehmensstandort", "Posizione dell'azienda"),
+  "Nome do funcionário": steelL("Employee name", "Nombre del empleado", "Nom de l'employé", "Mitarbeitername", "Nome del dipendente"),
+  "Mínimo 8 caracteres": steelL("At least 8 characters", "Mínimo 8 caracteres", "8 caractères minimum", "Mindestens 8 Zeichen", "Minimo 8 caratteri"),
+  "Deixe em branco para manter a senha atual": steelL("Leave blank to keep the current password", "Deje en blanco para mantener la contraseña actual", "Laissez vide pour conserver le mot de passe actuel", "Leer lassen, um das aktuelle Passwort beizubehalten", "Lascia vuoto per mantenere la password attuale"),
+  "Código de verificação do novo e-mail": steelL("New email verification code", "Código de verificación del nuevo correo", "Code de vérification du nouvel e-mail", "Bestätigungscode für die neue E-Mail", "Codice di verifica della nuova e-mail"),
+  "Fechar cadastro facial": steelL("Close facial enrollment", "Cerrar registro facial", "Fermer l'enrôlement facial", "Gesichtserfassung schließen", "Chiudi registrazione facciale"),
+  "Ex.: Principal, Sem óculos, Turno A": steelL("Example: Primary, No glasses, Shift A", "Ej.: Principal, Sin gafas, Turno A", "Ex. : Principal, Sans lunettes, Équipe A", "Beispiel: Primär, Ohne Brille, Schicht A", "Es.: Principale, Senza occhiali, Turno A"),
+  "Consentimento para cadastro facial": steelL("Consent for facial enrollment", "Consentimiento para registro facial", "Consentement à l'enrôlement facial", "Einwilligung zur Gesichtserfassung", "Consenso alla registrazione facciale"),
+  "Fechar gerenciador de faciais": steelL("Close facial manager", "Cerrar gestor facial", "Fermer le gestionnaire facial", "Gesichtsverwaltung schließen", "Chiudi gestione facciale")
+});
+
+Object.assign(STEEL_LITERAL_I18N, {
+  "Sensores, conectividade Wi-Fi, sinal, latência e telemetria do dispositivo embarcado.": steelL("Sensors, Wi-Fi connectivity, signal, latency and embedded-device telemetry.", "Sensores, conectividad Wi-Fi, señal, latencia y telemetría del dispositivo integrado.", "Capteurs, connectivité Wi-Fi, signal, latence et télémétrie du dispositif embarqué.", "Sensoren, WLAN-Verbindung, Signal, Latenz und Telemetrie des eingebetteten Geräts.", "Sensori, connettività Wi-Fi, segnale, latenza e telemetria del dispositivo integrato."),
+  "AGUARDANDO CONEXÃO REAL": steelL("WAITING FOR REAL CONNECTION", "ESPERANDO CONEXIÓN REAL", "EN ATTENTE DE CONNEXION RÉELLE", "WARTEN AUF REALE VERBINDUNG", "IN ATTESA DELLA CONNESSIONE REALE"),
+  "EM CICLO": steelL("RUNNING CYCLE", "EN CICLO", "CYCLE EN COURS", "ZYKLUS LÄUFT", "CICLO IN CORSO"),
+  "AGUARDANDO CONEXÃO": steelL("WAITING FOR CONNECTION", "ESPERANDO CONEXIÓN", "EN ATTENTE DE CONNEXION", "WARTEN AUF VERBINDUNG", "IN ATTESA DELLA CONNESSIONE"),
+  "Aguardando conexão real. Todos os comandos permanecem bloqueados até chegar telemetria recente.": steelL("Waiting for a real connection. All commands remain blocked until recent telemetry arrives.", "Esperando una conexión real. Todos los comandos permanecen bloqueados hasta recibir telemetría reciente.", "En attente d'une connexion réelle. Toutes les commandes restent bloquées jusqu'à réception d'une télémétrie récente.", "Warten auf eine reale Verbindung. Alle Befehle bleiben gesperrt, bis aktuelle Telemetrie eintrifft.", "In attesa di una connessione reale. Tutti i comandi restano bloccati finché non arriva una telemetria recente."),
+  "START bloqueado por condição de segurança. RESET não libera a parada de segurança.": steelL("START blocked by a safety condition. RESET does not release the safety stop.", "START bloqueado por una condición de seguridad. RESET no libera la parada de seguridad.", "START bloqué par une condition de sécurité. RESET ne libère pas l'arrêt de sécurité.", "START durch Sicherheitsbedingung gesperrt. RESET hebt den Sicherheitsstopp nicht auf.", "START bloccato da una condizione di sicurezza. RESET non libera l'arresto di sicurezza."),
+  "Aguardando confirmação dos intertravamentos físicos.": steelL("Waiting for physical interlock confirmation.", "Esperando confirmación de los enclavamientos físicos.", "En attente de confirmation des interverrouillages physiques.", "Warten auf Bestätigung der physischen Verriegelungen.", "In attesa della conferma degli interblocchi fisici."),
+  "Não foi possível carregar o controlador.": steelL("The controller could not be loaded.", "No se pudo cargar el controlador.", "Impossible de charger le contrôleur.", "Der Controller konnte nicht geladen werden.", "Impossibile caricare il controller."),
+  "Painel do controlador": steelL("Controller dashboard", "Panel del controlador", "Tableau du contrôleur", "Controller-Dashboard", "Dashboard del controller"),
+  "Comando não autorizado pela IHM.": steelL("Command not authorized by the HMI.", "Comando no autorizado por la HMI.", "Commande non autorisée par l'IHM.", "Befehl von der HMI nicht autorisiert.", "Comando non autorizzato dalla HMI."),
+  "Comando processado.": steelL("Command processed.", "Comando procesado.", "Commande traitée.", "Befehl verarbeitet.", "Comando elaborato."),
+  "Comando bloqueado": steelL("Command blocked", "Comando bloqueado", "Commande bloquée", "Befehl gesperrt", "Comando bloccato"),
+
+  "Sessão expirada.": steelL("Session expired.", "Sesión caducada.", "Session expirée.", "Sitzung abgelaufen.", "Sessione scaduta."),
+  "Operação e telemetria do ESP32": steelL("ESP32 operation and telemetry", "Operación y telemetría del ESP32", "Fonctionnement et télémétrie de l'ESP32", "ESP32-Betrieb und Telemetrie", "Funzionamento e telemetria ESP32"),
+  "Erro na resposta da API.": steelL("API response error.", "Error en la respuesta de la API.", "Erreur dans la réponse de l'API.", "Fehler in der API-Antwort.", "Errore nella risposta API."),
+  "Máquina online": steelL("Machine online", "Máquina en línea", "Machine en ligne", "Maschine online", "Macchina online"),
+  "Parada de segurança ativa. Normalize a condição antes de liberar o equipamento.": steelL("Safety stop active. Normalize the condition before releasing the equipment.", "Parada de seguridad activa. Normalice la condición antes de liberar el equipo.", "Arrêt de sécurité actif. Normalisez la condition avant de libérer l'équipement.", "Sicherheitsstopp aktiv. Zustand vor Freigabe des Geräts normalisieren.", "Arresto di sicurezza attivo. Normalizza la condizione prima di liberare l'apparecchiatura."),
+  "Erro ao carregar manutenções.": steelL("Failed to load maintenance records.", "Error al cargar los mantenimientos.", "Erreur lors du chargement des maintenances.", "Wartungsdaten konnten nicht geladen werden.", "Errore durante il caricamento delle manutenzioni."),
+  "Erro ao carregar histórico.": steelL("Failed to load history.", "Error al cargar el historial.", "Erreur lors du chargement de l'historique.", "Verlauf konnte nicht geladen werden.", "Errore durante il caricamento dello storico."),
+  "SteelUI.confirm não está disponível. Exclusão bloqueada por segurança.": steelL("SteelUI.confirm is unavailable. Deletion was blocked for safety.", "SteelUI.confirm no está disponible. La eliminación fue bloqueada por seguridad.", "SteelUI.confirm est indisponible. La suppression a été bloquée par sécurité.", "SteelUI.confirm ist nicht verfügbar. Löschen wurde aus Sicherheitsgründen blockiert.", "SteelUI.confirm non è disponibile. Eliminazione bloccata per sicurezza."),
+  "Não foi possível arquivar o registro.": steelL("The record could not be archived.", "No se pudo archivar el registro.", "Impossible d'archiver l'enregistrement.", "Der Eintrag konnte nicht archiviert werden.", "Impossibile archiviare il record."),
+  "Registro arquivado com sucesso.": steelL("Record archived successfully.", "Registro archivado correctamente.", "Enregistrement archivé avec succès.", "Eintrag erfolgreich archiviert.", "Record archiviato correttamente."),
+  "O registro saiu da lista ativa e continua preservado no histórico de auditoria.": steelL("The record left the active list and remains preserved in the audit history.", "El registro salió de la lista activa y permanece conservado en el historial de auditoría.", "L'enregistrement a quitté la liste active et reste conservé dans l'historique d'audit.", "Der Eintrag wurde aus der aktiven Liste entfernt und bleibt im Audit-Verlauf erhalten.", "Il record è uscito dall'elenco attivo e rimane conservato nello storico di audit."),
+  "Seu perfil possui acesso somente à consulta do histórico de manutenção.": steelL("Your profile has read-only access to maintenance history.", "Su perfil solo tiene acceso de consulta al historial de mantenimiento.", "Votre profil dispose uniquement d'un accès en lecture à l'historique de maintenance.", "Ihr Profil hat nur Lesezugriff auf den Wartungsverlauf.", "Il tuo profilo ha accesso in sola lettura allo storico della manutenzione."),
+  "Não foi possível carregar a empresa.": steelL("The company could not be loaded.", "No se pudo cargar la empresa.", "Impossible de charger l'entreprise.", "Das Unternehmen konnte nicht geladen werden.", "Impossibile caricare l'azienda."),
+  "CNPJ não informado": steelL("Company ID not provided", "ID de empresa no informado", "Identifiant d'entreprise non renseigné", "Unternehmens-ID nicht angegeben", "ID azienda non indicato"),
+  "Não foi possível carregar os funcionários.": steelL("Employees could not be loaded.", "No se pudieron cargar los empleados.", "Impossible de charger les employés.", "Mitarbeiter konnten nicht geladen werden.", "Impossibile caricare i dipendenti."),
+  "Não foi possível carregar as máquinas.": steelL("Machines could not be loaded.", "No se pudieron cargar las máquinas.", "Impossible de charger les machines.", "Maschinen konnten nicht geladen werden.", "Impossibile caricare le macchine."),
+  "Nenhum equipamento cadastrado.": steelL("No equipment registered.", "Ningún equipo registrado.", "Aucun équipement enregistré.", "Keine Geräte registriert.", "Nessuna apparecchiatura registrata."),
+  "Operação excelente. Equipamentos funcionando normalmente.": steelL("Excellent operation. Equipment is running normally.", "Operación excelente. Los equipos funcionan normalmente.", "Excellente opération. Les équipements fonctionnent normalement.", "Ausgezeichneter Betrieb. Die Geräte laufen normal.", "Funzionamento eccellente. Le apparecchiature operano normalmente."),
+  "Operação estável. Continue acompanhando os equipamentos.": steelL("Stable operation. Keep monitoring the equipment.", "Operación estable. Continúe monitoreando los equipos.", "Opération stable. Continuez à surveiller les équipements.", "Stabiler Betrieb. Geräte weiter überwachen.", "Funzionamento stabile. Continua a monitorare le apparecchiature."),
+  "Atenção recomendada. Existem equipamentos que precisam ser verificados.": steelL("Attention recommended. Some equipment needs to be checked.", "Atención recomendada. Hay equipos que deben verificarse.", "Attention recommandée. Certains équipements doivent être vérifiés.", "Aufmerksamkeit empfohlen. Einige Geräte müssen geprüft werden.", "Attenzione consigliata. Alcune apparecchiature devono essere controllate."),
+  "Situação crítica. A operação precisa de atenção imediata.": steelL("Critical condition. The operation requires immediate attention.", "Situación crítica. La operación requiere atención inmediata.", "Situation critique. L'opération nécessite une attention immédiate.", "Kritischer Zustand. Der Betrieb erfordert sofortige Aufmerksamkeit.", "Situazione critica. L'operazione richiede attenzione immediata."),
+  "Não foi possível carregar a auditoria.": steelL("Audit data could not be loaded.", "No se pudo cargar la auditoría.", "Impossible de charger l'audit.", "Audit-Daten konnten nicht geladen werden.", "Impossibile caricare l'audit."),
+
+  "Painel exclusivo do Dobot": steelL("Dedicated Dobot dashboard", "Panel exclusivo del Dobot", "Tableau dédié au Dobot", "Exklusives Dobot-Dashboard", "Dashboard dedicata al Dobot"),
+  "Cadastre ou selecione uma máquina com o controlador Dobot Magician.": steelL("Register or select a machine with the Dobot Magician controller.", "Registre o seleccione una máquina con el controlador Dobot Magician.", "Enregistrez ou sélectionnez une machine avec le contrôleur Dobot Magician.", "Registrieren oder wählen Sie eine Maschine mit Dobot-Magician-Controller.", "Registra o seleziona una macchina con controller Dobot Magician."),
+  "A máquina selecionada não é um Dobot Magician.": steelL("The selected machine is not a Dobot Magician.", "La máquina seleccionada no es un Dobot Magician.", "La machine sélectionnée n'est pas un Dobot Magician.", "Die ausgewählte Maschine ist kein Dobot Magician.", "La macchina selezionata non è un Dobot Magician."),
+  "Dobot offline. Aguarde uma conexão real e telemetria recente antes de enviar comandos.": steelL("Dobot offline. Wait for a real connection and recent telemetry before sending commands.", "Dobot sin conexión. Espere una conexión real y telemetría reciente antes de enviar comandos.", "Dobot hors ligne. Attendez une connexion réelle et une télémétrie récente avant d'envoyer des commandes.", "Dobot offline. Vor dem Senden von Befehlen auf reale Verbindung und aktuelle Telemetrie warten.", "Dobot offline. Attendi una connessione reale e telemetria recente prima di inviare comandi."),
+  "Comando não aceito.": steelL("Command not accepted.", "Comando no aceptado.", "Commande non acceptée.", "Befehl nicht akzeptiert.", "Comando non accettato."),
+  "Comando na fila": steelL("Command queued", "Comando en cola", "Commande en file", "Befehl in Warteschlange", "Comando in coda"),
+  "O backend não retornou o identificador do comando.": steelL("The backend did not return the command identifier.", "El backend no devolvió el identificador del comando.", "Le backend n'a pas renvoyé l'identifiant de la commande.", "Das Backend hat keine Befehlskennung zurückgegeben.", "Il backend non ha restituito l'identificativo del comando."),
+  "Ciclo interrompido pelo operador.": steelL("Cycle interrupted by the operator.", "Ciclo interrumpido por el operador.", "Cycle interrompu par l'opérateur.", "Zyklus vom Bediener unterbrochen.", "Ciclo interrotto dall'operatore."),
+  "Não foi possível acompanhar o comando do Dobot.": steelL("The Dobot command could not be tracked.", "No se pudo seguir el comando del Dobot.", "Impossible de suivre la commande du Dobot.", "Der Dobot-Befehl konnte nicht verfolgt werden.", "Impossibile monitorare il comando del Dobot."),
+  "Manual intertravado": steelL("Manual mode interlocked", "Manual enclavado", "Mode manuel verrouillé", "Manueller Modus verriegelt", "Modalità manuale interbloccata"),
+  "O ciclo automático ainda está parando.": steelL("The automatic cycle is still stopping.", "El ciclo automático todavía se está deteniendo.", "Le cycle automatique est encore en cours d'arrêt.", "Der Automatikzyklus wird noch gestoppt.", "Il ciclo automatico si sta ancora arrestando."),
+  "Rotação confirmada": steelL("Rotation confirmed", "Rotación confirmada", "Rotation confirmée", "Drehung bestätigt", "Rotazione confermata"),
+  "Rotação não executada": steelL("Rotation not executed", "Rotación no ejecutada", "Rotation non exécutée", "Drehung nicht ausgeführt", "Rotazione non eseguita"),
+  "A posição real do Dobot não está disponível.": steelL("The Dobot's real position is unavailable.", "La posición real del Dobot no está disponible.", "La position réelle du Dobot n'est pas disponible.", "Die reale Dobot-Position ist nicht verfügbar.", "La posizione reale del Dobot non è disponibile."),
+  "Movimento não executado": steelL("Movement not executed", "Movimiento no ejecutado", "Mouvement non exécuté", "Bewegung nicht ausgeführt", "Movimento non eseguito"),
+  "O Dobot não confirmou a posição de destino dentro do tempo esperado.": steelL("The Dobot did not confirm the target position within the expected time.", "El Dobot no confirmó la posición de destino en el tiempo esperado.", "Le Dobot n'a pas confirmé la position cible dans le délai prévu.", "Der Dobot hat die Zielposition nicht rechtzeitig bestätigt.", "Il Dobot non ha confermato la posizione di destinazione entro il tempo previsto."),
+  "Pare o ciclo antes de ensinar posições.": steelL("Stop the cycle before teaching positions.", "Detenga el ciclo antes de enseñar posiciones.", "Arrêtez le cycle avant d'apprendre les positions.", "Zyklus vor dem Einlernen von Positionen stoppen.", "Arresta il ciclo prima di apprendere le posizioni."),
+  "A posição atual do Dobot ainda não está disponível.": steelL("The Dobot's current position is not available yet.", "La posición actual del Dobot aún no está disponible.", "La position actuelle du Dobot n'est pas encore disponible.", "Die aktuelle Dobot-Position ist noch nicht verfügbar.", "La posizione attuale del Dobot non è ancora disponibile."),
+  "Ensino do ciclo": steelL("Cycle teaching", "Enseñanza del ciclo", "Apprentissage du cycle", "Zyklus einlernen", "Apprendimento del ciclo"),
+  "Aguardar na posição segura": steelL("Wait at safe position", "Esperar en la posición segura", "Attendre en position sûre", "In sicherer Position warten", "Attendi nella posizione sicura"),
+  "Aproximar da matéria-prima": steelL("Approach raw material", "Acercarse a la materia prima", "Approcher la matière première", "Rohmaterial anfahren", "Avvicinati alla materia prima"),
+  "Recuar da estação": steelL("Move away from station", "Alejarse de la estación", "S'éloigner de la station", "Von der Station zurückfahren", "Allontanati dalla stazione"),
+  "Retornar à espera": steelL("Return to waiting position", "Volver a la posición de espera", "Revenir en position d'attente", "Zur Warteposition zurückkehren", "Ritorna alla posizione di attesa"),
+  "Ciclo em execução": steelL("Cycle running", "Ciclo en ejecución", "Cycle en cours", "Zyklus läuft", "Ciclo in esecuzione"),
+  "Preparando sequência": steelL("Preparing sequence", "Preparando secuencia", "Préparation de la séquence", "Sequenz wird vorbereitet", "Preparazione sequenza"),
+  "Peça posicionada": steelL("Part positioned", "Pieza posicionada", "Pièce positionnée", "Teil positioniert", "Pezzo posizionato"),
+  "Automático concluído": steelL("Automatic cycle completed", "Automático completado", "Cycle automatique terminé", "Automatik abgeschlossen", "Automatico completato"),
+  "Sequência concluída": steelL("Sequence completed", "Secuencia completada", "Séquence terminée", "Sequenz abgeschlossen", "Sequenza completata"),
+  "Pronto para novo ciclo": steelL("Ready for a new cycle", "Listo para un nuevo ciclo", "Prêt pour un nouveau cycle", "Bereit für einen neuen Zyklus", "Pronto per un nuovo ciclo"),
+  "Ciclo automático interrompido": steelL("Automatic cycle interrupted", "Ciclo automático interrumpido", "Cycle automatique interrompu", "Automatikzyklus unterbrochen", "Ciclo automatico interrotto"),
+  "Ciclo interrompido": steelL("Cycle interrupted", "Ciclo interrumpido", "Cycle interrompu", "Zyklus unterbrochen", "Ciclo interrotto"),
+  "Pausado após a etapa atual": steelL("Paused after current step", "Pausado después de la etapa actual", "En pause après l'étape actuelle", "Nach aktuellem Schritt pausiert", "In pausa dopo la fase corrente"),
+  "Ciclo retomado": steelL("Cycle resumed", "Ciclo reanudado", "Cycle repris", "Zyklus fortgesetzt", "Ciclo ripreso"),
+  "Aguardando operador": steelL("Waiting for operator", "Esperando operador", "En attente de l'opérateur", "Warten auf Bediener", "In attesa dell'operatore"),
+  "Retomando sequência": steelL("Resuming sequence", "Reanudando secuencia", "Reprise de la séquence", "Sequenz wird fortgesetzt", "Ripresa della sequenza"),
+  "Pare o ciclo automático antes de enviar comandos manuais.": steelL("Stop the automatic cycle before sending manual commands.", "Detenga el ciclo automático antes de enviar comandos manuales.", "Arrêtez le cycle automatique avant d'envoyer des commandes manuelles.", "Automatikzyklus vor manuellen Befehlen stoppen.", "Arresta il ciclo automatico prima di inviare comandi manuali."),
+  "Capture P0 a P4 em posições reais diferentes": steelL("Capture P0 through P4 at different real positions", "Capture P0 a P4 en posiciones reales diferentes", "Capturez P0 à P4 à différentes positions réelles", "P0 bis P4 an unterschiedlichen realen Positionen erfassen", "Acquisisci da P0 a P4 in posizioni reali differenti"),
+
+  "Não definido": steelL("Not defined", "No definido", "Non défini", "Nicht definiert", "Non definito"),
+  "Nenhum sinal recebido": steelL("No signal received", "Ninguna señal recibida", "Aucun signal reçu", "Kein Signal empfangen", "Nessun segnale ricevuto"),
+  "Não gerada": steelL("Not generated", "No generada", "Non générée", "Nicht erzeugt", "Non generata"),
+  "Parada de segurança ativa": steelL("Safety stop active", "Parada de seguridad activa", "Arrêt de sécurité actif", "Sicherheitsstopp aktiv", "Arresto di sicurezza attivo"),
+  "Condição crítica detectada.": steelL("Critical condition detected.", "Condición crítica detectada.", "Condition critique détectée.", "Kritischer Zustand erkannt.", "Condizione critica rilevata."),
+  "stream indisponível": steelL("stream unavailable", "stream no disponible", "flux indisponible", "Stream nicht verfügbar", "stream non disponibile"),
+  "Liberação não realizada": steelL("Release not completed", "Liberación no realizada", "Libération non effectuée", "Freigabe nicht durchgeführt", "Abilitazione non eseguita"),
+  "Não foi possível liberar o equipamento.": steelL("The equipment could not be released.", "No se pudo liberar el equipo.", "Impossible de libérer l'équipement.", "Das Gerät konnte nicht freigegeben werden.", "Impossibile abilitare l'apparecchiatura."),
+  "Cenário indisponível": steelL("Scenario unavailable", "Escenario no disponible", "Scénario indisponible", "Szenario nicht verfügbar", "Scenario non disponibile"),
+  "Não foi possível executar o cenário.": steelL("The scenario could not be executed.", "No se pudo ejecutar el escenario.", "Impossible d'exécuter le scénario.", "Das Szenario konnte nicht ausgeführt werden.", "Impossibile eseguire lo scenario."),
+
+  "Robótica e manipulação": steelL("Robotics and handling", "Robótica y manipulación", "Robotique et manutention", "Robotik und Handhabung", "Robotica e movimentazione"),
+  "Produção, segurança, manutenção e consumo do braço.": steelL("Arm production, safety, maintenance and consumption.", "Producción, seguridad, mantenimiento y consumo del brazo.", "Production, sécurité, maintenance et consommation du bras.", "Produktion, Sicherheit, Wartung und Verbrauch des Arms.", "Produzione, sicurezza, manutenzione e consumo del braccio."),
+  "Robótica industrial": steelL("Industrial robotics", "Robótica industrial", "Robotique industrielle", "Industrierobotik", "Robotica industriale"),
+  "Eficiência, produção, intertravamentos, manutenção e energia.": steelL("Efficiency, production, interlocks, maintenance and energy.", "Eficiencia, producción, enclavamientos, mantenimiento y energía.", "Efficacité, production, interverrouillages, maintenance et énergie.", "Effizienz, Produktion, Verriegelungen, Wartung und Energie.", "Efficienza, produzione, interblocchi, manutenzione ed energia."),
+  "Movimentação e fluxo": steelL("Movement and flow", "Movimiento y flujo", "Mouvement et flux", "Bewegung und Materialfluss", "Movimentazione e flusso"),
+  "Ritmo de produção, segurança, manutenção e consumo.": steelL("Production rate, safety, maintenance and consumption.", "Ritmo de producción, seguridad, mantenimiento y consumo.", "Cadence de production, sécurité, maintenance et consommation.", "Produktionsrate, Sicherheit, Wartung und Verbrauch.", "Ritmo di produzione, sicurezza, manutenzione e consumo."),
+  "Célula de soldagem": steelL("Welding cell", "Celda de soldadura", "Cellule de soudage", "Schweißzelle", "Cella di saldatura"),
+  "Máquina de corte": steelL("Cutting machine", "Máquina de corte", "Machine de découpe", "Schneidmaschine", "Macchina da taglio"),
+  "Equipamento personalizado": steelL("Custom equipment", "Equipo personalizado", "Équipement personnalisé", "Benutzerdefiniertes Gerät", "Apparecchiatura personalizzata"),
+  "Escolha manualmente somente os grupos de indicadores necessários.": steelL("Manually choose only the required indicator groups.", "Elija manualmente solo los grupos de indicadores necesarios.", "Choisissez manuellement uniquement les groupes d'indicateurs nécessaires.", "Wählen Sie manuell nur die benötigten Anzeigegruppen.", "Scegli manualmente solo i gruppi di indicatori necessari."),
+  "Não foi possível consultar a descoberta automática.": steelL("Automatic discovery could not be queried.", "No se pudo consultar el descubrimiento automático.", "Impossible d'interroger la découverte automatique.", "Die automatische Erkennung konnte nicht abgefragt werden.", "Impossibile interrogare il rilevamento automatico."),
+  "Erro ao consultar equipamentos da rede.": steelL("Failed to query network equipment.", "Error al consultar los equipos de red.", "Erreur lors de la recherche des équipements réseau.", "Netzwerkgeräte konnten nicht abgefragt werden.", "Errore durante la ricerca delle apparecchiature di rete."),
+  "Não foi possível iniciar a busca.": steelL("The search could not be started.", "No se pudo iniciar la búsqueda.", "Impossible de démarrer la recherche.", "Die Suche konnte nicht gestartet werden.", "Impossibile avviare la ricerca."),
+  "Busca enviada. Aguardando respostas...": steelL("Search sent. Waiting for responses...", "Búsqueda enviada. Esperando respuestas...", "Recherche envoyée. En attente de réponses...", "Suche gesendet. Warten auf Antworten...", "Ricerca inviata. In attesa di risposte..."),
+  "O monitoramento será provisionado automaticamente quando o dispositivo suportar. O controle remoto continuará DESATIVADO por segurança.": steelL("Monitoring will be provisioned automatically when supported by the device. Remote control will remain DISABLED for safety.", "El monitoreo se aprovisionará automáticamente cuando el dispositivo sea compatible. El control remoto permanecerá DESACTIVADO por seguridad.", "La surveillance sera configurée automatiquement si l'appareil la prend en charge. Le contrôle distant restera DÉSACTIVÉ par sécurité.", "Die Überwachung wird bei Geräteunterstützung automatisch bereitgestellt. Die Fernsteuerung bleibt aus Sicherheitsgründen DEAKTIVIERT.", "Il monitoraggio verrà configurato automaticamente quando supportato dal dispositivo. Il controllo remoto resterà DISATTIVATO per sicurezza."),
+  "Não foi possível adicionar o equipamento.": steelL("The equipment could not be added.", "No se pudo añadir el equipo.", "Impossible d'ajouter l'équipement.", "Das Gerät konnte nicht hinzugefügt werden.", "Impossibile aggiungere l'apparecchiatura."),
+  "Equipamento adicionado.": steelL("Equipment added.", "Equipo añadido.", "Équipement ajouté.", "Gerät hinzugefügt.", "Apparecchiatura aggiunta."),
+  "Chave do equipamento — configuração manual necessária": steelL("Equipment key — manual setup required", "Clave del equipo — configuración manual necesaria", "Clé de l'équipement — configuration manuelle requise", "Geräteschlüssel — manuelle Einrichtung erforderlich", "Chiave apparecchiatura — configurazione manuale necessaria"),
+  "Não foi possível comunicar com a API.": steelL("Could not communicate with the API.", "No se pudo comunicar con la API.", "Impossible de communiquer avec l'API.", "Kommunikation mit der API nicht möglich.", "Impossibile comunicare con l'API."),
+  "Sem status": steelL("No status", "Sin estado", "Sans état", "Kein Status", "Senza stato"),
+  "Painel IoT para sensores, conectividade Wi-Fi, sinal, latência e telemetria HTTP ou MQTT.": steelL("IoT dashboard for sensors, Wi-Fi connectivity, signal, latency and HTTP or MQTT telemetry.", "Panel IoT para sensores, conectividad Wi-Fi, señal, latencia y telemetría HTTP o MQTT.", "Tableau IoT pour capteurs, connectivité Wi-Fi, signal, latence et télémétrie HTTP ou MQTT.", "IoT-Dashboard für Sensoren, WLAN, Signal, Latenz und HTTP- oder MQTT-Telemetrie.", "Dashboard IoT per sensori, Wi-Fi, segnale, latenza e telemetria HTTP o MQTT."),
+  "Painel robótico dedicado para pose cartesiana, juntas, efetuador, fila de comandos e USB serial.": steelL("Dedicated robotic dashboard for Cartesian pose, joints, end effector, command queue and USB serial.", "Panel robótico dedicado para pose cartesiana, articulaciones, efector, cola de comandos y USB serial.", "Tableau robotique dédié à la pose cartésienne, aux articulations, à l'effecteur, à la file de commandes et à l'USB série.", "Robotik-Dashboard für kartesische Pose, Gelenke, Endeffektor, Befehlswarteschlange und USB-Seriell.", "Dashboard robotica per posa cartesiana, giunti, effettore, coda comandi e USB seriale."),
+  "Painel de automação para entradas, saídas, registradores, ciclo de varredura, processo e alarmes.": steelL("Automation dashboard for inputs, outputs, registers, scan cycle, process and alarms.", "Panel de automatización para entradas, salidas, registros, ciclo de escaneo, proceso y alarmas.", "Tableau d'automatisation pour entrées, sorties, registres, cycle de balayage, processus et alarmes.", "Automatisierungs-Dashboard für Ein-/Ausgänge, Register, Scanzyklus, Prozess und Alarme.", "Dashboard di automazione per ingressi, uscite, registri, ciclo di scansione, processo e allarmi."),
+  "Painel de célula robótica para eixos, ferramenta, ciclos, modo de operação e segurança.": steelL("Robotic-cell dashboard for axes, tool, cycles, operating mode and safety.", "Panel de celda robótica para ejes, herramienta, ciclos, modo de operación y seguridad.", "Tableau de cellule robotique pour axes, outil, cycles, mode de fonctionnement et sécurité.", "Roboterzellen-Dashboard für Achsen, Werkzeug, Zyklen, Betriebsmodus und Sicherheit.", "Dashboard della cella robotica per assi, utensile, cicli, modalità operativa e sicurezza."),
+  "Painel de usinagem para spindle, avanço, ferramenta, programa, peças e tempo de ciclo.": steelL("Machining dashboard for spindle, feed, tool, program, parts and cycle time.", "Panel de mecanizado para husillo, avance, herramienta, programa, piezas y tiempo de ciclo.", "Tableau d'usinage pour broche, avance, outil, programme, pièces et temps de cycle.", "Bearbeitungs-Dashboard für Spindel, Vorschub, Werkzeug, Programm, Teile und Zykluszeit.", "Dashboard di lavorazione per mandrino, avanzamento, utensile, programma, pezzi e tempo ciclo."),
+  "IHM Impressora 3D": steelL("3D Printer HMI", "HMI de impresora 3D", "IHM d'imprimante 3D", "3D-Drucker-HMI", "HMI stampante 3D"),
+  "IHM dedicada para FDM/FFF, SLA/MSLA/DLP, SLS e impressoras proprietárias. Exibe apenas os dados realmente enviados pelo equipamento.": steelL("Dedicated HMI for FDM/FFF, SLA/MSLA/DLP, SLS and proprietary printers. It displays only data actually sent by the equipment.", "HMI dedicada para FDM/FFF, SLA/MSLA/DLP, SLS e impresoras propietarias. Muestra solo los datos enviados realmente por el equipo.", "IHM dédiée aux imprimantes FDM/FFF, SLA/MSLA/DLP, SLS et propriétaires. Elle n'affiche que les données réellement envoyées.", "HMI für FDM/FFF-, SLA/MSLA/DLP-, SLS- und proprietäre Drucker. Angezeigt werden nur tatsächlich gesendete Daten.", "HMI dedicata a stampanti FDM/FFF, SLA/MSLA/DLP, SLS e proprietarie. Mostra solo i dati realmente inviati."),
+  "Painel de conectividade para dispositivos, protocolos, tráfego, latência e integridade do gateway.": steelL("Connectivity dashboard for devices, protocols, traffic, latency and gateway integrity.", "Panel de conectividad para dispositivos, protocolos, tráfico, latencia e integridad del gateway.", "Tableau de connectivité pour appareils, protocoles, trafic, latence et intégrité de la passerelle.", "Konnektivitäts-Dashboard für Geräte, Protokolle, Verkehr, Latenz und Gateway-Integrität.", "Dashboard di connettività per dispositivi, protocolli, traffico, latenza e integrità del gateway."),
+  "Equipamento genérico": steelL("Generic equipment", "Equipo genérico", "Équipement générique", "Generisches Gerät", "Apparecchiatura generica"),
+  "Painel industrial flexível para telemetria, comunicação e campos adicionais enviados pelo equipamento.": steelL("Flexible industrial dashboard for telemetry, communication and additional fields sent by the equipment.", "Panel industrial flexible para telemetría, comunicación y campos adicionales enviados por el equipo.", "Tableau industriel flexible pour télémétrie, communication et champs supplémentaires envoyés par l'équipement.", "Flexibles Industrie-Dashboard für Telemetrie, Kommunikation und zusätzliche Gerätefelder.", "Dashboard industriale flessibile per telemetria, comunicazione e campi aggiuntivi inviati dall'apparecchiatura."),
+  "Dados extras": steelL("Additional data", "Datos adicionales", "Données supplémentaires", "Zusätzliche Daten", "Dati aggiuntivi"),
+  "Desativar equipamento": steelL("Disable equipment", "Desactivar equipo", "Désactiver l'équipement", "Gerät deaktivieren", "Disattiva apparecchiatura"),
+  "Equipamento desativado": steelL("Equipment disabled", "Equipo desactivado", "Équipement désactivé", "Gerät deaktiviert", "Apparecchiatura disattivata"),
+  "Erro ao remover equipamento.": steelL("Failed to remove equipment.", "Error al eliminar el equipo.", "Erreur lors de la suppression de l'équipement.", "Gerät konnte nicht entfernt werden.", "Errore durante la rimozione dell'apparecchiatura."),
+  "Preencha nome, setor, modelo e código do equipamento.": steelL("Fill in the equipment name, sector, model and code.", "Complete el nombre, sector, modelo y código del equipo.", "Renseignez le nom, le secteur, le modèle et le code de l'équipement.", "Name, Bereich, Modell und Code des Geräts ausfüllen.", "Compila nome, settore, modello e codice dell'apparecchiatura."),
+  "Selecione o controlador ou gateway do equipamento real.": steelL("Select the controller or gateway for the real equipment.", "Seleccione el controlador o gateway del equipo real.", "Sélectionnez le contrôleur ou la passerelle de l'équipement réel.", "Controller oder Gateway des realen Geräts auswählen.", "Seleziona il controller o gateway dell'apparecchiatura reale."),
+  "Selecione ao menos um módulo para o painel inteligente ou desative o painel.": steelL("Select at least one module for the smart dashboard or disable the dashboard.", "Seleccione al menos un módulo para el panel inteligente o desactive el panel.", "Sélectionnez au moins un module pour le tableau intelligent ou désactivez-le.", "Mindestens ein Modul für das Smart-Dashboard auswählen oder Dashboard deaktivieren.", "Seleziona almeno un modulo per la dashboard intelligente oppure disattivala."),
+  "Os limites críticos devem ser maiores que os limites de atenção e a carga elétrica deve permanecer entre 0 e 100%.": steelL("Critical limits must be higher than warning limits and electrical load must remain between 0 and 100%.", "Los límites críticos deben ser mayores que los límites de advertencia y la carga eléctrica debe permanecer entre 0 y 100%.", "Les seuils critiques doivent être supérieurs aux seuils d'alerte et la charge électrique doit rester entre 0 et 100 %.", "Kritische Grenzwerte müssen über Warnwerten liegen und die elektrische Last zwischen 0 und 100 % bleiben.", "I limiti critici devono superare quelli di attenzione e il carico elettrico deve restare tra 0 e 100%."),
+  "Salvando alterações...": steelL("Saving changes...", "Guardando cambios...", "Enregistrement des modifications...", "Änderungen werden gespeichert...", "Salvataggio modifiche..."),
+  "Equipamento atualizado com sucesso!": steelL("Equipment updated successfully!", "¡Equipo actualizado correctamente!", "Équipement mis à jour avec succès !", "Gerät erfolgreich aktualisiert!", "Apparecchiatura aggiornata correttamente!"),
+  "Chave gerada para o equipamento": steelL("Key generated for the equipment", "Clave generada para el equipo", "Clé générée pour l'équipement", "Schlüssel für das Gerät erzeugt", "Chiave generata per l'apparecchiatura"),
+  "Chave do novo equipamento": steelL("New equipment key", "Clave del nuevo equipo", "Clé du nouvel équipement", "Schlüssel des neuen Geräts", "Chiave della nuova apparecchiatura"),
+
+  "Controle remoto desativado ou impressora offline.": steelL("Remote control disabled or printer offline.", "Control remoto desactivado o impresora sin conexión.", "Contrôle distant désactivé ou imprimante hors ligne.", "Fernsteuerung deaktiviert oder Drucker offline.", "Controllo remoto disattivato o stampante offline."),
+  "Recurso não suportado pelo bridge desta impressora.": steelL("Feature not supported by this printer's bridge.", "Función no compatible con el bridge de esta impresora.", "Fonction non prise en charge par le bridge de cette imprimante.", "Funktion wird von der Bridge dieses Druckers nicht unterstützt.", "Funzione non supportata dal bridge di questa stampante."),
+  "Comando enviado.": steelL("Command sent.", "Comando enviado.", "Commande envoyée.", "Befehl gesendet.", "Comando inviato."),
+  "Emergência ativa": steelL("Emergency active", "Emergencia activa", "Urgence active", "Not-Halt aktiv", "Emergenza attiva")
+});
+
+// Textos institucionais da landing page, mensagens de conta e estados de
+// biometria. A tradução global também observa nós inseridos dinamicamente,
+// portanto estes rótulos permanecem corretos depois de abrir modais/toasts.
+Object.assign(STEEL_LITERAL_I18N, {
+  "SteelControl, início": steelL("SteelControl, home", "SteelControl, inicio", "SteelControl, accueil", "SteelControl, Startseite", "SteelControl, home"),
+  "Seções": steelL("Sections", "Secciones", "Sections", "Bereiche", "Sezioni"),
+  "Ilustração 3D de uma célula industrial com robô, fresadora CNC, esteira, impressora 3D, tanque e painel de CLP conectados ao SteelControl": steelL("3D illustration of an industrial cell with a robot, CNC mill, conveyor, 3D printer, tank and PLC panel connected to SteelControl", "Ilustración 3D de una célula industrial con robot, fresadora CNC, cinta, impresora 3D, tanque y panel PLC conectados a SteelControl", "Illustration 3D d'une cellule industrielle avec robot, fraiseuse CNC, convoyeur, imprimante 3D, réservoir et automate connectés à SteelControl", "3D-Darstellung einer Industriezelle mit Roboter, CNC-Fräse, Förderband, 3D-Drucker, Tank und SPS-Panel, verbunden mit SteelControl", "Illustrazione 3D di una cella industriale con robot, fresa CNC, nastro, stampante 3D, serbatoio e pannello PLC collegati a SteelControl"),
+  "Tipos de máquina atendidos": steelL("Supported machine types", "Tipos de máquina compatibles", "Types de machines pris en charge", "Unterstützte Maschinentypen", "Tipi di macchina supportati"),
+  "Telas do sistema": steelL("System screens", "Pantallas del sistema", "Écrans du système", "Systemansichten", "Schermate del sistema"),
+  "Posição do efetuador, ângulos das juntas, ventosa e garra. O que o equipamento não envia aparece como \"Não instalado\", sem leitura inventada.": steelL("End-effector position, joint angles, suction cup and gripper. Data not sent by the equipment appears as \"Not installed\", with no fabricated readings.", "Posición del efector, ángulos de las articulaciones, ventosa y pinza. Lo que el equipo no envía aparece como \"No instalado\", sin lecturas inventadas.", "Position de l'effecteur, angles des articulations, ventouse et pince. Les données non transmises apparaissent comme \"Non installé\", sans mesure inventée.", "Endeffektorposition, Gelenkwinkel, Sauger und Greifer. Nicht übermittelte Daten erscheinen als \"Nicht installiert\", ohne erfundene Messwerte.", "Posizione dell'effettore, angoli dei giunti, ventosa e pinza. I dati non inviati appaiono come \"Non installato\", senza letture inventate."),
+  "Você não precisa de uma tela nova para cada fabricante. Cada equipamento mostra os indicadores que importam para ele, e o que não envia aparece como \"Não informado\".": steelL("You do not need a new screen for every manufacturer. Each machine shows the indicators that matter to it, and missing signals appear as \"Not provided\".", "No necesita una pantalla nueva para cada fabricante. Cada equipo muestra los indicadores relevantes y lo que no envía aparece como \"No informado\".", "Vous n'avez pas besoin d'un nouvel écran pour chaque fabricant. Chaque équipement affiche ses indicateurs utiles et les signaux absents apparaissent comme \"Non renseigné\".", "Sie benötigen nicht für jeden Hersteller eine neue Ansicht. Jede Maschine zeigt ihre relevanten Kennzahlen; fehlende Signale erscheinen als \"Nicht angegeben\".", "Non serve una nuova schermata per ogni produttore. Ogni macchina mostra gli indicatori rilevanti e i segnali mancanti appaiono come \"Non indicato\"."),
+  "Tipo de máquina": steelL("Machine type", "Tipo de máquina", "Type de machine", "Maschinentyp", "Tipo di macchina"),
+  "Sinal que a máquina não envia aparece como \"Não informado\"": steelL("Signals not sent by the machine appear as \"Not provided\"", "Las señales no enviadas por la máquina aparecen como \"No informado\"", "Les signaux non transmis apparaissent comme \"Non renseigné\"", "Nicht gelieferte Signale erscheinen als \"Nicht angegeben\"", "I segnali non inviati appaiono come \"Non indicato\""),
+  "LIBERAR": steelL("ENABLE", "HABILITAR", "AUTORISER", "FREIGEBEN", "ABILITA"),
+  "Rodapé": steelL("Footer", "Pie de página", "Pied de page", "Fußzeile", "Piè di pagina"),
+  "Painel do SteelControl com os dados de uma máquina": steelL("SteelControl dashboard with machine data", "Panel de SteelControl con los datos de una máquina", "Tableau SteelControl avec les données d'une machine", "SteelControl-Dashboard mit Maschinendaten", "Dashboard SteelControl con i dati di una macchina"),
+  "Painel do Dobot Magician no SteelControl, com pose do efetuador, ângulos das juntas, ventosa e garra": steelL("Dobot Magician dashboard in SteelControl, with end-effector pose, joint angles, suction cup and gripper", "Panel de Dobot Magician en SteelControl, con pose del efector, ángulos de articulaciones, ventosa y pinza", "Tableau Dobot Magician dans SteelControl, avec pose de l'effecteur, angles des articulations, ventouse et pince", "Dobot-Magician-Dashboard in SteelControl mit Endeffektorpose, Gelenkwinkeln, Sauger und Greifer", "Dashboard Dobot Magician in SteelControl con posa dell'effettore, angoli dei giunti, ventosa e pinza"),
+  "Controle do robô no SteelControl, com modo manual, ciclo automático de pick-and-place e controle jog": steelL("Robot control in SteelControl, with manual mode, automatic pick-and-place cycle and jog control", "Control del robot en SteelControl, con modo manual, ciclo automático de pick-and-place y control jog", "Commande du robot dans SteelControl, avec mode manuel, cycle automatique de pick-and-place et commande jog", "Robotersteuerung in SteelControl mit manuellem Modus, automatischem Pick-and-Place-Zyklus und Jog-Steuerung", "Controllo robot in SteelControl con modalità manuale, ciclo automatico pick-and-place e controllo jog"),
+  "Lista de equipamentos e descoberta automática no SteelControl": steelL("Equipment list and automatic discovery in SteelControl", "Lista de equipos y detección automática en SteelControl", "Liste des équipements et découverte automatique dans SteelControl", "Geräteliste und automatische Erkennung in SteelControl", "Elenco apparecchiature e rilevamento automatico in SteelControl"),
+  "Câmera ao vivo da impressora 3D": steelL("Live 3D-printer camera", "Cámara en vivo de la impresora 3D", "Caméra en direct de l'imprimante 3D", "Live-Kamera des 3D-Druckers", "Fotocamera live della stampante 3D"),
+  "Tendência das temperaturas": steelL("Temperature trend", "Tendencia de temperaturas", "Tendance des températures", "Temperaturtrend", "Andamento delle temperature"),
+  "Logo da empresa": steelL("Company logo", "Logo de la empresa", "Logo de l'entreprise", "Unternehmenslogo", "Logo aziendale"),
+  "Avenida Industrial": steelL("Industrial Avenue", "Avenida Industrial", "Avenue Industrielle", "Industriestraße", "Viale Industriale"),
+  "Galpão 2": steelL("Warehouse 2", "Nave 2", "Entrepôt 2", "Halle 2", "Capannone 2"),
+  "Distrito Industrial": steelL("Industrial District", "Distrito Industrial", "Zone Industrielle", "Industriegebiet", "Zona Industriale"),
+
+  "Painel da máquina": steelL("Machine dashboard", "Panel de la máquina", "Tableau de la machine", "Maschinen-Dashboard", "Dashboard macchina"),
+  "Resposta inválida:": steelL("Invalid response:", "Respuesta no válida:", "Réponse invalide :", "Ungültige Antwort:", "Risposta non valida:"),
+  "O servidor retornou uma resposta inválida.": steelL("The server returned an invalid response.", "El servidor devolvió una respuesta no válida.", "Le serveur a renvoyé une réponse invalide.", "Der Server hat eine ungültige Antwort zurückgegeben.", "Il server ha restituito una risposta non valida."),
+  "Erro na operação.": steelL("Operation failed.", "Error en la operación.", "Échec de l'opération.", "Vorgang fehlgeschlagen.", "Operazione non riuscita."),
+  "Acesso restrito": steelL("Restricted access", "Acceso restringido", "Accès restreint", "Eingeschränkter Zugriff", "Accesso limitato"),
+  "A nova identidade visual foi aplicada com sucesso.": steelL("The new visual identity was applied successfully.", "La nueva identidad visual se aplicó correctamente.", "La nouvelle identité visuelle a été appliquée.", "Die neue visuelle Identität wurde erfolgreich übernommen.", "La nuova identità visiva è stata applicata correttamente."),
+  "Dados da empresa atualizados com sucesso.": steelL("Company information updated successfully.", "Datos de la empresa actualizados correctamente.", "Informations de l'entreprise mises à jour.", "Unternehmensdaten erfolgreich aktualisiert.", "Dati aziendali aggiornati correttamente."),
+  "Endereço copiado": steelL("Address copied", "Dirección copiada", "Adresse copiée", "Adresse kopiert", "Indirizzo copiato"),
+  "O endereço foi copiado. O SteelControl não precisa de internet para exibir os dados da empresa.": steelL("The address was copied. SteelControl does not need internet access to display company information.", "La dirección fue copiada. SteelControl no necesita internet para mostrar los datos de la empresa.", "L'adresse a été copiée. SteelControl n'a pas besoin d'Internet pour afficher les informations de l'entreprise.", "Die Adresse wurde kopiert. SteelControl benötigt kein Internet, um Unternehmensdaten anzuzeigen.", "L'indirizzo è stato copiato. SteelControl non richiede Internet per mostrare i dati aziendali."),
+  "Somente administradores podem editar usuários.": steelL("Only administrators can edit users.", "Solo los administradores pueden editar usuarios.", "Seuls les administrateurs peuvent modifier les utilisateurs.", "Nur Administratoren können Benutzer bearbeiten.", "Solo gli amministratori possono modificare gli utenti."),
+  "Código enviado. Confirme o novo e-mail.": steelL("Code sent. Confirm the new email address.", "Código enviado. Confirme el nuevo correo.", "Code envoyé. Confirmez la nouvelle adresse e-mail.", "Code gesendet. Bestätigen Sie die neue E-Mail-Adresse.", "Codice inviato. Conferma il nuovo indirizzo e-mail."),
+  "Dados de acesso atualizados com sucesso.": steelL("Access details updated successfully.", "Datos de acceso actualizados correctamente.", "Données d'accès mises à jour.", "Zugangsdaten erfolgreich aktualisiert.", "Dati di accesso aggiornati correttamente."),
+  "Não foi possível atualizar o usuário.": steelL("The user could not be updated.", "No se pudo actualizar el usuario.", "Impossible de mettre à jour l'utilisateur.", "Der Benutzer konnte nicht aktualisiert werden.", "Impossibile aggiornare l'utente."),
+  "Não foi possível confirmar o novo e-mail.": steelL("The new email address could not be confirmed.", "No se pudo confirmar el nuevo correo.", "Impossible de confirmer la nouvelle adresse e-mail.", "Die neue E-Mail-Adresse konnte nicht bestätigt werden.", "Impossibile confermare il nuovo indirizzo e-mail."),
+  "Somente administradores podem desativar funcionários.": steelL("Only administrators can disable employees.", "Solo los administradores pueden desactivar empleados.", "Seuls les administrateurs peuvent désactiver des employés.", "Nur Administratoren können Mitarbeiter deaktivieren.", "Solo gli amministratori possono disattivare i dipendenti."),
+  "este funcionário": steelL("this employee", "este empleado", "cet employé", "diesen Mitarbeiter", "questo dipendente"),
+  "A conta deixará de aparecer como funcionário ativo, perderá o acesso ao sistema e as credenciais faciais serão revogadas. O histórico continuará preservado.": steelL("The account will no longer appear as an active employee, will lose system access and its facial credentials will be revoked. The history will be preserved.", "La cuenta dejará de aparecer como empleado activo, perderá el acceso al sistema y se revocarán sus credenciales faciales. El historial se conservará.", "Le compte ne sera plus affiché comme employé actif, perdra l'accès au système et ses identifiants faciaux seront révoqués. L'historique sera conservé.", "Das Konto wird nicht mehr als aktiver Mitarbeiter angezeigt, verliert den Systemzugriff und die Gesichtsdaten werden widerrufen. Der Verlauf bleibt erhalten.", "L'account non apparirà più come dipendente attivo, perderà l'accesso al sistema e le credenziali facciali saranno revocate. La cronologia verrà conservata."),
+  "Desativar funcionário": steelL("Disable employee", "Desactivar empleado", "Désactiver l'employé", "Mitarbeiter deaktivieren", "Disattiva dipendente"),
+  "Funcionário desativado": steelL("Employee disabled", "Empleado desactivado", "Employé désactivé", "Mitarbeiter deaktiviert", "Dipendente disattivato"),
+  "Não foi possível desativar o funcionário.": steelL("The employee could not be disabled.", "No se pudo desactivar al empleado.", "Impossible de désactiver l'employé.", "Der Mitarbeiter konnte nicht deaktiviert werden.", "Impossibile disattivare il dipendente."),
+  "Erro ao desativar": steelL("Disable failed", "Error al desactivar", "Échec de la désactivation", "Deaktivierung fehlgeschlagen", "Errore durante la disattivazione"),
+
+  "Prova de vida não detectada. O funcionário não movimentou a cabeça a tempo. Faça o cadastro facial novamente.": steelL("Liveness was not detected. The employee did not move their head in time. Register the face again.", "No se detectó prueba de vida. El empleado no movió la cabeza a tiempo. Registre el rostro nuevamente.", "La preuve de vie n'a pas été détectée. L'employé n'a pas bougé la tête à temps. Recommencez l'enregistrement facial.", "Die Lebenderkennung ist fehlgeschlagen. Der Mitarbeiter hat den Kopf nicht rechtzeitig bewegt. Gesicht erneut registrieren.", "La prova di vitalità non è stata rilevata. Il dipendente non ha mosso la testa in tempo. Registra nuovamente il volto."),
+  "Refaça a biometria": steelL("Repeat biometrics", "Repetir biometría", "Refaire la biométrie", "Biometrie wiederholen", "Ripeti biometria"),
+  "Este perfil já possui uma biometria facial. Remova a facial atual antes de cadastrar outra.": steelL("This profile already has facial biometrics. Remove the current face before registering another.", "Este perfil ya tiene biometría facial. Elimine el rostro actual antes de registrar otro.", "Ce profil possède déjà une biométrie faciale. Supprimez-la avant d'en enregistrer une autre.", "Dieses Profil besitzt bereits Gesichtsdaten. Entfernen Sie diese vor einer neuen Registrierung.", "Questo profilo dispone già di biometria facciale. Rimuovila prima di registrarne un'altra."),
+  "Posicione o rosto no centro da câmera.": steelL("Center your face in the camera.", "Coloque el rostro en el centro de la cámara.", "Placez votre visage au centre de la caméra.", "Positionieren Sie Ihr Gesicht in der Kameramitte.", "Posiziona il viso al centro della fotocamera."),
+  "Não foi possível acessar a câmera": steelL("Could not access the camera", "No se pudo acceder a la cámara", "Impossible d'accéder à la caméra", "Kamerazugriff nicht möglich", "Impossibile accedere alla fotocamera"),
+  "Permita o acesso à câmera no navegador.": steelL("Allow camera access in the browser.", "Permita el acceso a la cámara en el navegador.", "Autorisez l'accès à la caméra dans le navigateur.", "Erlauben Sie den Kamerazugriff im Browser.", "Consenti l'accesso alla fotocamera nel browser."),
+  "Erro na análise.": steelL("Analysis failed.", "Error en el análisis.", "Échec de l'analyse.", "Analyse fehlgeschlagen.", "Errore durante l'analisi."),
+  "Erro na análise facial": steelL("Facial analysis failed", "Error en el análisis facial", "Échec de l'analyse faciale", "Gesichtsanalyse fehlgeschlagen", "Errore nell'analisi facciale"),
+  "Apenas o funcionário deve aparecer.": steelL("Only the employee should be visible.", "Solo debe aparecer el empleado.", "Seul l'employé doit apparaître.", "Nur der Mitarbeiter darf sichtbar sein.", "Deve essere visibile solo il dipendente."),
+  "Vire levemente a cabeça. Você tem até 8 segundos.": steelL("Turn your head slightly. You have up to 8 seconds.", "Gire ligeramente la cabeza. Tiene hasta 8 segundos.", "Tournez légèrement la tête. Vous avez jusqu'à 8 secondes.", "Drehen Sie den Kopf leicht. Sie haben bis zu 8 Sekunden.", "Ruota leggermente la testa. Hai fino a 8 secondi."),
+  "Ajuste o rosto": steelL("Adjust your face", "Ajuste el rostro", "Ajustez votre visage", "Gesicht ausrichten", "Regola il viso"),
+  "Posicione o rosto corretamente.": steelL("Position your face correctly.", "Coloque el rostro correctamente.", "Positionnez correctement votre visage.", "Positionieren Sie Ihr Gesicht korrekt.", "Posiziona correttamente il viso."),
+  "A prova de vida é obrigatória. Refaça o cadastro facial.": steelL("Liveness verification is required. Register the face again.", "La prueba de vida es obligatoria. Registre el rostro nuevamente.", "La preuve de vie est obligatoire. Recommencez l'enregistrement facial.", "Lebenderkennung ist erforderlich. Gesicht erneut registrieren.", "La prova di vitalità è obbligatoria. Registra nuovamente il volto."),
+  "Cadastro não concluído": steelL("Registration not completed", "Registro no completado", "Inscription non terminée", "Registrierung nicht abgeschlossen", "Registrazione non completata"),
+  "Data não informada": steelL("Date not provided", "Fecha no informada", "Date non renseignée", "Datum nicht angegeben", "Data non indicata"),
+  "Cadastro cancelado porque a biometria facial não foi concluída.": steelL("Registration was cancelled because facial biometrics were not completed.", "El registro se canceló porque no se completó la biometría facial.", "L'inscription a été annulée car la biométrie faciale n'a pas été terminée.", "Die Registrierung wurde abgebrochen, da die Gesichtsbiometrie nicht abgeschlossen wurde.", "La registrazione è stata annullata perché la biometria facciale non è stata completata."),
+  "Funcionário não ativado": steelL("Employee not activated", "Empleado no activado", "Employé non activé", "Mitarbeiter nicht aktiviert", "Dipendente non attivato"),
+  "A facial não foi concluída e não foi possível reverter a conta automaticamente. Revise o funcionário antes de continuar.": steelL("Facial registration was not completed and the account could not be reverted automatically. Review the employee before continuing.", "El registro facial no se completó y no fue posible revertir la cuenta automáticamente. Revise al empleado antes de continuar.", "L'enregistrement facial n'a pas été terminé et le compte n'a pas pu être rétabli automatiquement. Vérifiez l'employé avant de continuer.", "Die Gesichtserfassung wurde nicht abgeschlossen und das Konto konnte nicht automatisch zurückgesetzt werden. Prüfen Sie den Mitarbeiter, bevor Sie fortfahren.", "La registrazione facciale non è stata completata e non è stato possibile ripristinare automaticamente l'account. Verifica il dipendente prima di continuare."),
+  "Não foi possível confirmar o código.": steelL("The code could not be confirmed.", "No se pudo confirmar el código.", "Impossible de confirmer le code.", "Der Code konnte nicht bestätigt werden.", "Impossibile confermare il codice."),
+  "Não foi possível reenviar o código.": steelL("The code could not be resent.", "No se pudo reenviar el código.", "Impossible de renvoyer le code.", "Der Code konnte nicht erneut gesendet werden.", "Impossibile inviare nuovamente il codice."),
+  "A verificação do cadastro expirou. Confirme o e-mail novamente.": steelL("Registration verification expired. Confirm the email again.", "La verificación del registro expiró. Confirme el correo nuevamente.", "La vérification de l'inscription a expiré. Confirmez à nouveau l'e-mail.", "Die Registrierungsprüfung ist abgelaufen. Bestätigen Sie die E-Mail erneut.", "La verifica della registrazione è scaduta. Conferma nuovamente l'e-mail."),
+  "A biometria não foi concluída. A conta ainda não foi criada; faça a facial novamente.": steelL("Biometrics were not completed. The account has not been created yet; repeat facial registration.", "La biometría no se completó. La cuenta aún no fue creada; repita el registro facial.", "La biométrie n'a pas été terminée. Le compte n'a pas encore été créé ; recommencez l'enregistrement facial.", "Die Biometrie wurde nicht abgeschlossen. Das Konto wurde noch nicht erstellt; Gesicht erneut registrieren.", "La biometria non è stata completata. L'account non è ancora stato creato; ripeti la registrazione facciale."),
+  "Código de 6 dígitos": steelL("6-digit code", "Código de 6 dígitos", "Code à 6 chiffres", "6-stelliger Code", "Codice di 6 cifre"),
+  "Confirmação adicional necessária.": steelL("Additional confirmation required.", "Se requiere confirmación adicional.", "Confirmation supplémentaire requise.", "Zusätzliche Bestätigung erforderlich.", "È richiesta una conferma aggiuntiva.")
+});
+
+// Estados produzidos pelos runtimes dos dashboards e pelos formulários.
+Object.assign(STEEL_LITERAL_I18N, {
+  "Tempo de scan": steelL("Scan time", "Tiempo de escaneo", "Temps de balayage", "Scanzeit", "Tempo di scansione"),
+  "Modo automático": steelL("Automatic mode", "Modo automático", "Mode automatique", "Automatikmodus", "Modalità automatica"),
+  "Conversão de dados": steelL("Data conversion", "Conversión de datos", "Conversion des données", "Datenkonvertierung", "Conversione dati"),
+  "Dados adicionais": steelL("Additional data", "Datos adicionales", "Données supplémentaires", "Zusätzliche Daten", "Dati aggiuntivi"),
+  "Alarme ativo": steelL("Active alarm", "Alarma activa", "Alarme active", "Aktiver Alarm", "Allarme attivo"),
+  "Produção controlada pelo PLC": steelL("Production controlled by the PLC", "Producción controlada por el PLC", "Production contrôlée par l'automate", "SPS-gesteuerte Produktion", "Produzione controllata dal PLC"),
+  "Produção, ciclos de processo e dados de automação da máquina selecionada.": steelL("Production, process cycles and automation data for the selected machine.", "Producción, ciclos de proceso y datos de automatización de la máquina seleccionada.", "Production, cycles de processus et données d'automatisation de la machine sélectionnée.", "Produktion, Prozesszyklen und Automatisierungsdaten der ausgewählten Maschine.", "Produzione, cicli di processo e dati di automazione della macchina selezionata."),
+  "Produção do PLC": steelL("PLC production", "Producción del PLC", "Production de l'automate", "SPS-Produktion", "Produzione PLC"),
+  "Produção e ciclos executados exclusivamente pela célula selecionada.": steelL("Production and cycles executed exclusively by the selected cell.", "Producción y ciclos ejecutados exclusivamente por la celda seleccionada.", "Production et cycles exécutés exclusivement par la cellule sélectionnée.", "Produktion und Zyklen ausschließlich der ausgewählten Zelle.", "Produzione e cicli eseguiti esclusivamente dalla cella selezionata."),
+  "Produção da máquina CNC": steelL("CNC machine production", "Producción de la máquina CNC", "Production de la machine CNC", "Produktion der CNC-Maschine", "Produzione della macchina CNC"),
+  "Peças, ciclos e parâmetros de usinagem da máquina selecionada.": steelL("Parts, cycles and machining parameters for the selected machine.", "Piezas, ciclos y parámetros de mecanizado de la máquina seleccionada.", "Pièces, cycles et paramètres d'usinage de la machine sélectionnée.", "Teile, Zyklen und Bearbeitungsparameter der ausgewählten Maschine.", "Pezzi, cicli e parametri di lavorazione della macchina selezionata."),
+  "Produção aditiva em tempo real": steelL("Real-time additive manufacturing", "Fabricación aditiva en tiempo real", "Fabrication additive en temps réel", "Additive Fertigung in Echtzeit", "Produzione additiva in tempo reale"),
+  "Fluxo de dados e atividade dos equipamentos integrados por este gateway.": steelL("Data flow and activity of equipment integrated through this gateway.", "Flujo de datos y actividad de los equipos integrados por este gateway.", "Flux de données et activité des équipements intégrés via cette passerelle.", "Datenfluss und Aktivität der über dieses Gateway integrierten Geräte.", "Flusso dati e attività delle apparecchiature integrate tramite questo gateway."),
+  "Indicadores operacionais exclusivos do equipamento selecionado.": steelL("Operational indicators specific to the selected equipment.", "Indicadores operativos específicos del equipo seleccionado.", "Indicateurs opérationnels propres à l'équipement sélectionné.", "Betriebskennzahlen speziell für das ausgewählte Gerät.", "Indicatori operativi specifici dell'apparecchiatura selezionata."),
+  "Erro ao carregar manutenções:": steelL("Failed to load maintenance records:", "Error al cargar los mantenimientos:", "Échec du chargement des maintenances :", "Wartungen konnten nicht geladen werden:", "Errore nel caricamento delle manutenzioni:"),
+  "Erro ao arquivar manutenção:": steelL("Failed to archive maintenance:", "Error al archivar el mantenimiento:", "Échec de l'archivage de la maintenance :", "Wartung konnte nicht archiviert werden:", "Errore nell'archiviazione della manutenzione:"),
+  "Erro ao arquivar manutenção.": steelL("Failed to archive maintenance.", "Error al archivar el mantenimiento.", "Échec de l'archivage de la maintenance.", "Wartung konnte nicht archiviert werden.", "Errore nell'archiviazione della manutenzione."),
+  "Erro ao carregar resumo da empresa:": steelL("Failed to load company summary:", "Error al cargar el resumen de la empresa:", "Échec du chargement du résumé de l'entreprise :", "Unternehmensübersicht konnte nicht geladen werden:", "Errore nel caricamento del riepilogo aziendale:"),
+  "Erro na visão geral:": steelL("Overview failed:", "Error en la vista general:", "Échec de la vue générale :", "Übersicht fehlgeschlagen:", "Errore nella panoramica:"),
+
+  "O Edge não confirmou a execução do comando dentro do tempo esperado.": steelL("Edge did not confirm command execution within the expected time.", "Edge no confirmó la ejecución del comando dentro del tiempo esperado.", "Edge n'a pas confirmé l'exécution de la commande dans le délai prévu.", "Edge hat die Ausführung des Befehls nicht innerhalb der erwarteten Zeit bestätigt.", "Edge non ha confermato l'esecuzione del comando entro il tempo previsto."),
+  "Comando executado": steelL("Command executed", "Comando ejecutado", "Commande exécutée", "Befehl ausgeführt", "Comando eseguito"),
+  "Comando Dobot": steelL("Dobot command", "Comando Dobot", "Commande Dobot", "Dobot-Befehl", "Comando Dobot"),
+  "Sem telemetria do Dobot durante o ciclo.": steelL("No Dobot telemetry was received during the cycle.", "No se recibió telemetría del Dobot durante el ciclo.", "Aucune télémétrie Dobot reçue pendant le cycle.", "Während des Zyklus wurde keine Dobot-Telemetrie empfangen.", "Nessuna telemetria Dobot ricevuta durante il ciclo."),
+  "Falha no movimento": steelL("Movement failed", "Fallo de movimiento", "Échec du mouvement", "Bewegung fehlgeschlagen", "Movimento non riuscito"),
+  "Parado pelo operador": steelL("Stopped by the operator", "Detenido por el operador", "Arrêté par l'opérateur", "Vom Bediener gestoppt", "Fermato dall'operatore"),
+  "Movimento interrompido": steelL("Movement interrupted", "Movimiento interrumpido", "Mouvement interrompu", "Bewegung unterbrochen", "Movimento interrotto"),
+
+  "Somente administradores podem alterar a logo.": steelL("Only administrators can change the logo.", "Solo los administradores pueden cambiar el logo.", "Seuls les administrateurs peuvent modifier le logo.", "Nur Administratoren können das Logo ändern.", "Solo gli amministratori possono modificare il logo."),
+  "Não foi possível alterar a logo.": steelL("The logo could not be changed.", "No se pudo cambiar el logo.", "Impossible de modifier le logo.", "Das Logo konnte nicht geändert werden.", "Impossibile modificare il logo."),
+  "O PostgreSQL não confirmou o salvamento da logo.": steelL("PostgreSQL did not confirm that the logo was saved.", "PostgreSQL no confirmó que el logo se guardó.", "PostgreSQL n'a pas confirmé l'enregistrement du logo.", "PostgreSQL hat das Speichern des Logos nicht bestätigt.", "PostgreSQL non ha confermato il salvataggio del logo."),
+  "Não foi possível remover a logo.": steelL("The logo could not be removed.", "No se pudo eliminar el logo.", "Impossible de supprimer le logo.", "Das Logo konnte nicht entfernt werden.", "Impossibile rimuovere il logo."),
+  "Não foi possível remover a logo": steelL("The logo could not be removed", "No se pudo eliminar el logo", "Impossible de supprimer le logo", "Das Logo konnte nicht entfernt werden", "Impossibile rimuovere il logo"),
+  "Somente administradores podem alterar os dados da empresa.": steelL("Only administrators can change company information.", "Solo los administradores pueden cambiar los datos de la empresa.", "Seuls les administrateurs peuvent modifier les informations de l'entreprise.", "Nur Administratoren können Unternehmensdaten ändern.", "Solo gli amministratori possono modificare i dati aziendali."),
+  "Informe o nome da empresa.": steelL("Enter the company name.", "Ingrese el nombre de la empresa.", "Saisissez le nom de l'entreprise.", "Geben Sie den Unternehmensnamen ein.", "Inserisci il nome dell'azienda."),
+  "Nenhuma amostra facial cadastrada.": steelL("No facial sample registered.", "No hay ninguna muestra facial registrada.", "Aucun échantillon facial enregistré.", "Keine Gesichtsprobe registriert.", "Nessun campione facciale registrato."),
+  "Funcionário reativado com sucesso.": steelL("Employee reactivated successfully.", "Empleado reactivado correctamente.", "Employé réactivé avec succès.", "Mitarbeiter erfolgreich reaktiviert.", "Dipendente riattivato correttamente."),
+  "Funcionário cadastrado.": steelL("Employee registered.", "Empleado registrado.", "Employé enregistré.", "Mitarbeiter registriert.", "Dipendente registrato."),
+  "Funcionário recontratado": steelL("Employee rehired", "Empleado recontratado", "Employé réembauché", "Mitarbeiter wiedereingestellt", "Dipendente riassunto"),
+  "Funcionário cadastrado": steelL("Employee registered", "Empleado registrado", "Employé enregistré", "Mitarbeiter registriert", "Dipendente registrato"),
+  "A conta foi reativada. Por segurança, cadastre novamente o reconhecimento facial.": steelL("The account was reactivated. For security, register facial recognition again.", "La cuenta fue reactivada. Por seguridad, registre de nuevo el reconocimiento facial.", "Le compte a été réactivé. Pour des raisons de sécurité, enregistrez à nouveau la reconnaissance faciale.", "Das Konto wurde reaktiviert. Registrieren Sie aus Sicherheitsgründen die Gesichtserkennung erneut.", "L'account è stato riattivato. Per sicurezza, registra nuovamente il riconoscimento facciale."),
+  "O novo acesso foi criado com sucesso.": steelL("The new access account was created successfully.", "El nuevo acceso se creó correctamente.", "Le nouvel accès a été créé avec succès.", "Der neue Zugang wurde erfolgreich erstellt.", "Il nuovo accesso è stato creato correttamente."),
+  "Excluir esta facial": steelL("Delete this facial profile", "Eliminar este perfil facial", "Supprimer ce profil facial", "Dieses Gesichtsprofil löschen", "Elimina questo profilo facciale"),
+  "Não foi possível enviar o código.": steelL("The code could not be sent.", "No se pudo enviar el código.", "Impossible d'envoyer le code.", "Der Code konnte nicht gesendet werden.", "Impossibile inviare il codice."),
+  "Código inválido.": steelL("Invalid code.", "Código no válido.", "Code invalide.", "Ungültiger Code.", "Codice non valido."),
+
+  "OEE, produção, proteções, manutenção e energia.": steelL("OEE, production, safeguards, maintenance and energy.", "OEE, producción, protecciones, mantenimiento y energía.", "OEE, production, protections, maintenance et énergie.", "OEE, Produktion, Schutzfunktionen, Wartung und Energie.", "OEE, produzione, protezioni, manutenzione ed energia."),
+  "OEE, programa, qualidade, ferramenta e segurança.": steelL("OEE, program, quality, tooling and safety.", "OEE, programa, calidad, herramienta y seguridad.", "OEE, programme, qualité, outillage et sécurité.", "OEE, Programm, Qualität, Werkzeug und Sicherheit.", "OEE, programma, qualità, utensile e sicurezza."),
+  "OEE, programa, peças, ferramenta, alarmes e energia.": steelL("OEE, program, parts, tooling, alarms and energy.", "OEE, programa, piezas, herramienta, alarmas y energía.", "OEE, programme, pièces, outillage, alarmes et énergie.", "OEE, Programm, Teile, Werkzeug, Alarme und Energie.", "OEE, programma, pezzi, utensile, allarmi ed energia."),
+  "Produção, proteções, manutenção e utilidades.": steelL("Production, safeguards, maintenance and utilities.", "Producción, protecciones, mantenimiento y servicios.", "Production, protections, maintenance et utilités.", "Produktion, Schutzfunktionen, Wartung und Medien.", "Produzione, protezioni, manutenzione e utenze."),
+  "Eficiência, produção, segurança, ferramenta e energia.": steelL("Efficiency, production, safety, tooling and energy.", "Eficiencia, producción, seguridad, herramienta y energía.", "Efficacité, production, sécurité, outillage et énergie.", "Effizienz, Produktion, Sicherheit, Werkzeug und Energie.", "Efficienza, produzione, sicurezza, utensile ed energia."),
+  "OEE, contagem, qualidade, segurança e manutenção.": steelL("OEE, count, quality, safety and maintenance.", "OEE, conteo, calidad, seguridad y mantenimiento.", "OEE, comptage, qualité, sécurité et maintenance.", "OEE, Zählung, Qualität, Sicherheit und Wartung.", "OEE, conteggio, qualità, sicurezza e manutenzione."),
+  "Trabalho, progresso, condição, manutenção e energia.": steelL("Job, progress, condition, maintenance and energy.", "Trabajo, progreso, condición, mantenimiento y energía.", "Travail, progression, état, maintenance et énergie.", "Auftrag, Fortschritt, Zustand, Wartung und Energie.", "Lavoro, avanzamento, condizione, manutenzione ed energia."),
+  "Desativado": steelL("Disabled", "Desactivado", "Désactivé", "Deaktiviert", "Disattivato"),
+  "Escolha o tipo do equipamento para receber uma recomendação de indicadores.": steelL("Choose the equipment type to receive recommended indicators.", "Elija el tipo de equipo para recibir indicadores recomendados.", "Choisissez le type d'équipement pour obtenir des indicateurs recommandés.", "Wählen Sie den Gerätetyp, um empfohlene Kennzahlen zu erhalten.", "Scegli il tipo di apparecchiatura per ricevere gli indicatori consigliati."),
+  "Modo real: o simulador fica desativado. Configure o controlador e o protocolo de comunicação. A máquina permanecerá offline até receber telemetria real.": steelL("Real mode: the simulator is disabled. Configure the controller and communication protocol. The machine will remain offline until real telemetry is received.", "Modo real: el simulador está desactivado. Configure el controlador y el protocolo de comunicación. La máquina permanecerá sin conexión hasta recibir telemetría real.", "Mode réel : le simulateur est désactivé. Configurez le contrôleur et le protocole de communication. La machine restera hors ligne jusqu'à réception d'une télémétrie réelle.", "Realbetrieb: Der Simulator ist deaktiviert. Konfigurieren Sie Controller und Kommunikationsprotokoll. Die Maschine bleibt offline, bis reale Telemetrie empfangen wird.", "Modalità reale: il simulatore è disattivato. Configura controller e protocollo di comunicazione. La macchina resterà offline finché non riceverà telemetria reale."),
+  "Nenhum equipamento SteelControl foi identificado nesse IP.": steelL("No SteelControl equipment was identified at this IP address.", "No se identificó ningún equipo SteelControl en esta IP.", "Aucun équipement SteelControl n'a été identifié à cette adresse IP.", "Unter dieser IP-Adresse wurde kein SteelControl-Gerät erkannt.", "Nessuna apparecchiatura SteelControl è stata identificata a questo indirizzo IP."),
+  "Equipamento identificado pelo IP.": steelL("Equipment identified by IP address.", "Equipo identificado por IP.", "Équipement identifié par adresse IP.", "Gerät über IP-Adresse identifiziert.", "Apparecchiatura identificata tramite IP."),
+  "Falha ao detectar o equipamento pelo IP.": steelL("Failed to detect equipment by IP address.", "Error al detectar el equipo por IP.", "Échec de la détection de l'équipement par adresse IP.", "Gerät konnte über die IP-Adresse nicht erkannt werden.", "Rilevamento dell'apparecchiatura tramite IP non riuscito."),
+  "Erro ao buscar equipamentos.": steelL("Failed to search for equipment.", "Error al buscar equipos.", "Échec de la recherche des équipements.", "Gerätesuche fehlgeschlagen.", "Errore nella ricerca delle apparecchiature."),
+  "Falha no provisionamento.": steelL("Provisioning failed.", "Error de aprovisionamiento.", "Échec du provisionnement.", "Bereitstellung fehlgeschlagen.", "Provisioning non riuscito."),
+  "Erro:": steelL("Error:", "Error:", "Erreur :", "Fehler:", "Errore:"),
+  "Gerar nova chave do equipamento": steelL("Generate new equipment key", "Generar nueva clave del equipo", "Générer une nouvelle clé d'équipement", "Neuen Geräteschlüssel erzeugen", "Genera una nuova chiave apparecchiatura"),
+  "O equipamento foi desativado e seu histórico foi preservado.": steelL("The equipment was disabled and its history was preserved.", "El equipo fue desactivado y su historial se conservó.", "L'équipement a été désactivé et son historique a été conservé.", "Das Gerät wurde deaktiviert und sein Verlauf beibehalten.", "L'apparecchiatura è stata disattivata e la cronologia è stata conservata.")
+});
+
+// Descoberta e provisionamento: inclui mensagens criadas no navegador e
+// respostas textuais enviadas pelo backend/Edge.
+Object.assign(STEEL_LITERAL_I18N, {
+  "Nenhum equipamento respondeu ainda. Abra o SteelControl Edge para detectar USB/Serial ou use “Procurar novamente” para equipamentos de rede.": steelL("No equipment has responded yet. Open SteelControl Edge to detect USB/Serial devices, or use “Search again” for network equipment.", "Ningún equipo ha respondido todavía. Abra SteelControl Edge para detectar dispositivos USB/Serial o use “Buscar de nuevo” para equipos de red.", "Aucun équipement n'a encore répondu. Ouvrez SteelControl Edge pour détecter les appareils USB/Série ou utilisez « Rechercher à nouveau » pour les équipements réseau.", "Noch kein Gerät hat geantwortet. Öffnen Sie SteelControl Edge, um USB-/Seriell-Geräte zu erkennen, oder verwenden Sie „Erneut suchen“ für Netzwerkgeräte.", "Nessuna apparecchiatura ha ancora risposto. Apri SteelControl Edge per rilevare dispositivi USB/Seriale oppure usa “Cerca di nuovo” per le apparecchiature di rete."),
+  "Varredura solicitada. O SteelControl enviou a busca para os broadcasts locais detectados; aguarde alguns segundos pelas respostas.": steelL("Scan requested. SteelControl sent the search to the detected local broadcast addresses; wait a few seconds for responses.", "Escaneo solicitado. SteelControl envió la búsqueda a las direcciones de broadcast locales detectadas; espere unos segundos por las respuestas.", "Analyse demandée. SteelControl a envoyé la recherche aux adresses de diffusion locales détectées ; attendez quelques secondes les réponses.", "Suche angefordert. SteelControl hat die Anfrage an die erkannten lokalen Broadcast-Adressen gesendet; warten Sie einige Sekunden auf Antworten.", "Scansione richiesta. SteelControl ha inviato la ricerca agli indirizzi broadcast locali rilevati; attendi alcuni secondi per le risposte."),
+  "Descoberta local ainda não está disponível neste processo.": steelL("Local discovery is not available in this process yet.", "La detección local aún no está disponible en este proceso.", "La découverte locale n'est pas encore disponible dans ce processus.", "Die lokale Erkennung ist in diesem Prozess noch nicht verfügbar.", "Il rilevamento locale non è ancora disponibile in questo processo."),
+  "Não foi possível copiar": steelL("Could not copy", "No se pudo copiar", "Impossible de copier", "Kopieren nicht möglich", "Impossibile copiare"),
+  "Abra o SteelControl Edge e clique em Importar do clipboard.": steelL("Open SteelControl Edge and click Import from clipboard.", "Abra SteelControl Edge y haga clic en Importar desde el portapapeles.", "Ouvrez SteelControl Edge et cliquez sur Importer depuis le presse-papiers.", "Öffnen Sie SteelControl Edge und klicken Sie auf Aus Zwischenablage importieren.", "Apri SteelControl Edge e fai clic su Importa dagli appunti."),
+  "Copie a Device Key e o ID da máquina manualmente.": steelL("Copy the Device Key and machine ID manually.", "Copie manualmente la Device Key y el ID de la máquina.", "Copiez manuellement la Device Key et l'identifiant de la machine.", "Kopieren Sie Device Key und Maschinen-ID manuell.", "Copia manualmente Device Key e ID macchina."),
+  "Chave copiada": steelL("Key copied", "Clave copiada", "Clé copiée", "Schlüssel kopiert", "Chiave copiata"),
+  "Cole a chave na configuração do equipamento.": steelL("Paste the key into the equipment configuration.", "Pegue la clave en la configuración del equipo.", "Collez la clé dans la configuration de l'équipement.", "Fügen Sie den Schlüssel in die Gerätekonfiguration ein.", "Incolla la chiave nella configurazione dell'apparecchiatura."),
+  "Selecione a chave manualmente.": steelL("Select the key manually.", "Seleccione la clave manualmente.", "Sélectionnez la clé manuellement.", "Wählen Sie den Schlüssel manuell aus.", "Seleziona manualmente la chiave."),
+  "Gerar nova chave de acesso": steelL("Generate new access key", "Generar nueva clave de acceso", "Générer une nouvelle clé d'accès", "Neuen Zugangsschlüssel erzeugen", "Genera nuova chiave di accesso"),
+  "A chave atual será invalidada imediatamente. O controlador do equipamento precisará usar a nova credencial para continuar enviando telemetria.": steelL("The current key will be invalidated immediately. The equipment controller must use the new credential to continue sending telemetry.", "La clave actual se invalidará inmediatamente. El controlador del equipo deberá usar la nueva credencial para seguir enviando telemetría.", "La clé actuelle sera immédiatement invalidée. Le contrôleur de l'équipement devra utiliser le nouvel identifiant pour continuer à envoyer la télémétrie.", "Der aktuelle Schlüssel wird sofort ungültig. Der Gerätecontroller muss die neue Berechtigung verwenden, um weiterhin Telemetrie zu senden.", "La chiave attuale verrà invalidata immediatamente. Il controller dovrà usare la nuova credenziale per continuare a inviare telemetria."),
+  "Não foi possível gerar a nova chave.": steelL("The new key could not be generated.", "No se pudo generar la nueva clave.", "Impossible de générer la nouvelle clé.", "Der neue Schlüssel konnte nicht erzeugt werden.", "Impossibile generare la nuova chiave."),
+  "Nova chave gerada": steelL("New key generated", "Nueva clave generada", "Nouvelle clé générée", "Neuer Schlüssel erzeugt", "Nuova chiave generata"),
+  "A chave anterior foi invalidada. Copie a nova Device Key para o controlador do equipamento.": steelL("The previous key was invalidated. Copy the new Device Key to the equipment controller.", "La clave anterior fue invalidada. Copie la nueva Device Key al controlador del equipo.", "La clé précédente a été invalidée. Copiez la nouvelle Device Key vers le contrôleur de l'équipement.", "Der vorherige Schlüssel wurde ungültig. Kopieren Sie den neuen Device Key in den Gerätecontroller.", "La chiave precedente è stata invalidata. Copia la nuova Device Key nel controller dell'apparecchiatura."),
+  "Não foi possível gerar a chave": steelL("The key could not be generated", "No se pudo generar la clave", "Impossible de générer la clé", "Der Schlüssel konnte nicht erzeugt werden", "Impossibile generare la chiave"),
+  "Ocorreu um erro ao gerar a nova credencial.": steelL("An error occurred while generating the new credential.", "Ocurrió un error al generar la nueva credencial.", "Une erreur s'est produite lors de la génération du nouvel identifiant.", "Beim Erzeugen der neuen Berechtigung ist ein Fehler aufgetreten.", "Si è verificato un errore durante la generazione della nuova credenziale."),
+  "Erro ao renovar a chave.": steelL("Failed to renew the key.", "Error al renovar la clave.", "Échec du renouvellement de la clé.", "Schlüsselerneuerung fehlgeschlagen.", "Errore nel rinnovo della chiave."),
+  "Ainda não recebido": steelL("Not received yet", "Aún no recibido", "Pas encore reçu", "Noch nicht empfangen", "Non ancora ricevuto"),
+  "Rede": steelL("Network", "Red", "Réseau", "Netzwerk", "Rete"),
+  "Nenhuma interface IPv4 privada detectada": steelL("No private IPv4 interface detected", "No se detectó ninguna interfaz IPv4 privada", "Aucune interface IPv4 privée détectée", "Keine private IPv4-Schnittstelle erkannt", "Nessuna interfaccia IPv4 privata rilevata"),
+  "Diagnóstico de rede": steelL("Network diagnostics", "Diagnóstico de red", "Diagnostic réseau", "Netzwerkdiagnose", "Diagnostica di rete"),
+  "Nenhum problema de descoberta foi identificado pelo backend.": steelL("The backend identified no discovery issues.", "El backend no identificó problemas de detección.", "Le backend n'a identifié aucun problème de découverte.", "Das Backend hat keine Erkennungsprobleme festgestellt.", "Il backend non ha rilevato problemi di individuazione."),
+  "Não foi possível obter o diagnóstico da rede.": steelL("Network diagnostics could not be retrieved.", "No se pudo obtener el diagnóstico de red.", "Impossible d'obtenir le diagnostic réseau.", "Die Netzwerkdiagnose konnte nicht abgerufen werden.", "Impossibile ottenere la diagnostica di rete."),
+  "Diagnóstico de descoberta indisponível.": steelL("Discovery diagnostics unavailable.", "Diagnóstico de detección no disponible.", "Diagnostic de découverte indisponible.", "Erkennungsdiagnose nicht verfügbar.", "Diagnostica di rilevamento non disponibile."),
+  "Informe o IPv4 do equipamento, por exemplo 192.168.0.87.": steelL("Enter the equipment IPv4 address, for example 192.168.0.87.", "Ingrese el IPv4 del equipo, por ejemplo 192.168.0.87.", "Saisissez l'adresse IPv4 de l'équipement, par exemple 192.168.0.87.", "Geben Sie die IPv4-Adresse des Geräts ein, zum Beispiel 192.168.0.87.", "Inserisci l'indirizzo IPv4 dell'apparecchiatura, ad esempio 192.168.0.87."),
+  "Informe uma porta válida entre 1 e 65535.": steelL("Enter a valid port between 1 and 65535.", "Ingrese un puerto válido entre 1 y 65535.", "Saisissez un port valide compris entre 1 et 65535.", "Geben Sie einen gültigen Port zwischen 1 und 65535 ein.", "Inserisci una porta valida tra 1 e 65535."),
+  "Já adicionado": steelL("Already added", "Ya agregado", "Déjà ajouté", "Bereits hinzugefügt", "Già aggiunto"),
+  "Indisponível": steelL("Unavailable", "No disponible", "Indisponible", "Nicht verfügbar", "Non disponibile"),
+  "Adicionar ao SteelControl": steelL("Add to SteelControl", "Agregar a SteelControl", "Ajouter à SteelControl", "Zu SteelControl hinzufügen", "Aggiungi a SteelControl"),
+  "Equipamento encontrado": steelL("Equipment found", "Equipo encontrado", "Équipement trouvé", "Gerät gefunden", "Apparecchiatura trovata"),
+  "Fabricante não informado": steelL("Manufacturer not provided", "Fabricante no informado", "Fabricant non renseigné", "Hersteller nicht angegeben", "Produttore non indicato"),
+  "Modelo não informado": steelL("Model not provided", "Modelo no informado", "Modèle non renseigné", "Modell nicht angegeben", "Modello non indicato"),
+  "Procurando equipamentos SteelControl na rede local...": steelL("Searching for SteelControl equipment on the local network...", "Buscando equipos SteelControl en la red local...", "Recherche d'équipements SteelControl sur le réseau local...", "SteelControl-Geräte werden im lokalen Netzwerk gesucht...", "Ricerca di apparecchiature SteelControl nella rete locale..."),
+  "Procurando...": steelL("Searching...", "Buscando...", "Recherche...", "Suche...", "Ricerca..."),
+  "Erro ao renovar Device Key:": steelL("Failed to renew Device Key:", "Error al renovar la Device Key:", "Échec du renouvellement de la Device Key :", "Device Key konnte nicht erneuert werden:", "Errore nel rinnovo della Device Key:"),
+  "Equipamento industrial": steelL("Industrial equipment", "Equipo industrial", "Équipement industriel", "Industrieanlage", "Apparecchiatura industriale"),
+  "Nenhuma descrição cadastrada.": steelL("No description registered.", "No hay ninguna descripción registrada.", "Aucune description enregistrée.", "Keine Beschreibung hinterlegt.", "Nessuna descrizione registrata."),
+  "Configurar quando integrar o equipamento": steelL("Configure when integrating the equipment", "Configurar al integrar el equipo", "Configurer lors de l'intégration de l'équipement", "Bei der Geräteintegration konfigurieren", "Configura durante l'integrazione dell'apparecchiatura"),
+  "Editar equipamento e conexão": steelL("Edit equipment and connection", "Editar equipo y conexión", "Modifier l'équipement et la connexion", "Gerät und Verbindung bearbeiten", "Modifica apparecchiatura e connessione"),
+  "A descoberta está desativada no backend. Verifique DISCOVERY_ENABLED.": steelL("Discovery is disabled in the backend. Check DISCOVERY_ENABLED.", "La detección está desactivada en el backend. Verifique DISCOVERY_ENABLED.", "La découverte est désactivée dans le backend. Vérifiez DISCOVERY_ENABLED.", "Die Erkennung ist im Backend deaktiviert. Prüfen Sie DISCOVERY_ENABLED.", "Il rilevamento è disattivato nel backend. Verifica DISCOVERY_ENABLED."),
+  "O listener UDP ainda não está pronto. Reinicie o backend e confira se a porta de descoberta está disponível.": steelL("The UDP listener is not ready yet. Restart the backend and check that the discovery port is available.", "El listener UDP aún no está listo. Reinicie el backend y verifique que el puerto de detección esté disponible.", "L'écouteur UDP n'est pas encore prêt. Redémarrez le backend et vérifiez que le port de découverte est disponible.", "Der UDP-Listener ist noch nicht bereit. Starten Sie das Backend neu und prüfen Sie den Erkennungsport.", "Il listener UDP non è ancora pronto. Riavvia il backend e verifica che la porta di rilevamento sia disponibile."),
+  "O backend não encontrou uma interface IPv4 privada ativa. Confirme Wi-Fi/Ethernet e evite executar apenas em loopback.": steelL("The backend found no active private IPv4 interface. Check Wi-Fi/Ethernet and avoid running only on loopback.", "El backend no encontró una interfaz IPv4 privada activa. Verifique Wi-Fi/Ethernet y evite ejecutar solo en loopback.", "Le backend n'a trouvé aucune interface IPv4 privée active. Vérifiez le Wi-Fi/Ethernet et évitez une exécution uniquement en loopback.", "Das Backend hat keine aktive private IPv4-Schnittstelle gefunden. Prüfen Sie WLAN/Ethernet und vermeiden Sie reinen Loopback-Betrieb.", "Il backend non ha trovato un'interfaccia IPv4 privata attiva. Verifica Wi-Fi/Ethernet ed evita l'esecuzione solo su loopback."),
+  "Nenhum dispositivo SteelControl respondeu à última busca. Possíveis causas: firewall UDP, isolamento de clientes Wi-Fi, VLAN/sub-rede diferente ou firmware sem descoberta habilitada.": steelL("No SteelControl device responded to the last search. Possible causes: UDP firewall, Wi-Fi client isolation, a different VLAN/subnet, or firmware without discovery enabled.", "Ningún dispositivo SteelControl respondió a la última búsqueda. Posibles causas: firewall UDP, aislamiento de clientes Wi-Fi, VLAN/subred diferente o firmware sin detección habilitada.", "Aucun appareil SteelControl n'a répondu à la dernière recherche. Causes possibles : pare-feu UDP, isolation des clients Wi-Fi, VLAN/sous-réseau différent ou découverte désactivée dans le firmware.", "Kein SteelControl-Gerät hat auf die letzte Suche geantwortet. Mögliche Ursachen: UDP-Firewall, WLAN-Client-Isolation, anderes VLAN/Subnetz oder Firmware ohne aktivierte Erkennung.", "Nessun dispositivo SteelControl ha risposto all'ultima ricerca. Possibili cause: firewall UDP, isolamento client Wi-Fi, VLAN/sottorete diversa o firmware senza rilevamento abilitato."),
+  "Há várias interfaces de rede ativas. VPN, adaptador virtual ou Docker podem fazer o broadcast sair pela rede errada; o SteelControl tenta todos os broadcasts locais detectados.": steelL("Several network interfaces are active. A VPN, virtual adapter or Docker may send the broadcast through the wrong network; SteelControl tries every detected local broadcast address.", "Hay varias interfaces de red activas. Una VPN, un adaptador virtual o Docker pueden enviar el broadcast por la red equivocada; SteelControl prueba todas las direcciones de broadcast locales detectadas.", "Plusieurs interfaces réseau sont actives. Un VPN, un adaptateur virtuel ou Docker peut envoyer la diffusion sur le mauvais réseau ; SteelControl essaie toutes les adresses de diffusion locales détectées.", "Mehrere Netzwerkschnittstellen sind aktiv. VPN, virtueller Adapter oder Docker können den Broadcast über das falsche Netzwerk senden; SteelControl versucht alle erkannten lokalen Broadcast-Adressen.", "Sono attive più interfacce di rete. VPN, adattatore virtuale o Docker possono inviare il broadcast sulla rete errata; SteelControl prova tutti gli indirizzi broadcast locali rilevati.")
+});
+
 
 
 /* =========================================================
@@ -7535,6 +8191,121 @@ Object.entries(
 );
 
 
+// Textos emitidos em tempo de execução pelos painéis industriais. Eles ficam
+// aqui (antes da criação dos mapas reversos) para que uma troca de idioma
+// também alcance valores inseridos depois do carregamento da página.
+Object.assign(STEEL_LITERAL_I18N, {
+  "Célula robótica": steelL("Robotic cell", "Celda robótica", "Cellule robotique", "Roboterzelle", "Cella robotica"),
+  "PAINEL CÉLULA ROBÓTICA": steelL("ROBOTIC CELL DASHBOARD", "PANEL DE CELDA ROBÓTICA", "TABLEAU DE CELLULE ROBOTIQUE", "ROBOTERZELLEN-DASHBOARD", "DASHBOARD CELLA ROBOTICA"),
+  "CONTROLADOR ROBÓTICO": steelL("ROBOT CONTROLLER", "CONTROLADOR ROBÓTICO", "CONTRÔLEUR ROBOTIQUE", "ROBOTERSTEUERUNG", "CONTROLLER ROBOTICO"),
+  "Eixos, ferramenta, ciclos, modo de operação e informações de segurança da célula robótica.": steelL("Axes, tooling, cycles, operating mode and robotic-cell safety information.", "Ejes, herramienta, ciclos, modo de operación e información de seguridad de la celda robótica.", "Axes, outil, cycles, mode de fonctionnement et informations de sécurité de la cellule robotique.", "Achsen, Werkzeug, Zyklen, Betriebsmodus und Sicherheitsinformationen der Roboterzelle.", "Assi, utensile, cicli, modalità operativa e informazioni di sicurezza della cella robotica."),
+  "Operação da célula robótica": steelL("Robotic cell operation", "Operación de la celda robótica", "Fonctionnement de la cellule robotique", "Betrieb der Roboterzelle", "Funzionamento della cella robotica"),
+  "Operações concluídas:": steelL("Completed operations:", "Operaciones completadas:", "Opérations terminées :", "Abgeschlossene Vorgänge:", "Operazioni completate:"),
+  "Ciclos robóticos:": steelL("Robotic cycles:", "Ciclos robóticos:", "Cycles robotiques :", "Roboterzyklen:", "Cicli robotici:"),
+  "Ciclos robóticos": steelL("Robotic cycles", "Ciclos robóticos", "Cycles robotiques", "Roboterzyklen", "Cicli robotici"),
+  "Quantidade de eixos": steelL("Number of axes", "Cantidad de ejes", "Nombre d'axes", "Anzahl der Achsen", "Numero di assi"),
+  "Aguardando o controlador": steelL("Waiting for the controller", "Esperando al controlador", "En attente du contrôleur", "Warten auf die Steuerung", "In attesa del controller"),
+  "Dado recebido/configurado": steelL("Data received/configured", "Dato recibido/configurado", "Donnée reçue/configurée", "Daten empfangen/konfiguriert", "Dato ricevuto/configurato"),
+  "Controlador conectado": steelL("Controller connected", "Controlador conectado", "Contrôleur connecté", "Steuerung verbunden", "Controller connesso"),
+  "Simulação ativa": steelL("Simulation active", "Simulación activa", "Simulation active", "Simulation aktiv", "Simulazione attiva"),
+  "Simulação local": steelL("Local simulation", "Simulación local", "Simulation locale", "Lokale Simulation", "Simulazione locale"),
+  "Proprietário": steelL("Proprietary", "Propietario", "Propriétaire", "Proprietär", "Proprietario"),
+  "Sem leitura": steelL("No reading", "Sin lectura", "Aucune lecture", "Keine Messung", "Nessuna lettura"),
+  "Não configurada": steelL("Not configured", "No configurada", "Non configurée", "Nicht konfiguriert", "Non configurata"),
+  "Origem da leitura": steelL("Reading source", "Origen de la lectura", "Source de la lecture", "Datenquelle", "Origine della lettura"),
+  "Comandos pendentes": steelL("Pending commands", "Comandos pendientes", "Commandes en attente", "Ausstehende Befehle", "Comandi in attesa"),
+  "Disponível": steelL("Available", "Disponible", "Disponible", "Verfügbar", "Disponibile"),
+  "SIMULADOR": steelL("SIMULATOR", "SIMULADOR", "SIMULATEUR", "SIMULATOR", "SIMULATORE"),
+  "Aguardando conexão real": steelL("Waiting for a real connection", "Esperando una conexión real", "En attente d'une connexion réelle", "Warten auf eine reale Verbindung", "In attesa di una connessione reale"),
+  "AGUARDANDO CONEXÃO REAL": steelL("WAITING FOR A REAL CONNECTION", "ESPERANDO UNA CONEXIÓN REAL", "EN ATTENTE D'UNE CONNEXION RÉELLE", "WARTEN AUF EINE REALE VERBINDUNG", "IN ATTESA DI UNA CONNESSIONE REALE"),
+  "AGUARDANDO CONEXÃO": steelL("WAITING FOR CONNECTION", "ESPERANDO CONEXIÓN", "EN ATTENTE DE CONNEXION", "WARTEN AUF VERBINDUNG", "IN ATTESA DI CONNESSIONE"),
+  "BLOQUEADA": steelL("BLOCKED", "BLOQUEADA", "BLOQUÉE", "GESPERRT", "BLOCCATA"),
+  "EM CICLO": steelL("IN CYCLE", "EN CICLO", "EN CYCLE", "IM ZYKLUS", "IN CICLO"),
+  "PARADA": steelL("STOPPED", "DETENIDA", "ARRÊTÉE", "GESTOPPT", "ARRESTATA"),
+  "OPERANDO": steelL("RUNNING", "OPERANDO", "EN FONCTIONNEMENT", "IN BETRIEB", "IN FUNZIONE"),
+  "AGUARDANDO": steelL("WAITING", "ESPERANDO", "EN ATTENTE", "WARTEND", "IN ATTESA"),
+  "Processo bloqueado": steelL("Process blocked", "Proceso bloqueado", "Processus bloqué", "Prozess gesperrt", "Processo bloccato"),
+  "Processo em operação": steelL("Process running", "Proceso en operación", "Processus en fonctionnement", "Prozess läuft", "Processo in funzione"),
+  "Aguardando conexão real. Todos os comandos permanecem bloqueados até chegar telemetria recente.": steelL("Waiting for a real connection. All commands remain blocked until recent telemetry arrives.", "Esperando una conexión real. Todos los comandos permanecen bloqueados hasta recibir telemetría reciente.", "En attente d'une connexion réelle. Toutes les commandes restent bloquées jusqu'à réception d'une télémétrie récente.", "Warten auf eine reale Verbindung. Alle Befehle bleiben gesperrt, bis aktuelle Telemetrie eintrifft.", "In attesa di una connessione reale. Tutti i comandi restano bloccati finché non arriva telemetria recente."),
+  "Controle remoto real desativado no cadastro desta máquina.": steelL("Real remote control is disabled in this machine's settings.", "El control remoto real está desactivado en la configuración de esta máquina.", "Le contrôle à distance réel est désactivé dans la configuration de cette machine.", "Die reale Fernsteuerung ist in den Einstellungen dieser Maschine deaktiviert.", "Il controllo remoto reale è disattivato nelle impostazioni di questa macchina."),
+  "START bloqueado por condição de segurança. RESET não libera a parada de segurança.": steelL("START is blocked by a safety condition. RESET does not release the safety stop.", "START está bloqueado por una condición de seguridad. RESET no libera la parada de seguridad.", "START est bloqué par une condition de sécurité. RESET ne libère pas l'arrêt de sécurité.", "START ist durch eine Sicherheitsbedingung gesperrt. RESET hebt den Sicherheitsstopp nicht auf.", "START è bloccato da una condizione di sicurezza. RESET non rilascia l'arresto di sicurezza."),
+  "Aguardando confirmação dos intertravamentos físicos.": steelL("Waiting for confirmation of the physical interlocks.", "Esperando la confirmación de los enclavamientos físicos.", "En attente de la confirmation des interverrouillages physiques.", "Warten auf die Bestätigung der physischen Verriegelungen.", "In attesa della conferma degli interblocchi fisici."),
+  "IHM em simulação funcional. Os comandos alteram o processo demonstrado.": steelL("HMI in functional simulation. Commands change the demonstrated process.", "HMI en simulación funcional. Los comandos cambian el proceso mostrado.", "IHM en simulation fonctionnelle. Les commandes modifient le processus présenté.", "HMI in funktionaler Simulation. Befehle ändern den dargestellten Prozess.", "HMI in simulazione funzionale. I comandi modificano il processo mostrato."),
+  "IHM real habilitada. Comandos passam pela fila autenticada com ACK e prazo de validade.": steelL("Real HMI enabled. Commands pass through the authenticated queue with ACK and an expiration time.", "HMI real habilitada. Los comandos pasan por la cola autenticada con ACK y vencimiento.", "IHM réelle activée. Les commandes passent par la file authentifiée avec ACK et délai d'expiration.", "Reale HMI aktiviert. Befehle laufen über die authentifizierte Warteschlange mit ACK und Ablaufzeit.", "HMI reale abilitata. I comandi passano dalla coda autenticata con ACK e scadenza."),
+  "Sem detalhes adicionais": steelL("No additional details", "Sin detalles adicionales", "Aucun détail supplémentaire", "Keine weiteren Details", "Nessun dettaglio aggiuntivo"),
+  "Nenhum evento encontrado.": steelL("No events found.", "No se encontraron eventos.", "Aucun événement trouvé.", "Keine Ereignisse gefunden.", "Nessun evento trovato."),
+  "Detalhes técnicos": steelL("Technical details", "Detalles técnicos", "Détails techniques", "Technische Details", "Dettagli tecnici"),
+  "executou uma ação no sistema": steelL("performed an action in the system", "realizó una acción en el sistema", "a effectué une action dans le système", "hat eine Aktion im System ausgeführt", "ha eseguito un'azione nel sistema"),
+  "Sistema": steelL("System", "Sistema", "Système", "System", "Sistema")
+});
+
+Object.assign(STEEL_LITERAL_I18N, {
+  "Leituras, conectividade e atividade enviadas pelo dispositivo selecionado.": steelL("Readings, connectivity and activity sent by the selected device.", "Lecturas, conectividad y actividad enviadas por el dispositivo seleccionado.", "Mesures, connectivité et activité envoyées par l'appareil sélectionné.", "Messwerte, Konnektivität und Aktivität des ausgewählten Geräts.", "Letture, connettività e attività inviate dal dispositivo selezionato."),
+  "Processos contabilizados:": steelL("Processes counted:", "Procesos contabilizados:", "Processus comptabilisés :", "Erfasste Prozesse:", "Processi conteggiati:"),
+  "Ciclos informados:": steelL("Reported cycles:", "Ciclos informados:", "Cycles déclarés :", "Gemeldete Zyklen:", "Cicli segnalati:"),
+  "Sensores": steelL("Sensors", "Sensores", "Capteurs", "Sensoren", "Sensori"),
+  "Atividade do ESP32": steelL("ESP32 activity", "Actividad del ESP32", "Activité de l'ESP32", "ESP32-Aktivität", "Attività ESP32"),
+  "Operação do braço robótico": steelL("Robotic arm operation", "Operación del brazo robótico", "Fonctionnement du bras robotique", "Betrieb des Roboterarms", "Funzionamento del braccio robotico"),
+  "Ciclos, manipulações e atividade operacional do Dobot selecionado.": steelL("Cycles, handling and operational activity of the selected Dobot.", "Ciclos, manipulaciones y actividad operativa del Dobot seleccionado.", "Cycles, manipulations et activité opérationnelle du Dobot sélectionné.", "Zyklen, Handhabungen und Betriebsaktivität des ausgewählten Dobot.", "Cicli, movimentazioni e attività operativa del Dobot selezionato."),
+  "Ciclos do braço:": steelL("Arm cycles:", "Ciclos del brazo:", "Cycles du bras :", "Armzyklen:", "Cicli del braccio:"),
+  "Movimentos": steelL("Movements", "Movimientos", "Mouvements", "Bewegungen", "Movimenti"),
+  "Ferramenta": steelL("Tool", "Herramienta", "Outil", "Werkzeug", "Utensile"),
+  "Tempo": steelL("Time", "Tiempo", "Temps", "Zeit", "Tempo"),
+  "Comunicação": steelL("Communication", "Comunicación", "Communication", "Kommunikation", "Comunicazione"),
+  "Tópico MQTT": steelL("MQTT topic", "Tema MQTT", "Sujet MQTT", "MQTT-Thema", "Topic MQTT"),
+  "Efetuador": steelL("End effector", "Efector", "Effecteur", "Endeffektor", "Effettore"),
+  "Fila segura": steelL("Secure queue", "Cola segura", "File sécurisée", "Sichere Warteschlange", "Coda sicura"),
+  "Operações do Dobot": steelL("Dobot operations", "Operaciones del Dobot", "Opérations Dobot", "Dobot-Vorgänge", "Operazioni Dobot"),
+  "Unidades produzidas:": steelL("Units produced:", "Unidades producidas:", "Unités produites :", "Produzierte Einheiten:", "Unità prodotte:"),
+  "Ciclos do processo:": steelL("Process cycles:", "Ciclos del proceso:", "Cycles du processus :", "Prozesszyklen:", "Cicli di processo:"),
+  "Processo": steelL("Process", "Proceso", "Processus", "Prozess", "Processo"),
+  "Registradores": steelL("Registers", "Registros", "Registres", "Register", "Registri"),
+  "Peças produzidas:": steelL("Parts produced:", "Piezas producidas:", "Pièces produites :", "Produzierte Teile:", "Pezzi prodotti:"),
+  "Ciclos de usinagem:": steelL("Machining cycles:", "Ciclos de mecanizado:", "Cycles d'usinage :", "Bearbeitungszyklen:", "Cicli di lavorazione:"),
+  "Rotação do spindle": steelL("Spindle speed", "Velocidad del husillo", "Vitesse de broche", "Spindeldrehzahl", "Velocità del mandrino"),
+  "Avanço": steelL("Feed", "Avance", "Avance", "Vorschub", "Avanzamento"),
+  "Programa": steelL("Program", "Programa", "Programme", "Programm", "Programma"),
+  "Peças usinadas": steelL("Machined parts", "Piezas mecanizadas", "Pièces usinées", "Bearbeitete Teile", "Pezzi lavorati"),
+  "Temperaturas, progresso, camadas e estado da impressora 3D selecionada.": steelL("Temperatures, progress, layers and status of the selected 3D printer.", "Temperaturas, progreso, capas y estado de la impresora 3D seleccionada.", "Températures, progression, couches et état de l'imprimante 3D sélectionnée.", "Temperaturen, Fortschritt, Schichten und Status des ausgewählten 3D-Druckers.", "Temperature, avanzamento, strati e stato della stampante 3D selezionata."),
+  "Impressões concluídas:": steelL("Completed prints:", "Impresiones completadas:", "Impressions terminées :", "Abgeschlossene Drucke:", "Stampe completate:"),
+  "Trabalhos/ciclos:": steelL("Jobs/cycles:", "Trabajos/ciclos:", "Travaux/cycles :", "Aufträge/Zyklen:", "Lavori/cicli:"),
+  "Progresso": steelL("Progress", "Progreso", "Progression", "Fortschritt", "Avanzamento"),
+  "Temperaturas": steelL("Temperatures", "Temperaturas", "Températures", "Temperaturen", "Temperature"),
+  "Camadas": steelL("Layers", "Capas", "Couches", "Schichten", "Strati"),
+  "Progresso da impressão": steelL("Print progress", "Progreso de impresión", "Progression de l'impression", "Druckfortschritt", "Avanzamento di stampa"),
+  "Operação do gateway industrial": steelL("Industrial gateway operation", "Operación del gateway industrial", "Fonctionnement de la passerelle industrielle", "Betrieb des Industrie-Gateways", "Funzionamento del gateway industriale"),
+  "Mensagens/processos:": steelL("Messages/processes:", "Mensajes/procesos:", "Messages/processus :", "Nachrichten/Prozesse:", "Messaggi/processi:"),
+  "Ciclos de comunicação:": steelL("Communication cycles:", "Ciclos de comunicación:", "Cycles de communication :", "Kommunikationszyklen:", "Cicli di comunicazione:"),
+  "Dispositivos online": steelL("Online devices", "Dispositivos en línea", "Appareils en ligne", "Online-Geräte", "Dispositivi online"),
+  "Dispositivos": steelL("Devices", "Dispositivos", "Appareils", "Geräte", "Dispositivi"),
+  "Tráfego": steelL("Traffic", "Tráfico", "Trafic", "Datenverkehr", "Traffico"),
+  "Atividade do gateway": steelL("Gateway activity", "Actividad del gateway", "Activité de la passerelle", "Gateway-Aktivität", "Attività del gateway"),
+  "Controlador genérico": steelL("Generic controller", "Controlador genérico", "Contrôleur générique", "Generische Steuerung", "Controller generico"),
+  "Total produzido:": steelL("Total produced:", "Total producido:", "Total produit :", "Gesamtproduktion:", "Totale prodotto:"),
+  "Ciclos executados:": steelL("Cycles completed:", "Ciclos ejecutados:", "Cycles exécutés :", "Ausgeführte Zyklen:", "Cicli eseguiti:"),
+  "Telemetria": steelL("Telemetry", "Telemetría", "Télémétrie", "Telemetrie", "Telemetria"),
+  "Alertas": steelL("Alerts", "Alertas", "Alertes", "Alarme", "Avvisi"),
+  "Processo industrial, entradas e saídas, registradores, ciclo de varredura e alarmes do CLP.": steelL("Industrial process, inputs and outputs, registers, scan cycle and PLC alarms.", "Proceso industrial, entradas y salidas, registros, ciclo de escaneo y alarmas del PLC.", "Processus industriel, entrées et sorties, registres, cycle de balayage et alarmes de l'automate.", "Industrieprozess, Ein- und Ausgänge, Register, Scanzyklus und SPS-Alarme.", "Processo industriale, ingressi e uscite, registri, ciclo di scansione e allarmi PLC."),
+  "Entradas digitais": steelL("Digital inputs", "Entradas digitales", "Entrées numériques", "Digitale Eingänge", "Ingressi digitali"),
+  "Saídas digitais": steelL("Digital outputs", "Salidas digitales", "Sorties numériques", "Digitale Ausgänge", "Uscite digitali"),
+  "Entradas ativas": steelL("Active inputs", "Entradas activas", "Entrées actives", "Aktive Eingänge", "Ingressi attivi"),
+  "Spindle, avanço, ferramenta, programa, peças produzidas e desempenho do ciclo de usinagem.": steelL("Spindle, feed, tooling, program, produced parts and machining-cycle performance.", "Husillo, avance, herramienta, programa, piezas producidas y rendimiento del ciclo de mecanizado.", "Broche, avance, outil, programme, pièces produites et performance du cycle d'usinage.", "Spindel, Vorschub, Werkzeug, Programm, produzierte Teile und Leistung des Bearbeitungszyklus.", "Mandrino, avanzamento, utensile, programma, pezzi prodotti e prestazioni del ciclo di lavorazione."),
+  "Programa CNC": steelL("CNC program", "Programa CNC", "Programme CNC", "CNC-Programm", "Programma CNC"),
+  "IHM dedicada de produção aditiva para FDM/FFF, resina, SLS e outras tecnologias.": steelL("Dedicated additive-manufacturing HMI for FDM/FFF, resin, SLS and other technologies.", "HMI dedicada de fabricación aditiva para FDM/FFF, resina, SLS y otras tecnologías.", "IHM dédiée à la fabrication additive FDM/FFF, résine, SLS et autres technologies.", "Spezielle HMI für additive Fertigung mit FDM/FFF, Harz, SLS und weiteren Technologien.", "HMI dedicata alla produzione additiva FDM/FFF, resina, SLS e altre tecnologie."),
+  "Bico / mesa / câmara": steelL("Nozzle / bed / chamber", "Boquilla / cama / cámara", "Buse / plateau / chambre", "Düse / Bett / Kammer", "Ugello / piano / camera"),
+  "Monitoramento remoto": steelL("Remote monitoring", "Monitoreo remoto", "Surveillance à distance", "Fernüberwachung", "Monitoraggio remoto"),
+  "Dispositivos conectados, protocolos, tráfego, latência e integridade do gateway de integração.": steelL("Connected devices, protocols, traffic, latency and integration-gateway integrity.", "Dispositivos conectados, protocolos, tráfico, latencia e integridad del gateway de integración.", "Appareils connectés, protocoles, trafic, latence et intégrité de la passerelle d'intégration.", "Verbundene Geräte, Protokolle, Datenverkehr, Latenz und Integrität des Integrations-Gateways.", "Dispositivi connessi, protocolli, traffico, latenza e integrità del gateway di integrazione."),
+  "Integridade": steelL("Integrity", "Integridad", "Intégrité", "Integrität", "Integrità"),
+  "Mensagens/min": steelL("Messages/min", "Mensajes/min", "Messages/min", "Nachrichten/min", "Messaggi/min"),
+  "Telemetria e comunicação configuráveis para equipamentos que utilizam controladores proprietários.": steelL("Configurable telemetry and communication for equipment that uses proprietary controllers.", "Telemetría y comunicación configurables para equipos que utilizan controladores propietarios.", "Télémétrie et communication configurables pour les équipements utilisant des contrôleurs propriétaires.", "Konfigurierbare Telemetrie und Kommunikation für Geräte mit proprietären Steuerungen.", "Telemetria e comunicazione configurabili per apparecchiature con controller proprietari."),
+  "Bloqueado": steelL("Blocked", "Bloqueado", "Bloqué", "Gesperrt", "Bloccato"),
+  "Liberado": steelL("Released", "Liberado", "Libéré", "Freigegeben", "Abilitato"),
+  "Acionado / aberto": steelL("Triggered / open", "Accionado / abierto", "Déclenché / ouvert", "Ausgelöst / offen", "Attivato / aperto"),
+  "Fechada": steelL("Closed", "Cerrada", "Fermée", "Geschlossen", "Chiusa"),
+  "Aberta": steelL("Open", "Abierta", "Ouverte", "Offen", "Aperta")
+});
+
+
 // =========================================================
 // TRADUÇÃO AUTOMÁTICA DOS TEXTOS ESTÁTICOS
 // =========================================================
@@ -7603,8 +8374,9 @@ function traduzirTextosEstaticos(root = document.body) {
     // Assim trocar EN -> FR -> DE nunca depende do idioma anterior.
     let chave = node.__steelI18nKey;
     let literalBase = node.__steelLiteralBase;
+    let padraoBase = node.__steelPatternBase;
 
-    if (!chave && !literalBase) {
+    if (!chave && !literalBase && !padraoBase) {
       chave =
         CHAVE_POR_TEXTO_GLOBAL.get(atual) ||
         CHAVE_POR_TEXTO_PT.get(atual);
@@ -7642,6 +8414,25 @@ function traduzirTextosEstaticos(root = document.body) {
               STEEL_LITERAL_I18N[literalBase]?.en ||
               literalBase
             );
+    }
+
+    if (traduzido == null) {
+      const origemLivre =
+        padraoBase ||
+        atual;
+      const traducaoLivre =
+        traduzirTextoLivre(origemLivre);
+
+      if (traducaoLivre !== atual) {
+        traduzido = traducaoLivre;
+
+        if (!padraoBase) {
+          node.__steelPatternBase =
+            origemLivre;
+          padraoBase =
+            origemLivre;
+        }
+      }
     }
 
     if (traduzido == null) return;
@@ -7764,6 +8555,8 @@ function criarSeletorGlobalIdioma() {
 
   container.innerHTML = `
     <span class="steel-language-icon" aria-hidden="true"><i class="fa-solid fa-globe"></i></span>
+    <strong id="steelLanguageCurrent" class="steel-language-current" aria-hidden="true">PT</strong>
+    <span class="steel-language-chevron" aria-hidden="true"><i class="fa-solid fa-chevron-down"></i></span>
     <select id="steelLanguageSelect" aria-label="Language">
       <option value="pt">PT</option>
       <option value="en">EN</option>
@@ -7777,16 +8570,22 @@ function criarSeletorGlobalIdioma() {
   // Na Home, integra o seletor ao cabeçalho para manter a interface limpa.
   const homeHeaderActions = document.querySelector(".home-page .header-actions");
   const homeLoginButton = homeHeaderActions?.querySelector(".login-btn");
+  const homeNavigation = document.querySelector(".home-page .nav-in");
+  const homeNavigationLogin = homeNavigation?.querySelector('a[href="/app/login"]');
 
   if (homeHeaderActions && homeLoginButton) {
     homeHeaderActions.insertBefore(container, homeLoginButton);
+  } else if (homeNavigation && homeNavigationLogin) {
+    homeNavigation.insertBefore(container, homeNavigationLogin);
   } else {
     document.body.appendChild(container);
   }
 
   const select = container.querySelector("#steelLanguageSelect");
+  const current = container.querySelector("#steelLanguageCurrent");
 
   select.value = pegarIdiomaAtual();
+  current.textContent = pegarIdiomaAtual().toUpperCase();
 
   select.addEventListener("change", () => {
     trocarIdioma(select.value);
@@ -7795,9 +8594,19 @@ function criarSeletorGlobalIdioma() {
 
 function atualizarSeletorGlobalIdioma() {
   const select = document.getElementById("steelLanguageSelect");
+  const current = document.getElementById("steelLanguageCurrent");
+  const idioma = pegarIdiomaAtual();
 
   if (select) {
-    select.value = pegarIdiomaAtual();
+    select.value = idioma;
+    select.setAttribute(
+      "aria-label",
+      `${pegarTexto("idioma")}: ${idioma.toUpperCase()}`
+    );
+  }
+
+  if (current) {
+    current.textContent = idioma.toUpperCase();
   }
 }
 
@@ -7945,6 +8754,281 @@ function t(
 }
 
 
+function traduzirParteLivre(
+  valor,
+  idioma
+) {
+  const texto =
+    String(valor || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const chave =
+    CHAVE_POR_TEXTO_GLOBAL.get(texto) ||
+    CHAVE_POR_TEXTO_PT.get(texto);
+
+  if (chave) {
+    return pegarTexto(chave);
+  }
+
+  let base =
+    STEEL_LITERAL_I18N[texto]
+      ? texto
+      : null;
+
+  if (!base) {
+    const comparacao =
+      texto.toLocaleLowerCase("pt-BR");
+
+    for (const [textoBase, tabela] of Object.entries(STEEL_LITERAL_I18N)) {
+      if (
+        textoBase.toLocaleLowerCase("pt-BR") === comparacao ||
+        Object.values(tabela).some(
+          traducao =>
+            String(traducao)
+              .toLocaleLowerCase("pt-BR") ===
+            comparacao
+        )
+      ) {
+        base = textoBase;
+        break;
+      }
+    }
+  }
+
+  if (!base || idioma === "pt") {
+    return texto;
+  }
+
+  return (
+    STEEL_LITERAL_I18N[base]?.[idioma] ||
+    STEEL_LITERAL_I18N[base]?.en ||
+    texto
+  );
+}
+
+
+// Frases que carregam nomes, números ou códigos não podem ser resolvidas por
+// igualdade exata. Estes padrões mantêm o conteúdo variável e traduzem a
+// estrutura ao redor dele.
+function traduzirPadraoLivre(
+  valor,
+  idioma
+) {
+  if (idioma === "pt") {
+    return null;
+  }
+
+  const escolher = tabela =>
+    tabela[idioma] ||
+    tabela.en;
+
+  const parte = texto =>
+    traduzirParteLivre(
+      texto,
+      idioma
+    );
+
+  let encontrado =
+    valor.match(
+      /^Manutenção\s+—\s+(.+)$/
+    );
+
+  if (!encontrado) {
+    const painel =
+      valor.match(
+        /^PAINEL\s+(.+)$/
+      );
+
+    if (painel) {
+      const nome =
+        parte(painel[1])
+          .toLocaleUpperCase(idioma);
+      const prefixo = escolher({
+        en: "DASHBOARD",
+        es: "PANEL",
+        fr: "TABLEAU",
+        de: "DASHBOARD",
+        it: "DASHBOARD"
+      });
+
+      return `${prefixo} ${nome}`;
+    }
+  }
+
+  if (encontrado) {
+    const prefixo = escolher({
+      en: "Maintenance",
+      es: "Mantenimiento",
+      fr: "Maintenance",
+      de: "Wartung",
+      it: "Manutenzione"
+    });
+
+    return `${prefixo} — ${encontrado[1]}`;
+  }
+
+  encontrado = valor.match(
+    /^No ciclo\s+(\d+)$/
+  );
+
+  if (encontrado) {
+    return escolher({
+      en: `At cycle ${encontrado[1]}`,
+      es: `En el ciclo ${encontrado[1]}`,
+      fr: `Au cycle ${encontrado[1]}`,
+      de: `Bei Zyklus ${encontrado[1]}`,
+      it: `Al ciclo ${encontrado[1]}`
+    });
+  }
+
+  encontrado = valor.match(
+    /^Módulos operacionais compatíveis com (.+)\. Dados ausentes permanecem identificados como não configurados\.$/
+  );
+
+  if (encontrado) {
+    const nome = parte(encontrado[1]);
+
+    return escolher({
+      en: `Operational modules compatible with ${nome}. Missing data remains identified as not configured.`,
+      es: `Módulos operativos compatibles con ${nome}. Los datos ausentes permanecen identificados como no configurados.`,
+      fr: `Modules opérationnels compatibles avec ${nome}. Les données absentes restent indiquées comme non configurées.`,
+      de: `Mit ${nome} kompatible Betriebsmodule. Fehlende Daten bleiben als nicht konfiguriert gekennzeichnet.`,
+      it: `Moduli operativi compatibili con ${nome}. I dati mancanti restano indicati come non configurati.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^Plano preventivo, intervenções e histórico técnico exclusivos do (.+)\.$/
+  );
+
+  if (encontrado) {
+    const nome = parte(encontrado[1]);
+
+    return escolher({
+      en: `Preventive plan, interventions and technical history exclusively for ${nome}.`,
+      es: `Plan preventivo, intervenciones e historial técnico exclusivos de ${nome}.`,
+      fr: `Plan préventif, interventions et historique technique exclusivement pour ${nome}.`,
+      de: `Präventivplan, Eingriffe und technischer Verlauf ausschließlich für ${nome}.`,
+      it: `Piano preventivo, interventi e storico tecnico esclusivi per ${nome}.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^Eventos do (.+) vinculados somente à máquina selecionada\.$/
+  );
+
+  if (encontrado) {
+    const nome = parte(encontrado[1]);
+
+    return escolher({
+      en: `${nome} events linked only to the selected machine.`,
+      es: `Eventos de ${nome} vinculados únicamente a la máquina seleccionada.`,
+      fr: `Événements de ${nome} liés uniquement à la machine sélectionnée.`,
+      de: `${nome}-Ereignisse, die nur mit der ausgewählten Maschine verknüpft sind.`,
+      it: `Eventi di ${nome} collegati solo alla macchina selezionata.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^(.+) afetou o registro #(\d+)\.$/
+  );
+
+  if (encontrado) {
+    return escolher({
+      en: `${encontrado[1]} affected record #${encontrado[2]}.`,
+      es: `${encontrado[1]} modificó el registro #${encontrado[2]}.`,
+      fr: `${encontrado[1]} a modifié l'enregistrement #${encontrado[2]}.`,
+      de: `${encontrado[1]} hat Datensatz #${encontrado[2]} geändert.`,
+      it: `${encontrado[1]} ha modificato il record #${encontrado[2]}.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^afetou o registro #(\d+)\s*\.$/
+  );
+
+  if (encontrado) {
+    return escolher({
+      en: `affected record #${encontrado[1]}.`,
+      es: `modificó el registro #${encontrado[1]}.`,
+      fr: `a modifié l'enregistrement #${encontrado[1]}.`,
+      de: `hat Datensatz #${encontrado[1]} geändert.`,
+      it: `ha modificato il record #${encontrado[1]}.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^(.+) executou uma ação no sistema\.$/
+  );
+
+  if (encontrado) {
+    return escolher({
+      en: `${encontrado[1]} performed an action in the system.`,
+      es: `${encontrado[1]} realizó una acción en el sistema.`,
+      fr: `${encontrado[1]} a effectué une action dans le système.`,
+      de: `${encontrado[1]} hat eine Aktion im System ausgeführt.`,
+      it: `${encontrado[1]} ha eseguito un'azione nel sistema.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^Equipamento confirmou comando ([A-Z0-9_]+): (FALHOU|CONCLUÍDO)\.$/
+  );
+
+  if (encontrado) {
+    const sucesso =
+      encontrado[2] === "CONCLUÍDO";
+
+    return escolher({
+      en: `Equipment confirmed command ${encontrado[1]}: ${sucesso ? "COMPLETED" : "FAILED"}.`,
+      es: `El equipo confirmó el comando ${encontrado[1]}: ${sucesso ? "COMPLETADO" : "FALLÓ"}.`,
+      fr: `L'équipement a confirmé la commande ${encontrado[1]} : ${sucesso ? "TERMINÉE" : "ÉCHEC"}.`,
+      de: `Das Gerät bestätigte den Befehl ${encontrado[1]}: ${sucesso ? "ABGESCHLOSSEN" : "FEHLGESCHLAGEN"}.`,
+      it: `L'apparecchiatura ha confermato il comando ${encontrado[1]}: ${sucesso ? "COMPLETATO" : "NON RIUSCITO"}.`
+    });
+  }
+
+  encontrado = valor.match(
+    /^Comando ([A-Z0-9_]+) solicitado por (.+)\.$/
+  );
+
+  if (encontrado) {
+    return escolher({
+      en: `Command ${encontrado[1]} requested by ${encontrado[2]}.`,
+      es: `Comando ${encontrado[1]} solicitado por ${encontrado[2]}.`,
+      fr: `Commande ${encontrado[1]} demandée par ${encontrado[2]}.`,
+      de: `Befehl ${encontrado[1]} angefordert von ${encontrado[2]}.`,
+      it: `Comando ${encontrado[1]} richiesto da ${encontrado[2]}.`
+    });
+  }
+
+  const tokensAuditoria = {
+    en: { REMOVER_LOGO: "REMOVE LOGO", ALTERAR_LOGO: "CHANGE LOGO", ATUALIZAR: "UPDATE", CRIAR: "CREATE", EMPRESA: "COMPANY", MAQUINA: "MACHINE", USUARIO: "USER", MANUTENCAO: "MAINTENANCE", SISTEMA: "SYSTEM" },
+    es: { REMOVER_LOGO: "ELIMINAR LOGO", ALTERAR_LOGO: "CAMBIAR LOGO", ATUALIZAR: "ACTUALIZAR", CRIAR: "CREAR", EMPRESA: "EMPRESA", MAQUINA: "MÁQUINA", USUARIO: "USUARIO", MANUTENCAO: "MANTENIMIENTO", SISTEMA: "SISTEMA" },
+    fr: { REMOVER_LOGO: "SUPPRIMER LE LOGO", ALTERAR_LOGO: "MODIFIER LE LOGO", ATUALIZAR: "METTRE À JOUR", CRIAR: "CRÉER", EMPRESA: "ENTREPRISE", MAQUINA: "MACHINE", USUARIO: "UTILISATEUR", MANUTENCAO: "MAINTENANCE", SISTEMA: "SYSTÈME" },
+    de: { REMOVER_LOGO: "LOGO ENTFERNEN", ALTERAR_LOGO: "LOGO ÄNDERN", ATUALIZAR: "AKTUALISIEREN", CRIAR: "ERSTELLEN", EMPRESA: "UNTERNEHMEN", MAQUINA: "MASCHINE", USUARIO: "BENUTZER", MANUTENCAO: "WARTUNG", SISTEMA: "SYSTEM" },
+    it: { REMOVER_LOGO: "RIMUOVI LOGO", ALTERAR_LOGO: "MODIFICA LOGO", ATUALIZAR: "AGGIORNA", CRIAR: "CREA", EMPRESA: "AZIENDA", MAQUINA: "MACCHINA", USUARIO: "UTENTE", MANUTENCAO: "MANUTENZIONE", SISTEMA: "SISTEMA" }
+  };
+
+  if (/^[A-Z_]+(?:\s*·\s*[A-Z_]+)+$/.test(valor)) {
+    const tabela =
+      tokensAuditoria[idioma] ||
+      tokensAuditoria.en;
+    const tokens =
+      valor.split(/\s*·\s*/);
+    const traduzidos =
+      tokens.map(token => tabela[token] || token);
+
+    if (traduzidos.some((token, indice) => token !== tokens[indice])) {
+      return traduzidos.join(" · ");
+    }
+  }
+
+  return null;
+}
+
+
 // Traduz mensagens vindas de APIs ou criadas dinamicamente quando elas
 // correspondem a um texto conhecido pelo dicionário global.
 function traduzirTextoLivre(texto) {
@@ -7977,9 +9061,17 @@ function traduzirTextoLivre(texto) {
     }
   }
 
-  if (!base) return valor;
-
   const idioma = pegarIdiomaAtual();
+
+  if (!base) {
+    return (
+      traduzirPadraoLivre(
+        valor,
+        idioma
+      ) ||
+      valor
+    );
+  }
 
   return idioma === "pt"
     ? base
@@ -8345,41 +9437,20 @@ function abrirIdiomas() {
 
 
 function aplicarContrasteLogoEmpresa() {
-  const escuro =
-    ["escuro", "dark"].includes(
-      document.documentElement.getAttribute("data-theme")
-    );
-
-  // No tema escuro, a marca branca usa uma placa preta. No tema claro,
-  // preserva o ícone original sobre uma placa clara.
+  // A placa e o SVG da marca padrão são estilizados em elementos separados
+  // pelo CSS. Não aplicar filtro nem fundo inline aqui: o filtro também afeta
+  // o fundo do <img> e transformava a marca em um quadrado sólido.
   const logoSidebar =
     document.getElementById("empresaLogoSidebar");
 
   if (logoSidebar) {
     logoSidebar.classList.remove("logo-monocromatica-escura");
-    logoSidebar.src = escuro
-      ? "assets/img/steel-icon-white.svg?v=20260921"
-      : "assets/img/steel-icon.svg?v=20260921";
-    logoSidebar.style.setProperty(
-      "filter",
-      "none",
-      "important"
-    );
-    logoSidebar.style.setProperty(
-      "opacity",
-      "1",
-      "important"
-    );
-    logoSidebar.style.setProperty(
-      "background-color",
-      escuro ? "#0f1418" : "#f7f8f8",
-      "important"
-    );
-    logoSidebar.style.setProperty(
-      "border-color",
-      escuro ? "#303a40" : "#d8dee2",
-      "important"
-    );
+    logoSidebar.classList.add("default-company-logo");
+    logoSidebar.src = "assets/img/steel-icon.svg?v=20261013_THEME_LOGO_3";
+    ["filter", "opacity", "background-color", "border-color"]
+      .forEach(propriedade =>
+        logoSidebar.style.removeProperty(propriedade)
+      );
   }
 
   // A logo institucional fica sobre uma placa clara no conteúdo.
@@ -8391,6 +9462,16 @@ function aplicarContrasteLogoEmpresa() {
     .filter(Boolean)
     .forEach(img => {
       img.classList.remove("logo-monocromatica-escura");
+
+      if (img.classList.contains("default-company-logo")) {
+        img.style.removeProperty("filter");
+        img.style.removeProperty("opacity");
+        img.style.removeProperty("background-color");
+        img.style.removeProperty("border-color");
+        return;
+      }
+
+      // Logos realmente enviadas pela empresa preservam suas cores.
       img.style.setProperty("filter", "none", "important");
       img.style.setProperty("opacity", "1", "important");
     });
@@ -8573,6 +9654,29 @@ const observadorIdioma =
           mutacao.addedNodes.forEach(
             node => {
 
+              // textContent substitui o texto antigo por um novo Text node e
+              // gera uma mutação childList (não characterData). Sem tratar
+              // esse caso, títulos e valores atualizados pelos runtimes do
+              // dashboard permaneciam em português.
+              if (
+                node.nodeType ===
+                Node.TEXT_NODE
+              ) {
+                const parent =
+                  node.parentElement ||
+                  mutacao.target;
+
+                if (
+                  parent?.nodeType === 1
+                ) {
+                  traduzirTextosEstaticos(
+                    parent
+                  );
+                }
+
+                return;
+              }
+
               if (
                 node.nodeType !== 1
               ) {
@@ -8681,6 +9785,8 @@ window.addEventListener(
 document.addEventListener(
   "DOMContentLoaded",
   () => {
+
+    criarSeletorGlobalIdioma();
 
     aplicarTemaGlobal();
 

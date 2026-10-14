@@ -1,0 +1,38 @@
+STEELCONTROL — CORREÇÃO PRÉ-APRESENTAÇÃO (DESKTOP + EDGE)
+Data: 12/10/2026
+
+COMO APLICAR
+1. Feche o SteelControl Edge e o servidor que estiverem abertos.
+2. Extraia este ZIP dentro da pasta SteelControlDESKTOP.
+3. Confirme a substituição dos arquivos existentes.
+4. Inicie novamente com .\INICIAR_STEELCONTROL.ps1.
+5. No navegador, pressione Ctrl+F5 uma vez para remover o JavaScript antigo do cache.
+
+O QUE FOI CORRIGIDO
+- X e Y seguem a visão frontal do operador no controle desktop.
+- Clique ou segure uma direção para executar passos contínuos.
+- Removidas consultas redundantes antes/depois de cada passo manual.
+- Edge consulta comandos com baixa latência e publica a pose rapidamente.
+- Tráfego do Edge e do painel usa cotas separadas, sem retirar o rate limit.
+- Alarme transitório de STOP/boot é recuperado automaticamente e confirmado.
+- Alvo cartesiano impossível é bloqueado antes de colocar o Dobot em alarme.
+- Rotação usa a junta J4 e não desloca X/Y.
+- Limite preventivo de J4 evita chegar ao fim físico da junta.
+
+TESTE SEGURO ANTES DA APRESENTAÇÃO
+1. Deixe a área do braço totalmente livre.
+2. Comece com passo de 1 mm e velocidade de 10%.
+3. Teste X+, X-, Y+, Y-, Z+, Z-, R+ e R- uma vez cada.
+4. Depois segure cada direção por no máximo 2 segundos.
+5. Ao chegar à margem, o SteelControl deve recusar somente aquele sentido.
+   O sentido oposto continua disponível sem desligar o braço.
+
+IMPORTANTE
+- A correção não remove limites físicos, parada ou intertravamentos.
+- Se um alarme físico persistente não aceitar limpeza confirmada, o Edge bloqueia
+  o movimento. Nesse caso verifique posição, alimentação e o hardware do Dobot.
+
+VALIDAÇÃO EXECUTADA
+- Política Dobot do backend: 5 testes aprovados.
+- Driver e recuperação do Edge: 10 testes aprovados.
+- Sintaxe JavaScript e Python validada.

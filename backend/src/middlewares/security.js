@@ -139,14 +139,18 @@ export function criarRateLimit({
   janelaMs = 60_000,
   limite = 60,
   prefixo = "geral",
-  mensagem = "Muitas tentativas. Aguarde um pouco e tente novamente."
+  mensagem = "Muitas tentativas. Aguarde um pouco e tente novamente.",
+  segmento = null
 } = {}) {
   return function rateLimit(req, res, next) {
     const agora = Date.now();
 
     limparBucketsExpirados(agora);
 
-    const chave = chaveRequisicao(req, prefixo);
+    const valorSegmento = typeof segmento === "function"
+      ? String(segmento(req) || "geral").replace(/[^a-z0-9_-]/gi, "").slice(0, 32)
+      : "";
+    const chave = chaveRequisicao(req, valorSegmento ? `${prefixo}:${valorSegmento}` : prefixo);
 
     const localLimit = () => {
       const atual = buckets.get(chave);

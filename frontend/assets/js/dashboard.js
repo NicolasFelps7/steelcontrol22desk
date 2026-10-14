@@ -331,41 +331,49 @@ function obterPerfilOperacional(maquina) {
 }
 
 function formatarValorOperacional(valor, unidade = "") {
-  if (valor === null || valor === undefined || valor === "") return "Não configurado";
+  if (valor === null || valor === undefined || valor === "") {
+    return typeof traduzirTextoLivre === "function"
+      ? traduzirTextoLivre("Não configurado")
+      : "Não configurado";
+  }
   return `${valor}${unidade ? ` ${unidade}` : ""}`;
 }
 
 function atualizarContextoMaquina(maquina) {
+  const traduzir = texto =>
+    typeof traduzirTextoLivre === "function"
+      ? traduzirTextoLivre(texto)
+      : texto;
   const perfil = obterPerfilOperacional(maquina);
   const nome = maquina?.nome || localStorage.getItem("maquinaSelecionada") || "Máquina selecionada";
   const codigoEstado = String(maquina?.estadoConexao?.codigo || "OFFLINE").toUpperCase();
   const estadoTexto = codigoEstado === "CONECTADA" ? "Conectada" : codigoEstado === "INSTAVEL" ? "Instável" : maquina?.modoSimulacao !== false ? "Simulação" : "Offline";
 
   document.querySelectorAll("[data-machine-scope-name]").forEach(elemento => { elemento.textContent = nome; });
-  document.querySelectorAll("[data-machine-scope-controller]").forEach(elemento => { elemento.textContent = perfil.nome.toUpperCase(); });
+  document.querySelectorAll("[data-machine-scope-controller]").forEach(elemento => { elemento.textContent = traduzir(perfil.nome).toUpperCase(); });
   document.querySelectorAll("[data-machine-scope-state]").forEach(elemento => {
-    elemento.textContent = estadoTexto;
+    elemento.textContent = traduzir(estadoTexto);
     elemento.className = `machine-scope-state ${codigoEstado === "CONECTADA" ? "online" : codigoEstado === "INSTAVEL" ? "unstable" : ""}`;
   });
 
   const definir = (id, texto) => { const elemento = document.getElementById(id); if (elemento) elemento.textContent = texto; };
-  definir("machineProductionTitle", perfil.titulo);
-  definir("machineProductionDescription", perfil.descricao);
-  definir("productionPrimaryLabel", perfil.primario);
-  definir("productionCycleLabel", perfil.ciclos);
-  definir("productionControllerMetricLabel", perfil.metrica);
+  definir("machineProductionTitle", traduzir(perfil.titulo));
+  definir("machineProductionDescription", traduzir(perfil.descricao));
+  definir("productionPrimaryLabel", traduzir(perfil.primario));
+  definir("productionCycleLabel", traduzir(perfil.ciclos));
+  definir("productionControllerMetricLabel", traduzir(perfil.metrica));
   definir("productionControllerMetric", formatarValorOperacional(perfil.valor(maquina), perfil.unidade));
-  definir("productionSystemDescription", `Módulos operacionais compatíveis com ${perfil.nome}. Dados ausentes permanecem identificados como não configurados.`);
-  definir("machineMaintenanceTitle", `Manutenção — ${nome}`);
-  definir("machineMaintenanceDescription", `Plano preventivo, intervenções e histórico técnico exclusivos do ${perfil.nome}.`);
+  definir("productionSystemDescription", traduzir(`Módulos operacionais compatíveis com ${perfil.nome}. Dados ausentes permanecem identificados como não configurados.`));
+  definir("machineMaintenanceTitle", traduzir(`Manutenção — ${nome}`));
+  definir("machineMaintenanceDescription", traduzir(`Plano preventivo, intervenções e histórico técnico exclusivos do ${perfil.nome}.`));
   definir("machineLogsTitle", `Logs — ${nome}`);
-  definir("machineLogsDescription", `Eventos do ${perfil.nome} vinculados somente à máquina selecionada.`);
-  definir("machineLogsOrigin", perfil.nome);
+  definir("machineLogsDescription", traduzir(`Eventos do ${perfil.nome} vinculados somente à máquina selecionada.`));
+  definir("machineLogsOrigin", traduzir(perfil.nome));
 
   const recursos = document.getElementById("productionCompatibilityList");
-  if (recursos) recursos.innerHTML = perfil.recursos.map(item => `<span>${escaparHtml(item)}</span>`).join("");
+  if (recursos) recursos.innerHTML = perfil.recursos.map(item => `<span>${escaparHtml(traduzir(item))}</span>`).join("");
   if (graficoProducao2?.data?.datasets?.[0]) {
-    graficoProducao2.data.datasets[0].label = perfil.grafico;
+    graficoProducao2.data.datasets[0].label = traduzir(perfil.grafico);
     graficoProducao2.update();
   }
 }
@@ -728,9 +736,9 @@ const tipoManutencaoEl =
     "tipoManutencao"
   );
 
-const tecnicoManutencaoEl =
+const maintenanceAuthenticatedOperatorEl =
   document.getElementById(
-    "tecnicoManutencao"
+    "maintenanceAuthenticatedOperator"
   );
 
 const descricaoManutencaoEl =
@@ -920,6 +928,13 @@ if (nomeUsuarioEl) {
         : "Usuário"
     );
 
+}
+
+if (maintenanceAuthenticatedOperatorEl) {
+  maintenanceAuthenticatedOperatorEl.textContent =
+    nomeUsuario ||
+    usuarioLogado ||
+    "Usuário autenticado";
 }
 
 
@@ -2849,12 +2864,6 @@ if (formManutencao) {
           ?.value;
 
 
-      const tecnico =
-        tecnicoManutencaoEl
-          ?.value
-          .trim();
-
-
       const descricao =
         descricaoManutencaoEl
           ?.value
@@ -2863,7 +2872,6 @@ if (formManutencao) {
 
       if (
         !tipo ||
-        !tecnico ||
         !descricao
       ) {
 
@@ -2900,7 +2908,6 @@ if (formManutencao) {
                 JSON.stringify(
                   {
                     tipo,
-                    tecnico,
                     descricao
                   }
                 )
@@ -3068,7 +3075,7 @@ async function carregarResumoEmpresa() {
 
 
     let logoFinal =
-      "assets/img/steelcontrol-wordmark.png";
+      "assets/img/steel-icon.svg?v=20261013_THEME_LOGO_3";
 
     const logoInformada =
       empresa.logoUrl ||
@@ -3113,15 +3120,30 @@ async function carregarResumoEmpresa() {
 
 
     if (logoConfigEl) {
+      logoConfigEl.classList.toggle(
+        "default-company-logo",
+        !logoInformada
+      );
+
       logoConfigEl.onerror = () => {
         logoConfigEl.onerror = null;
-        logoConfigEl.src =
-          "assets/img/steelcontrol-wordmark.png";
-      };
-      logoConfigEl.onload = () =>
-        prepararLogoParaTema(
-          logoConfigEl
+        logoConfigEl.classList.add(
+          "default-company-logo"
         );
+        logoConfigEl.src =
+          "assets/img/steel-icon.svg?v=20261013_THEME_LOGO_3";
+      };
+      logoConfigEl.onload = () => {
+        if (
+          !logoConfigEl.classList.contains(
+            "default-company-logo"
+          )
+        ) {
+          prepararLogoParaTema(
+            logoConfigEl
+          );
+        }
+      };
       logoConfigEl.src =
         logoFinal;
 
@@ -4395,37 +4417,25 @@ document.addEventListener(
       document.getElementById("empresaLogoSidebar");
 
     if (logoSidebar) {
-      const temaEscuro =
-        ["escuro", "dark"].includes(
-          document.documentElement.getAttribute("data-theme")
-        );
-
       logoSidebar.classList.remove("logo-monocromatica-escura");
-      logoSidebar.src = temaEscuro
-        ? "assets/img/steel-icon-white.svg?v=20260921"
-        : "assets/img/steel-icon.svg?v=20260921";
-      logoSidebar.style.setProperty(
-        "filter",
-        "none",
-        "important"
-      );
-      logoSidebar.style.setProperty("opacity", "1", "important");
-      logoSidebar.style.setProperty(
-        "background-color",
-        temaEscuro ? "#0f1418" : "#f7f8f8",
-        "important"
-      );
-      logoSidebar.style.setProperty(
-        "border-color",
-        temaEscuro ? "#303a40" : "#d8dee2",
-        "important"
-      );
+      logoSidebar.classList.add("default-company-logo");
+      logoSidebar.src =
+        "assets/img/steel-icon.svg?v=20261013_THEME_LOGO_3";
+      ["filter", "opacity", "background-color", "border-color"]
+        .forEach(propriedade =>
+          logoSidebar.style.removeProperty(propriedade)
+        );
     }
 
     const logoConteudo =
       document.getElementById("configEmpresaLogo");
 
-    if (logoConteudo) {
+    if (
+      logoConteudo &&
+      !logoConteudo.classList.contains(
+        "default-company-logo"
+      )
+    ) {
       prepararLogoParaTema(logoConteudo);
     }
   }

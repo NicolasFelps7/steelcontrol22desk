@@ -1,7 +1,7 @@
 export const DOBOT_LIMITS = Object.freeze({
-  x: Object.freeze({ min: -320, max: 320 }),
-  y: Object.freeze({ min: -320, max: 320 }),
-  z: Object.freeze({ min: -20, max: 250 }),
+  x: Object.freeze({ min: -290, max: 290 }),
+  y: Object.freeze({ min: -290, max: 290 }),
+  z: Object.freeze({ min: -10, max: 220 }),
   r: Object.freeze({ min: -180, max: 180 }),
   velocidade: Object.freeze({ min: 1, max: 60 })
 });
@@ -71,6 +71,19 @@ export function validarPayloadDobot(comando, payload = {}) {
       throw erro;
     }
     resultado[campo] = valor;
+  }
+
+  // O volume útil do Magician não é um quadrado. Validar somente X/Y
+  // isoladamente permitia que os cantos (por exemplo 290/290) chegassem ao
+  // robô e disparassem o alarme de junta 18. A margem radial impede o erro
+  // antes de tocar no hardware e mantém livre o movimento no sentido oposto.
+  const raio = Math.hypot(resultado.x, resultado.y);
+  if (raio < 80 || raio > 290) {
+    const erro = new Error(
+      "Alvo fora da área cartesiana preventiva do Dobot (raio permitido: 80 a 290 mm). Mova no sentido oposto."
+    );
+    erro.statusCode = 400;
+    throw erro;
   }
 
   const velocidade = Number(payload?.velocidade ?? 30);

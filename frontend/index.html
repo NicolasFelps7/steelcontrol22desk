@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="assets/css/industrial-theme.css?v=20260921_LIGHT_PANELS_V4">
   <link rel="stylesheet" href="assets/css/sidebar.css?v=20260921_REAL_WHITE_ICON_V12">
   <link rel="stylesheet" href="assets/css/steelcontrol-refinement.css?v=20261009_DYNAMIC_LAYOUT">
+  <link rel="stylesheet" href="assets/css/steelcontrol-unified-ui.css?v=20261013_THEME_I18N_FINAL_7">
 
 
 </head>
@@ -59,11 +60,14 @@
 
     <div class="logo">
 
-      <img
-        id="empresaLogoSidebar"
-        src="assets/img/steel-icon.svg"
-        alt="SteelControl"
-      >
+      <span class="steel-logo-plate sidebar-logo-plate" aria-hidden="true">
+        <img
+          id="empresaLogoSidebar"
+          class="default-company-logo"
+          src="assets/img/steel-icon.svg"
+          alt=""
+        >
+      </span>
 
       <div class="sidebar-brand-copy">
         <strong>SteelControl</strong>
@@ -1806,20 +1810,17 @@
 
             <div class="form-group">
 
-              <label
-                for="tecnicoManutencao"
-                data-i18n="nomeTecnico"
-              >
-                Nome do técnico
+              <label data-i18n="responsavelAutenticado">
+                Responsável autenticado
               </label>
 
-
-              <input
-                type="text"
-                id="tecnicoManutencao"
-                placeholder="Digite o nome do técnico" data-i18n-placeholder="nomeTecnicoPlaceholder"
-                required
-              >
+              <div class="maintenance-authenticated-operator" role="status">
+                <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                <div>
+                  <span data-i18n="responsavelSessaoAjuda">Identificado pela conta conectada</span>
+                  <strong id="maintenanceAuthenticatedOperator">Usuário autenticado</strong>
+                </div>
+              </div>
 
             </div>
 
@@ -2464,7 +2465,8 @@
 
               <img
                 id="configEmpresaLogo"
-                src="assets/img/steelcontrol-wordmark.png"
+                class="default-company-logo"
+                src="assets/img/steel-icon.svg"
                 alt="Logo da empresa"
               >
 
@@ -2586,9 +2588,9 @@
        SCRIPTS
   =================================================== -->
 
-  <script src="assets/js/config.js?v=20261009_I18N_FULL"></script>
+  <script src="assets/js/config.js?v=20261013_THEME_I18N_FINAL_3"></script>
 
-  <script src="assets/js/dashboard.js?v=20260921_REAL_WHITE_ICON_V13"></script>
+  <script src="assets/js/dashboard.js?v=20261013_THEME_I18N_FINAL_3"></script>
 
   <script src="assets/js/industrial-runtime.js?v=20260918_INSTANT_MACHINE_CONFIG_V10"></script>
   <script src="assets/js/industrial-dashboard.js?v=20261009_DYNAMIC_DASHBOARD_V4"></script>

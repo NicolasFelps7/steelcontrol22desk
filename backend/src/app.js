@@ -74,7 +74,13 @@ app.use(
   criarRateLimit({
     janelaMs: 60_000,
     limite: 1200,
-    prefixo: "api"
+    prefixo: "api",
+    // O Edge faz polling autenticado e contínuo. Separar esse tráfego do
+    // painel evita que o próprio equipamento consuma a cota do operador,
+    // mantendo 1.200 requisições/minuto como teto em cada canal.
+    segmento: req => String(req.path || "").startsWith("/device/")
+      ? "device"
+      : "interactive"
   })
 );
 

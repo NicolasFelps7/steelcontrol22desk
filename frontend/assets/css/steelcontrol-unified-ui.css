@@ -1,0 +1,590 @@
+/* SteelControl — camada final de consistência visual Desktop/Mobile. */
+:root {
+  --sc-ui-font: "Segoe UI Variable Text", "Segoe UI", Inter, Arial, sans-serif;
+  --sc-ui-display: "Segoe UI Variable Display", "Segoe UI", Inter, Arial, sans-serif;
+  --sc-ui-ink: #111820;
+  --sc-ui-muted: #647181;
+  --sc-ui-line: #d8e0e6;
+  --sc-ui-panel: #ffffff;
+  --sc-ui-soft: #f5f7f8;
+  --sc-ui-orange: #cc7900;
+  --sc-ui-orange-soft: #fff5e7;
+  --sc-ui-danger: #c73434;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.tema-escuro,
+html[data-theme="escuro"] body,
+html[data-theme="dark"] body,
+body.dark-theme {
+  --sc-ui-ink: #f3f6f8;
+  --sc-ui-muted: #a9b5bf;
+  --sc-ui-line: #34404a;
+  --sc-ui-panel: #171d23;
+  --sc-ui-soft: #11171c;
+  --sc-ui-orange: #f2a01b;
+  --sc-ui-orange-soft: rgba(242, 160, 27, 0.1);
+}
+
+/* Seletor presente em todas as páginas autenticadas. */
+.steel-language-switcher {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 9000;
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 12px;
+  gap: 8px;
+  color: #f6f8f9;
+  background: rgba(17, 24, 30, 0.96);
+  border: 1px solid #34404a;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+  font-family: var(--sc-ui-font);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.steel-language-switcher .steel-language-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  color: #f0a11a;
+  font-size: 13px;
+}
+
+.steel-language-switcher .steel-language-current {
+  min-width: 25px;
+  color: #ffffff !important;
+  font: 700 13px/1 var(--sc-ui-font) !important;
+  letter-spacing: 0.06em;
+  text-align: center;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.steel-language-switcher .steel-language-chevron {
+  color: #a9b5bf;
+  font-size: 10px;
+}
+
+/* O select nativo fica sobre todo o controle somente para interação. O código
+   do idioma é desenhado separadamente, portanto nunca some por causa do tema
+   ou das regras globais de select do navegador. */
+.steel-language-switcher select {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+}
+
+.home-page .header-actions .steel-language-switcher,
+.home-page .nav-in > .steel-language-switcher {
+  position: static;
+  min-height: 40px;
+  box-shadow: none;
+}
+
+.home-page .nav-in > .steel-language-switcher {
+  flex: 0 0 auto;
+  padding-inline: 9px;
+  background: rgba(17, 24, 30, 0.74);
+}
+
+/* Confirmação de saída e confirmações críticas. */
+.sc-confirm-backdrop,
+.device-key-overlay {
+  padding: 22px;
+  background: rgba(5, 8, 11, 0.68) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sc-confirm-card,
+.device-key-modal {
+  width: min(100%, 480px) !important;
+  padding: 28px !important;
+  color: var(--sc-ui-ink) !important;
+  background: var(--sc-ui-panel) !important;
+  border: 1px solid var(--sc-ui-line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3) !important;
+  font-family: var(--sc-ui-font) !important;
+  text-align: left !important;
+}
+
+html[data-theme="escuro"] .sc-confirm-card,
+html[data-theme="escuro"] .device-key-modal,
+html[data-theme="dark"] .sc-confirm-card,
+html[data-theme="dark"] .device-key-modal,
+html[style*="color-scheme: dark"] .sc-confirm-card,
+html[style*="color-scheme: dark"] .device-key-modal,
+body.tema-escuro .sc-confirm-card,
+body.tema-escuro .device-key-modal,
+body.dark-theme .sc-confirm-card,
+body.dark-theme .device-key-modal {
+  color: #f4f7f9 !important;
+  background: #171d23 !important;
+  border-color: #34404a !important;
+  box-shadow: 0 30px 86px rgba(0, 0, 0, 0.58) !important;
+}
+
+html[data-theme="escuro"] .sc-confirm-card h3,
+html[data-theme="escuro"] .device-key-modal h3,
+html[data-theme="dark"] .sc-confirm-card h3,
+html[data-theme="dark"] .device-key-modal h3,
+html[style*="color-scheme: dark"] .sc-confirm-card h3,
+html[style*="color-scheme: dark"] .device-key-modal h3,
+body.tema-escuro .sc-confirm-card h3,
+body.tema-escuro .device-key-modal h3,
+body.dark-theme .sc-confirm-card h3,
+body.dark-theme .device-key-modal h3 {
+  color: #f4f7f9 !important;
+}
+
+html[data-theme="escuro"] .sc-confirm-card p,
+html[data-theme="escuro"] .device-key-modal p,
+html[data-theme="dark"] .sc-confirm-card p,
+html[data-theme="dark"] .device-key-modal p,
+html[style*="color-scheme: dark"] .sc-confirm-card p,
+html[style*="color-scheme: dark"] .device-key-modal p,
+body.tema-escuro .sc-confirm-card p,
+body.tema-escuro .device-key-modal p,
+body.dark-theme .sc-confirm-card p,
+body.dark-theme .device-key-modal p {
+  color: #aeb9c2 !important;
+}
+
+html[data-theme="escuro"] .sc-confirm-cancel,
+html[data-theme="dark"] .sc-confirm-cancel,
+html[style*="color-scheme: dark"] .sc-confirm-cancel,
+body.tema-escuro .sc-confirm-cancel,
+body.dark-theme .sc-confirm-cancel {
+  color: #e9eef1 !important;
+  background: #222b32 !important;
+  border-color: #3a4650 !important;
+}
+
+html[data-theme="escuro"] .sc-confirm-ok,
+html[data-theme="dark"] .sc-confirm-ok,
+html[style*="color-scheme: dark"] .sc-confirm-ok,
+body.tema-escuro .sc-confirm-ok,
+body.dark-theme .sc-confirm-ok {
+  color: #ffffff !important;
+  background: #b83232 !important;
+  border-color: #d64a4a !important;
+}
+
+.sc-confirm-icon,
+.device-key-modal-icon {
+  display: grid;
+  width: 48px !important;
+  height: 48px !important;
+  margin: 0 0 18px !important;
+  place-items: center;
+  color: var(--sc-ui-orange) !important;
+  background: var(--sc-ui-orange-soft) !important;
+  border: 1px solid color-mix(in srgb, var(--sc-ui-orange) 30%, transparent) !important;
+  border-radius: 12px !important;
+  font-size: 20px !important;
+}
+
+.sc-confirm-card.is-danger .sc-confirm-icon {
+  color: var(--sc-ui-danger) !important;
+  background: color-mix(in srgb, var(--sc-ui-danger) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--sc-ui-danger) 28%, transparent) !important;
+}
+
+.sc-confirm-card h3,
+.device-key-modal h3 {
+  margin: 0 0 9px !important;
+  color: var(--sc-ui-ink) !important;
+  font: 650 clamp(20px, 2.6vw, 25px)/1.18 var(--sc-ui-display) !important;
+  letter-spacing: -0.025em !important;
+  text-transform: none !important;
+}
+
+.sc-confirm-card p,
+.device-key-modal p {
+  margin: 0 !important;
+  color: var(--sc-ui-muted) !important;
+  font: 400 14px/1.55 var(--sc-ui-font) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.sc-confirm-actions,
+.device-key-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 24px !important;
+}
+
+.sc-confirm-actions button,
+.device-key-actions button {
+  min-height: 43px !important;
+  padding: 0 17px !important;
+  border-radius: 9px !important;
+  font: 600 13px/1 var(--sc-ui-font) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.device-key-machine-id {
+  margin-top: 18px;
+  color: var(--sc-ui-muted);
+  font: 500 12px/1.4 var(--sc-ui-font);
+}
+
+.device-key-code {
+  display: block;
+  max-height: 120px;
+  margin-top: 10px;
+  padding: 14px;
+  overflow: auto;
+  color: var(--sc-ui-ink);
+  background: var(--sc-ui-soft);
+  border: 1px solid var(--sc-ui-line);
+  border-radius: 10px;
+  font: 500 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* Responsável da manutenção vem da sessão autenticada. */
+.maintenance-authenticated-operator {
+  display: flex;
+  align-items: center;
+  min-height: 58px;
+  padding: 11px 13px;
+  gap: 11px;
+  color: var(--sc-ui-ink);
+  background: var(--sc-ui-soft);
+  border: 1px solid var(--sc-ui-line);
+  border-radius: 10px;
+  font-family: var(--sc-ui-font);
+}
+
+.maintenance-authenticated-operator > i {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--sc-ui-orange);
+  background: var(--sc-ui-orange-soft);
+  border-radius: 9px;
+}
+
+.maintenance-authenticated-operator span,
+.maintenance-authenticated-operator strong {
+  display: block;
+}
+
+.maintenance-authenticated-operator span {
+  color: var(--sc-ui-muted);
+  font-size: 11px;
+}
+
+.maintenance-authenticated-operator strong {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+/* Logos: fundo neutro consistente, sem sumir em nenhum tema. */
+.company-logo,
+.empresa-logo,
+.machine-company-logo,
+.sidebar-logo-icon,
+.brand-icon {
+  isolation: isolate;
+}
+
+.company-logo img,
+.empresa-logo img,
+.machine-company-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Marca padrão do SteelControl. A placa fica separada da imagem para que a
+   troca de tema altere apenas o SVG, sem pintar o fundo inteiro. */
+.steel-logo-plate,
+.brand-symbol,
+.company-top-symbol,
+.company-logo-placeholder,
+.config-company-logo:has(> .default-company-logo) {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden;
+  background: #ffffff !important;
+  border: 1px solid #d8e0e6 !important;
+  border-radius: 10px;
+}
+
+.dashboard-shell .sidebar .logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.sidebar-logo-plate {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  flex: 0 0 52px !important;
+}
+
+.company-logo-placeholder:not([hidden]) {
+  display: grid !important;
+}
+
+.company-logo-placeholder[hidden] {
+  display: none !important;
+}
+
+html[data-theme="escuro"] .steel-logo-plate,
+html[data-theme="dark"] .steel-logo-plate,
+html[style*="color-scheme: dark"] .steel-logo-plate,
+html[data-theme="escuro"] .brand-symbol,
+html[data-theme="dark"] .brand-symbol,
+html[style*="color-scheme: dark"] .brand-symbol,
+html[data-theme="escuro"] .company-top-symbol,
+html[data-theme="dark"] .company-top-symbol,
+html[style*="color-scheme: dark"] .company-top-symbol,
+html[data-theme="escuro"] .company-logo-placeholder,
+html[data-theme="dark"] .company-logo-placeholder,
+html[style*="color-scheme: dark"] .company-logo-placeholder,
+html[data-theme="escuro"] .config-company-logo:has(> .default-company-logo),
+html[data-theme="dark"] .config-company-logo:has(> .default-company-logo),
+html[style*="color-scheme: dark"] .config-company-logo:has(> .default-company-logo) {
+  background: #090d10 !important;
+  border-color: #34404a !important;
+}
+
+/* A animação de acesso também acompanha o tema: preto no claro e branco no
+   escuro. Corpo e capacete usam exatamente a mesma regra. */
+.access-welcome-overlay .welcome-mascot-body,
+.access-welcome-overlay .welcome-hardhat,
+.login-shell .brand-static-icon[src*="steel-icon.svg"] {
+  filter: brightness(0) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="escuro"] .access-welcome-overlay .welcome-mascot-body,
+html[data-theme="dark"] .access-welcome-overlay .welcome-mascot-body,
+html[style*="color-scheme: dark"] .access-welcome-overlay .welcome-mascot-body,
+html[data-theme="escuro"] .access-welcome-overlay .welcome-hardhat,
+html[data-theme="dark"] .access-welcome-overlay .welcome-hardhat,
+html[style*="color-scheme: dark"] .access-welcome-overlay .welcome-hardhat,
+html[data-theme="escuro"] .login-shell .brand-static-icon[src*="steel-icon.svg"],
+html[data-theme="dark"] .login-shell .brand-static-icon[src*="steel-icon.svg"],
+html[style*="color-scheme: dark"] .login-shell .brand-static-icon[src*="steel-icon.svg"] {
+  filter: brightness(0) invert(1) !important;
+}
+
+.company-logo-box > img:not([src=""]),
+.config-company-logo > img:not([src*="steelcontrol-wordmark"]),
+#empresaLogo:not([src=""]) {
+  padding: 8px;
+  background:
+    linear-gradient(45deg, rgba(126, 139, 150, 0.08) 25%, transparent 25%) 0 0 / 14px 14px,
+    linear-gradient(-45deg, rgba(126, 139, 150, 0.08) 25%, transparent 25%) 0 7px / 14px 14px,
+    var(--sc-ui-panel);
+  object-fit: contain;
+}
+
+.company-logo-formats {
+  max-width: 190px;
+  margin: 10px 0 0;
+  color: var(--sc-ui-muted);
+  font: 500 11px/1.4 var(--sc-ui-font);
+  text-align: center;
+}
+
+/* Correção final das logos padrão: usa o arquivo SVG real. Isso funciona nos
+   mesmos navegadores usados pelo projeto e não depende de máscara externa. */
+:root {
+  --steel-default-logo-filter: brightness(0);
+}
+
+html[data-theme="escuro"],
+html[data-theme="dark"],
+html[style*="color-scheme: dark"] {
+  --steel-default-logo-filter: brightness(0) invert(1);
+}
+
+.steel-logo-plate::after,
+.brand-symbol::after,
+.company-top-symbol::after,
+.company-logo-placeholder::after,
+.config-company-logo:has(> .default-company-logo)::after {
+  content: none !important;
+  display: none !important;
+}
+
+#empresaLogoSidebar.default-company-logo[src*="steel-icon"],
+.brand-symbol > img[src*="steel-icon"],
+.company-top-symbol > img[src*="steel-icon"],
+.company-logo-placeholder > img.default-company-logo[src*="steel-icon"],
+.config-company-logo > img.default-company-logo[src*="steel-icon"] {
+  position: static !important;
+  inset: auto !important;
+  display: block !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  filter: var(--steel-default-logo-filter) !important;
+  -webkit-filter: var(--steel-default-logo-filter) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  clip: auto !important;
+  pointer-events: none !important;
+}
+
+/* O CSS antigo da sidebar estiliza diretamente o <img> com outra moldura.
+   Este seletor deliberadamente mais específico remove o quadrado interno e
+   mantém o símbolo opticamente centralizado dentro da única placa externa. */
+html body.dashboard-shell .sidebar .logo .sidebar-logo-plate >
+#empresaLogoSidebar.default-company-logo[src*="steel-icon"] {
+  box-sizing: border-box !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  filter: brightness(0) !important;
+  -webkit-filter: brightness(0) !important;
+  transform: none !important;
+}
+
+html[data-theme="escuro"] body.dashboard-shell .sidebar .logo .sidebar-logo-plate >
+#empresaLogoSidebar.default-company-logo[src*="steel-icon"],
+html[data-theme="dark"] body.dashboard-shell .sidebar .logo .sidebar-logo-plate >
+#empresaLogoSidebar.default-company-logo[src*="steel-icon"],
+html[style*="color-scheme: dark"] body.dashboard-shell .sidebar .logo .sidebar-logo-plate >
+#empresaLogoSidebar.default-company-logo[src*="steel-icon"] {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+}
+
+.brand-symbol > img[src*="steel-icon"],
+.company-top-symbol > img[src*="steel-icon"] {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.company-logo-placeholder > img.default-company-logo[src*="steel-icon"] {
+  width: 68px !important;
+  height: 68px !important;
+}
+
+.config-company-logo > img.default-company-logo[src*="steel-icon"] {
+  width: 58px !important;
+  height: 58px !important;
+}
+
+/* Centralização geométrica das marcas dos cabeçalhos. Regras antigas dessas
+   páginas aplicavam deslocamentos no <img>; o centro agora é sempre 50/50. */
+html body.page-machines .topbar .brand .brand-symbol > img[src*="steel-icon"],
+html body.page-company .topbar .company-top-brand .company-top-symbol > img[src*="steel-icon"] {
+  position: absolute !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  transform-origin: center !important;
+  object-position: 50% 50% !important;
+}
+
+/* O dashboard antigo define `filter: none` para #configEmpresaLogo com ID.
+   Estes seletores específicos preservam logos enviadas pela empresa e mudam
+   somente a marca padrão do SteelControl. */
+html body.dashboard-shell .config-company-logo >
+#configEmpresaLogo.default-company-logo[src*="steel-icon"] {
+  position: absolute !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: 58px !important;
+  height: 58px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: brightness(0) !important;
+  -webkit-filter: brightness(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(-50%, -50%) !important;
+  transform-origin: center !important;
+  object-position: 50% 50% !important;
+}
+
+html[data-theme="escuro"] body.dashboard-shell .config-company-logo >
+#configEmpresaLogo.default-company-logo[src*="steel-icon"],
+html[data-theme="dark"] body.dashboard-shell .config-company-logo >
+#configEmpresaLogo.default-company-logo[src*="steel-icon"],
+html[style*="color-scheme: dark"] body.dashboard-shell .config-company-logo >
+#configEmpresaLogo.default-company-logo[src*="steel-icon"] {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+}
+
+@media (max-width: 620px) {
+  .sc-confirm-card,
+  .device-key-modal {
+    padding: 22px !important;
+  }
+
+  .sc-confirm-actions,
+  .device-key-actions {
+    flex-direction: column-reverse;
+  }
+
+  .sc-confirm-actions button,
+  .device-key-actions button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-confirm-card,
+  .device-key-modal,
+  .steel-language-switcher {
+    animation: none !important;
+    transition: none !important;
+  }
+}
