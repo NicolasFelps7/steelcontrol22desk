@@ -1,0 +1,11 @@
+STEELCONTROL — HOSPEDAGEM 24 HORAS
+
+1. Extraia este ZIP na raiz do projeto SteelControl, aceitando substituir os
+   arquivos indicados.
+2. Abra deploy/railway/README.md.
+3. Siga o guia na ordem. Não publique arquivos .env nem compartilhe os
+   segredos gerados.
+
+O site, a API, o banco, o Redis e a Face API ficarão na nuvem. O SteelControl
+Edge continuará no computador conectado à máquina e só precisará estar ligado
+quando você quiser comunicar ou controlar o equipamento físico.

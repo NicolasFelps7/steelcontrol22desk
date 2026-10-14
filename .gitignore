@@ -1,0 +1,36 @@
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/*.env.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/*.env.example
+
+# Dependências
+node_modules/
+**/node_modules/
+face-api/venv/
+face-api/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.insightface/
+
+# Saídas locais
+build/
+dist/
+.dart_tool/
+backend/uploads/
+*.log
+*.pid
+*.zip
+*.rar
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -2,6 +2,9 @@
 
 Arquitetura recomendada: frontend servido pelo Node/Express, PostgreSQL gerenciado e Face API em serviço Python separado.
 
+Para o procedimento completo de hospedagem 24 horas no Railway, consulte
+[`deploy/railway/README.md`](../deploy/railway/README.md).
+
 ## Produção
 - Execute `CONFIGURAR_PRODUCAO_NIVEL9.ps1`; não monte o `.env` manualmente.
 - Use HTTPS na borda/reverse proxy.
