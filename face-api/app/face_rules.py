@@ -5,7 +5,7 @@ testadas rapidamente sem baixar o buffalo_l ou inicializar o ONNX Runtime.
 """
 
 from collections.abc import Sequence
-from math import isfinite, sqrt
+from math import atan2, degrees, hypot, isfinite, sqrt
 
 
 TIPOS_IMAGEM_PERMITIDOS = {
@@ -16,6 +16,91 @@ TIPOS_IMAGEM_PERMITIDOS = {
 
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
 TAMANHO_EMBEDDING = 512
+
+
+def estimar_pose_por_pontos(
+    pontos: Sequence[Sequence[float]] | None,
+) -> tuple[float, float, float] | None:
+    """Estima pitch, yaw e roll usando os cinco pontos do detector.
+
+    A estimativa serve somente para orientar a prova de vida por movimento.
+    A autenticacao continua baseada no embedding de reconhecimento do
+    ``buffalo_l``. Assim, nao e necessario carregar o modelo auxiliar pesado
+    de landmarks 3D apenas para obter a direcao aproximada da cabeca.
+    """
+
+    if pontos is None or len(pontos) < 5:
+        return None
+
+    try:
+        coordenadas = [
+            (float(ponto[0]), float(ponto[1]))
+            for ponto in pontos[:5]
+        ]
+    except (IndexError, TypeError, ValueError):
+        return None
+
+    if not all(
+        isfinite(valor)
+        for ponto in coordenadas
+        for valor in ponto
+    ):
+        return None
+
+    olho_esquerdo, olho_direito, nariz, boca_esquerda, boca_direita = (
+        coordenadas
+    )
+
+    distancia_olhos = hypot(
+        olho_direito[0] - olho_esquerdo[0],
+        olho_direito[1] - olho_esquerdo[1],
+    )
+
+    if distancia_olhos < 1.0:
+        return None
+
+    centro_olhos = (
+        (olho_esquerdo[0] + olho_direito[0]) / 2.0,
+        (olho_esquerdo[1] + olho_direito[1]) / 2.0,
+    )
+    centro_boca = (
+        (boca_esquerda[0] + boca_direita[0]) / 2.0,
+        (boca_esquerda[1] + boca_direita[1]) / 2.0,
+    )
+    altura_face = hypot(
+        centro_boca[0] - centro_olhos[0],
+        centro_boca[1] - centro_olhos[1],
+    )
+
+    if altura_face < 1.0:
+        return None
+
+    yaw = (
+        (nariz[0] - centro_olhos[0])
+        / distancia_olhos
+    ) * 90.0
+
+    proporcao_vertical_nariz = (
+        (nariz[1] - centro_olhos[1])
+        / altura_face
+    )
+    pitch = (proporcao_vertical_nariz - 0.5) * 90.0
+
+    roll = degrees(
+        atan2(
+            olho_direito[1] - olho_esquerdo[1],
+            olho_direito[0] - olho_esquerdo[0],
+        )
+    )
+
+    def limitar_angulo(valor: float) -> float:
+        return max(-45.0, min(45.0, valor))
+
+    return (
+        limitar_angulo(pitch),
+        limitar_angulo(yaw),
+        limitar_angulo(roll),
+    )
 
 
 def validar_metadados_upload(

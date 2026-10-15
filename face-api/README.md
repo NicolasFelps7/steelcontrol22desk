@@ -76,3 +76,10 @@ PowerShell:
 ```
 
 O reconhecimento facial usa o modelo `buffalo_l`. Deixe esse modelo baixado no computador **antes** da apresentação; não dependa de internet no dia da banca.
+
+Em produção, a API carrega apenas os módulos `detection` e `recognition` do
+`buffalo_l`. Eles preservam o mesmo embedding de 512 posições e evitam manter
+na memória os modelos auxiliares de idade, gênero e landmarks detalhados, que
+não participam da autenticação do SteelControl. A orientação da prova de vida
+continua disponível por uma estimativa feita com os cinco pontos faciais que o
+próprio detector já retorna.

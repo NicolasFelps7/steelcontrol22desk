@@ -4,6 +4,7 @@ import unittest
 from app.face_rules import (
     MAX_IMAGE_BYTES,
     embedding_valido,
+    estimar_pose_por_pontos,
     limitar_bbox,
     validar_metadados_upload,
 )
@@ -49,6 +50,46 @@ class FaceRulesTest(unittest.TestCase):
 
     def test_embedding_rejeita_vetor_sem_norma(self):
         self.assertFalse(embedding_valido([0.0] * 512))
+
+    def test_pose_frontal_por_cinco_pontos(self):
+        pose = estimar_pose_por_pontos([
+            (30, 30),
+            (70, 30),
+            (50, 50),
+            (35, 70),
+            (65, 70),
+        ])
+
+        self.assertIsNotNone(pose)
+        pitch, yaw, roll = pose
+        self.assertAlmostEqual(pitch, 0.0)
+        self.assertAlmostEqual(yaw, 0.0)
+        self.assertAlmostEqual(roll, 0.0)
+
+    def test_pose_detecta_movimento_horizontal(self):
+        pose = estimar_pose_por_pontos([
+            (30, 30),
+            (70, 30),
+            (58, 50),
+            (35, 70),
+            (65, 70),
+        ])
+
+        self.assertIsNotNone(pose)
+        self.assertGreaterEqual(abs(pose[1]), 12.0)
+
+    def test_pose_rejeita_pontos_invalidos(self):
+        self.assertIsNone(estimar_pose_por_pontos(None))
+        self.assertIsNone(estimar_pose_por_pontos([(1, 2)]))
+        self.assertIsNone(
+            estimar_pose_por_pontos([
+                (10, 10),
+                (10, 10),
+                (10, 20),
+                (5, 30),
+                (15, 30),
+            ])
+        )
 
 
 if __name__ == "__main__":

@@ -9,10 +9,16 @@ from insightface.app import FaceAnalysis
 
 from .face_rules import (
     embedding_valido,
+    estimar_pose_por_pontos,
     limitar_bbox,
     validar_metadados_upload,
 )
 from .image_utils import decodificar_imagem, medir_brilho
+from .model_config import (
+    ALLOWED_MODULES,
+    DETECTION_SIZE,
+    MODEL_NAME,
+)
 
 
 # =========================================================
@@ -99,14 +105,31 @@ async def proteger_face_api(
 # =========================================================
 
 face_analyzer = FaceAnalysis(
-    name="buffalo_l",
-    providers=["CPUExecutionProvider"]
+    name=MODEL_NAME,
+    providers=["CPUExecutionProvider"],
+    allowed_modules=list(ALLOWED_MODULES),
 )
 
 
 face_analyzer.prepare(
     ctx_id=-1,
-    det_size=(640, 640)
+    det_size=DETECTION_SIZE,
+)
+
+modulos_carregados = set(face_analyzer.models)
+modulos_ausentes = set(ALLOWED_MODULES) - modulos_carregados
+
+if modulos_ausentes:
+    raise RuntimeError(
+        "Modelo facial incompleto. Módulos ausentes: "
+        + ", ".join(sorted(modulos_ausentes))
+    )
+
+print(
+    "[SteelControl Face] Modelo "
+    f"{MODEL_NAME} pronto com módulos: "
+    + ", ".join(ALLOWED_MODULES),
+    flush=True,
 )
 
 
@@ -149,7 +172,9 @@ def health():
     return {
         "status": "ok",
         "service": "steelcontrol-face-api",
-        "modelo": "buffalo_l"
+        "modelo": MODEL_NAME,
+        "modulos": list(ALLOWED_MODULES),
+        "tamanhoDeteccao": list(DETECTION_SIZE),
     }
 
 
@@ -420,6 +445,11 @@ async def analisar_rosto(
         "pose",
         None
     )
+
+    if pose is None:
+        pose = estimar_pose_por_pontos(
+            getattr(rosto, "kps", None)
+        )
 
     pitch = None
     yaw = None

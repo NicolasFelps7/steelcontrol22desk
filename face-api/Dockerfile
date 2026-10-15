@@ -3,7 +3,12 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PORT=8000 \
-    STEELCONTROL_ENV=production
+    STEELCONTROL_ENV=production \
+    MALLOC_ARENA_MAX=2 \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    NUMEXPR_NUM_THREADS=1
 
 WORKDIR /app
 
@@ -29,8 +34,14 @@ COPY --chown=steelcontrol:steelcontrol app ./app
 USER steelcontrol
 
 # Pré-baixa o modelo durante o build usando o mesmo usuário não-root
-# que executará a API, evitando permissões incorretas no cache.
-RUN python -c "from insightface.app import FaceAnalysis; FaceAnalysis(name='buffalo_l')"
+# que executará a API, evitando permissões incorretas no cache. Os modelos
+# auxiliares não usados são removidos da imagem para que nem sejam abertos no
+# container de 1 GB do Railway Trial.
+RUN python -c "from insightface.app import FaceAnalysis; from app.model_config import ALLOWED_MODULES, MODEL_NAME; FaceAnalysis(name=MODEL_NAME, allowed_modules=list(ALLOWED_MODULES))" \
+    && rm -f \
+       /home/steelcontrol/.insightface/models/buffalo_l/1k3d68.onnx \
+       /home/steelcontrol/.insightface/models/buffalo_l/2d106det.onnx \
+       /home/steelcontrol/.insightface/models/buffalo_l/genderage.onnx
 
 EXPOSE 8000
 
