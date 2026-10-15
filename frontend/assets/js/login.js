@@ -290,11 +290,17 @@ let frontalInicialBlob =
 let livenessMovementTimer =
   null;
 
+let livenessMovementAttempts =
+  0;
+
 const LIVENESS_MOVEMENT_TIMEOUT_MS =
-  20000;
+  60000;
 
 const LIVENESS_MOVEMENT_TIMEOUT_SECONDS =
   Math.round(LIVENESS_MOVEMENT_TIMEOUT_MS / 1000);
+
+const LIVENESS_MOVEMENT_MAX_ANALYSES =
+  6;
 
 let modoFace =
   "login";
@@ -1147,6 +1153,7 @@ function falharLivenessPorImobilidade() {
   livenessConfirmado = false;
   livenessBlob = null;
   frontalInicialBlob = null;
+  livenessMovementAttempts = 0;
   autenticando = false;
   analisando = false;
 
@@ -1229,6 +1236,9 @@ async function abrirCameraFace() {
 
   frontalInicialBlob =
     null;
+
+  livenessMovementAttempts =
+    0;
 
 
   autenticando =
@@ -1545,6 +1555,9 @@ async function analisarFrame() {
         livenessBlob =
           blob;
 
+        livenessMovementAttempts =
+          0;
+
         etapaLiveness =
           "retorno";
 
@@ -1558,6 +1571,16 @@ async function analisarFrame() {
         );
 
       } else {
+
+        livenessMovementAttempts++;
+
+        if (
+          livenessMovementAttempts >=
+          LIVENESS_MOVEMENT_MAX_ANALYSES
+        ) {
+          falharLivenessPorImobilidade();
+          return;
+        }
 
         alterarStatus(
           "analisando",
@@ -1609,6 +1632,9 @@ async function analisarFrame() {
           "movimento";
 
         framesCorretos =
+          0;
+
+        livenessMovementAttempts =
           0;
 
         iniciarTimeoutLivenessMovimento();

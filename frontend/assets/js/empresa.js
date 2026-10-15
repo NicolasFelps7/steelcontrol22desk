@@ -336,9 +336,11 @@ let etapaCadastroFacial = "frontal";
 let livenessCadastroBlob = null;
 let frontalCadastroBlob = null;
 let timeoutMovimentoCadastro = null;
-const FACE_ENROLL_MOVEMENT_TIMEOUT_MS = 20000;
+let tentativasMovimentoCadastro = 0;
+const FACE_ENROLL_MOVEMENT_TIMEOUT_MS = 60000;
 const FACE_ENROLL_MOVEMENT_TIMEOUT_SECONDS =
   Math.round(FACE_ENROLL_MOVEMENT_TIMEOUT_MS / 1000);
+const FACE_ENROLL_MOVEMENT_MAX_ANALYSES = 6;
 const FRAMES_RETORNO_NECESSARIOS = 2;
 
 // =====================================================
@@ -4037,6 +4039,7 @@ function falharMovimentoCadastroFacial() {
   }
 
   limparTimeoutCadastroFacial();
+  tentativasMovimentoCadastro = 0;
   pararCamera();
   faceModal?.classList.remove("ativo");
   usuarioFacialSelecionado = null;
@@ -4119,6 +4122,7 @@ async function abrirCadastroFacialFuncionario(
   etapaCadastroFacial = "frontal";
   livenessCadastroBlob = null;
   frontalCadastroBlob = null;
+  tentativasMovimentoCadastro = 0;
   limparTimeoutCadastroFacial();
 
   cadastrando = false;
@@ -4528,6 +4532,7 @@ function processarAnalise(
     ) {
       limparTimeoutCadastroFacial();
       livenessCadastroBlob = blobAtual;
+      tentativasMovimentoCadastro = 0;
       etapaCadastroFacial = "retorno";
       framesCorretos = 0;
       atualizarProgresso();
@@ -4537,6 +4542,16 @@ function processarAnalise(
         "Volte a olhar diretamente para a câmera."
       );
     } else {
+      tentativasMovimentoCadastro++;
+
+      if (
+        tentativasMovimentoCadastro >=
+        FACE_ENROLL_MOVEMENT_MAX_ANALYSES
+      ) {
+        falharMovimentoCadastroFacial();
+        return;
+      }
+
       alterarStatusCamera(
         "analisando",
         "Prova de vida",
@@ -4578,6 +4593,7 @@ function processarAnalise(
       }
       etapaCadastroFacial = "movimento";
       framesCorretos = 0;
+      tentativasMovimentoCadastro = 0;
       atualizarProgresso();
       iniciarTimeoutCadastroFacial();
       alterarStatusCamera(
