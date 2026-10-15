@@ -1,9 +1,5 @@
 import nodemailer from "nodemailer";
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "node:url";
-
 import { env } from "../config/env.js";
 
 
@@ -22,31 +18,7 @@ function escaparHtml(valor) {
 
 
 // =========================================================
-// LOGO
-// =========================================================
-
-const __filename =
-  fileURLToPath(import.meta.url);
-
-const __dirname =
-  path.dirname(__filename);
-
-const caminhoLogo =
-  path.resolve(
-    __dirname,
-    "../../../frontend/assets/img/steel-icon.png"
-  );
-
-
-function logoExiste() {
-  return fs.existsSync(
-    caminhoLogo
-  );
-}
-
-
-// =========================================================
-// TRANSPORTER GMAIL
+// TRANSPORTER SMTP
 // =========================================================
 
 function criarTransporter() {
@@ -56,7 +28,7 @@ function criarTransporter() {
   ) {
     const erro =
       new Error(
-        "Envio de e-mail não configurado. Defina EMAIL_USER e EMAIL_APP_PASSWORD no arquivo .env."
+        "Envio por SMTP não configurado. Defina EMAIL_USER e EMAIL_APP_PASSWORD no arquivo .env."
       );
 
     erro.statusCode =
@@ -495,16 +467,121 @@ function criarTemplateEmail({
 // ENVIO BASE
 // =========================================================
 
-async function enviarEmail({
+async function enviarEmailBrevo({
+  destino,
+  subject,
+  html
+}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    env.brevoTimeoutMs
+  );
+  timeout.unref?.();
+
+  try {
+    const resposta = await fetch(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "api-key": env.brevoApiKey,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          sender: {
+            name: env.brevoFromName,
+            email: env.brevoFromEmail
+          },
+          to: [{ email: destino }],
+          subject,
+          htmlContent: html
+        }),
+        signal: controller.signal
+      }
+    );
+
+    const corpoTexto = await resposta.text();
+    let corpo = {};
+    try {
+      corpo = corpoTexto ? JSON.parse(corpoTexto) : {};
+    } catch {
+      corpo = {};
+    }
+
+    if (!resposta.ok) {
+      let mensagem = "Não foi possível enviar o código por e-mail agora.";
+      let statusCode = 502;
+
+      if (resposta.status === 401 || resposta.status === 403) {
+        mensagem =
+          "O Brevo recusou a chave de envio. Confira BREVO_API_KEY e a permissão de e-mail transacional.";
+        statusCode = 503;
+      } else if (resposta.status === 400) {
+        mensagem =
+          "O Brevo recusou os dados do remetente. Confira se BREVO_FROM_EMAIL está verificado na sua conta.";
+        statusCode = 503;
+      } else if (resposta.status === 429) {
+        mensagem =
+          "O serviço de e-mail atingiu um limite temporário. Aguarde alguns minutos e tente novamente.";
+        statusCode = 429;
+      } else if (resposta.status >= 500) {
+        mensagem =
+          "O serviço de e-mail está temporariamente indisponível. Tente novamente em instantes.";
+        statusCode = 503;
+      }
+
+      const erro = new Error(mensagem);
+      erro.statusCode = statusCode;
+      erro.emailProvider = "brevo";
+      erro.emailErrorCode = `BREVO_HTTP_${resposta.status}`;
+      throw erro;
+    }
+
+    const messageId = String(corpo?.messageId || "");
+    console.log(
+      "E-mail SteelControl enviado via Brevo:",
+      messageId || "aceito"
+    );
+
+    return {
+      messageId,
+      provider: "brevo",
+      accepted: [destino]
+    };
+  } catch (erroOriginal) {
+    if (erroOriginal?.emailProvider === "brevo") {
+      console.error("Falha no envio Brevo:", erroOriginal.emailErrorCode);
+      throw erroOriginal;
+    }
+
+    const expirou =
+      controller.signal.aborted ||
+      erroOriginal?.name === "AbortError" ||
+      erroOriginal?.name === "TimeoutError";
+    const erro = new Error(
+      expirou
+        ? "O serviço de e-mail demorou demais para responder. Tente novamente em instantes."
+        : "Não foi possível conectar ao serviço de e-mail. Tente novamente em instantes."
+    );
+    erro.statusCode = 503;
+    erro.emailProvider = "brevo";
+    erro.emailErrorCode = expirou ? "BREVO_TIMEOUT" : "BREVO_NETWORK";
+    console.error("Falha no envio Brevo:", erro.emailErrorCode);
+    throw erro;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function enviarEmailSmtp({
   destino,
   subject,
   html
 }) {
   const transporter =
     criarTransporter();
-
-
-  const attachments = [];
 
 
   try {
@@ -519,9 +596,7 @@ async function enviarEmail({
 
         subject,
 
-        html,
-
-        attachments
+        html
       });
 
 
@@ -535,8 +610,8 @@ async function enviarEmail({
 
   } catch (erroOriginal) {
     console.error(
-      "Erro ao enviar e-mail pelo Gmail:",
-      erroOriginal
+      "Falha no envio SMTP:",
+      String(erroOriginal?.code || "SMTP_ERROR")
     );
 
     const codigo =
@@ -547,7 +622,7 @@ async function enviarEmail({
         .toLowerCase();
 
     let mensagem =
-      "Não foi possível enviar o código por e-mail. Verifique a configuração do Gmail.";
+      "Não foi possível enviar o código por e-mail. Verifique a configuração SMTP.";
 
     let statusCode = 502;
 
@@ -564,7 +639,7 @@ async function enviarEmail({
       ["ETIMEDOUT", "ECONNECTION", "ECONNREFUSED", "ENOTFOUND", "ESOCKET"].includes(codigo)
     ) {
       mensagem =
-        "Não foi possível conectar ao Gmail. Verifique sua internet, firewall/antivírus e tente novamente.";
+        "Não foi possível conectar ao servidor SMTP. Verifique sua internet, firewall/antivírus e tente novamente.";
       statusCode = 503;
     } else if (
       resposta.includes("daily user sending limit") ||
@@ -572,7 +647,7 @@ async function enviarEmail({
       resposta.includes("rate limit")
     ) {
       mensagem =
-        "O Gmail recusou temporariamente o envio por limite da conta. Aguarde alguns minutos ou use outra conta de envio.";
+        "O servidor de e-mail recusou temporariamente o envio por limite da conta. Aguarde alguns minutos e tente novamente.";
       statusCode = 429;
     }
 
@@ -583,17 +658,33 @@ async function enviarEmail({
   }
 }
 
+async function enviarEmail({ destino, subject, html }) {
+  if (env.brevoApiKey && env.brevoFromEmail) {
+    return enviarEmailBrevo({ destino, subject, html });
+  }
+
+  return enviarEmailSmtp({ destino, subject, html });
+}
+
 
 // =========================================================
 // DIAGNÓSTICO DE E-MAIL
 // =========================================================
 
 export async function verificarConfiguracaoEmail() {
+  if (env.brevoApiKey && env.brevoFromEmail) {
+    return {
+      ok: true,
+      email: env.brevoFromEmail,
+      provider: "brevo"
+    };
+  }
+
   const transporter = criarTransporter();
 
   try {
     await transporter.verify();
-    return { ok: true, email: env.emailUser };
+    return { ok: true, email: env.emailUser, provider: "smtp" };
   } catch (erroOriginal) {
     const codigo = String(erroOriginal?.code || "").toUpperCase();
     const resposta = String(erroOriginal?.response || erroOriginal?.message || "").toLowerCase();
@@ -611,21 +702,23 @@ export async function verificarConfiguracaoEmail() {
 }
 
 export async function enviarEmailTeste() {
-  if (!env.emailUser) {
-    const erro = new Error("EMAIL_USER não configurado.");
+  const destino = env.brevoFromEmail || env.emailUser;
+
+  if (!destino) {
+    const erro = new Error("Nenhum provedor de e-mail está configurado.");
     erro.statusCode = 503;
     throw erro;
   }
 
   return enviarEmail({
-    destino: env.emailUser,
+    destino,
     subject: "SteelControl — teste de e-mail",
     html: criarTemplateEmail({
       titulo: "E-mail configurado",
       subtitulo: "Teste do backend SteelControl",
       nome: "Administrador",
       codigo: "OK",
-      mensagemPrincipal: "O backend conseguiu autenticar e enviar e-mail pelo Gmail.",
+      mensagemPrincipal: "O backend conseguiu autenticar e enviar e-mail pelo provedor configurado.",
       mensagemSecundaria: "Você já pode voltar ao cadastro da empresa e solicitar o código de confirmação."
     })
   });

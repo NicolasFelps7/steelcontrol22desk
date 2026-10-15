@@ -12,8 +12,15 @@ const baseEnv = {
   SENSITIVE_DATA_KEY: Buffer.alloc(32, 7).toString("base64"),
   FACE_API_URL: "http://127.0.0.1:8000",
   FACE_API_KEY: "b".repeat(64),
+  BREVO_API_KEY: "",
+  BREVO_FROM_EMAIL: "",
   EMAIL_USER: "admin@example.com",
   EMAIL_APP_PASSWORD: "senha-de-aplicativo",
+  GMAIL_USER: "",
+  GMAIL_APP_PASSWORD: "",
+  EMAIL_PASS: "",
+  MAIL_USER: "",
+  MAIL_PASS: "",
   REDIS_URL: "redis://:senha@127.0.0.1:6379/0",
   MONITORING_TOKEN: "c".repeat(64),
   ENFORCE_HTTPS: "true",
@@ -33,6 +40,29 @@ function carregarConfig(env) {
 test("perfil level9 aceita configuração completa", () => {
   const result = carregarConfig(baseEnv);
   assert.equal(result.status, 0, result.stderr);
+});
+
+test("perfil level9 aceita Brevo sem credenciais SMTP", () => {
+  const env = {
+    ...baseEnv,
+    BREVO_API_KEY: "xkeysib-" + "d".repeat(64),
+    BREVO_FROM_EMAIL: "remetente@example.com",
+    EMAIL_USER: "",
+    EMAIL_APP_PASSWORD: ""
+  };
+  const result = carregarConfig(env);
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("produção recusa iniciar sem provedor de e-mail", () => {
+  const env = {
+    ...baseEnv,
+    EMAIL_USER: "",
+    EMAIL_APP_PASSWORD: ""
+  };
+  const result = carregarConfig(env);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Brevo.*SMTP|SMTP.*Brevo/i);
 });
 
 test("perfil level9 recusa iniciar sem Redis", () => {

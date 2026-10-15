@@ -5,7 +5,7 @@ Esta entrega usa `CODE_FREEZE.sha256` para detectar divergências dos arquivos f
 Antes da apresentação:
 1. `npm run quality`
 2. Validar PostgreSQL + migrations + E2E em ambiente limpo.
-3. Testar Gmail, Face API e câmera reais.
+3. Testar o provedor de e-mail, Face API e câmera reais.
 4. Testar ESP32/Dobot somente no modo e hardware planejados.
 5. Guardar o ZIP final e o commit Git correspondente.
 

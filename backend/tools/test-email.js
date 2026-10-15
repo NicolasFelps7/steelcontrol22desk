@@ -2,7 +2,7 @@ import { enviarEmailTeste, verificarConfiguracaoEmail } from "../src/lib/mailer.
 
 try {
   const status = await verificarConfiguracaoEmail();
-  console.log(`Gmail autenticado com sucesso: ${status.email}`);
+  console.log(`Provedor de e-mail configurado: ${status.provider} (${status.email})`);
 
   await enviarEmailTeste();
   console.log("E-mail de teste enviado. Confira a caixa de entrada (e Spam). ");

@@ -68,6 +68,19 @@ No serviço `steelcontrol-web`:
    segundos.
 5. Em **Settings > Networking**, gere um domínio Railway público.
 
+Para cadastro e MFA, verifique um remetente no Brevo e configure no serviço
+`steelcontrol-web`:
+
+```env
+BREVO_API_KEY=chave-criada-no-brevo
+BREVO_FROM_EMAIL=mesmo-remetente-verificado-no-brevo
+BREVO_FROM_NAME=SteelControl
+BREVO_TIMEOUT_MS=15000
+```
+
+Não coloque a chave real em arquivo do Git, print ou conversa. O backend usa a
+API HTTPS do Brevo porque SMTP pode estar bloqueado pelo plano da hospedagem.
+
 O frontend e a API usam o mesmo domínio. Não é necessário publicar uma segunda
 URL para o frontend.
 

@@ -78,6 +78,22 @@ const smtpHost = texto("SMTP_HOST");
 const smtpPort = Math.max(1, Math.min(65535, Number(process.env.SMTP_PORT || 587) || 587));
 const smtpSecure = ["1", "true", "on", "yes", "sim"].includes(texto("SMTP_SECURE").toLowerCase());
 
+// Em provedores que bloqueiam SMTP (como alguns planos de hospedagem),
+// o Brevo envia os mesmos e-mails pela API HTTPS.
+const brevoApiKey = texto("BREVO_API_KEY");
+const brevoFromEmail = texto("BREVO_FROM_EMAIL");
+const brevoFromName = texto("BREVO_FROM_NAME") || "SteelControl";
+const brevoTimeoutMs = Math.max(
+  5000,
+  Math.min(30000, Number(process.env.BREVO_TIMEOUT_MS || 15000) || 15000)
+);
+
+if (Boolean(brevoApiKey) !== Boolean(brevoFromEmail)) {
+  throw new Error(
+    "Configure BREVO_API_KEY e BREVO_FROM_EMAIL juntos. O remetente precisa estar verificado no Brevo."
+  );
+}
+
 // O Google exibe a senha de app normalmente em grupos separados por
 // espaços. Nodemailer deve receber apenas os 16 caracteres. Também
 // aceitamos aliases usados por versões antigas do projeto.
@@ -97,6 +113,9 @@ if (
     "Configure EMAIL_USER e EMAIL_APP_PASSWORD juntos (ou os aliases GMAIL_USER/GMAIL_APP_PASSWORD)."
   );
 }
+
+const emailViaBrevo = Boolean(brevoApiKey && brevoFromEmail);
+const emailViaSmtp = Boolean(emailUser && emailAppPassword);
 
 const faceApiUrl =
   texto("FACE_API_URL") ||
@@ -154,10 +173,11 @@ if (
 
 if (
   nodeEnv === "production" &&
-  (!emailUser || !emailAppPassword)
+  !emailViaBrevo &&
+  !emailViaSmtp
 ) {
   throw new Error(
-    "O cadastro por código exige EMAIL_USER e EMAIL_APP_PASSWORD em produção."
+    "O cadastro por código exige Brevo (BREVO_API_KEY e BREVO_FROM_EMAIL) ou SMTP (EMAIL_USER e EMAIL_APP_PASSWORD) em produção."
   );
 }
 
@@ -254,6 +274,11 @@ export const env = {
   smtpHost,
   smtpPort,
   smtpSecure,
+
+  brevoApiKey,
+  brevoFromEmail,
+  brevoFromName,
+  brevoTimeoutMs,
 
   emailFrom:
     texto("EMAIL_FROM") ||

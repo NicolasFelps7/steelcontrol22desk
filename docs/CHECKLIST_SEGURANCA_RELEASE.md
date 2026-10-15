@@ -20,7 +20,7 @@
 - [ ] `SECURITY_PROFILE=level9` e `npm run check:security9` está verde.
 - [ ] `JWT_SECRET` possui 64+ caracteres aleatórios.
 - [ ] `SENSITIVE_DATA_KEY`, `MONITORING_TOKEN` e `FACE_API_KEY` são diferentes.
-- [ ] Senha de app do Gmail está somente no secret manager do provedor.
+- [ ] Chave do Brevo ou senha de app SMTP está somente no secret manager do provedor.
 - [ ] `FACE_API_KEY` possui 32+ caracteres.
 - [ ] A Face API usa HTTPS ou loopback local; nenhuma API pública usa HTTP.
 - [ ] MFA de administrador foi recebido e validado.

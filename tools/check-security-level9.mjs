@@ -49,7 +49,18 @@ if (!chave32(env.SENSITIVE_DATA_KEY) || placeholder(env.SENSITIVE_DATA_KEY)) fal
 if ((env.FACE_API_KEY || "").length < 32 || placeholder(env.FACE_API_KEY)) falhar("FACE_API_KEY inválida.");
 if ((env.MONITORING_TOKEN || "").length < 32 || placeholder(env.MONITORING_TOKEN)) falhar("MONITORING_TOKEN inválido.");
 if (!env.REDIS_URL || placeholder(env.REDIS_URL)) falhar("REDIS_URL segura é obrigatória.");
-if (!env.EMAIL_USER || !env.EMAIL_APP_PASSWORD || placeholder(env.EMAIL_APP_PASSWORD)) falhar("MFA por e-mail não está configurado.");
+const brevoOk = Boolean(
+  env.BREVO_API_KEY &&
+  env.BREVO_FROM_EMAIL &&
+  !placeholder(env.BREVO_API_KEY) &&
+  /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(env.BREVO_FROM_EMAIL)
+);
+const smtpOk = Boolean(
+  env.EMAIL_USER &&
+  env.EMAIL_APP_PASSWORD &&
+  !placeholder(env.EMAIL_APP_PASSWORD)
+);
+if (!brevoOk && !smtpOk) falhar("MFA por e-mail não está configurado (use Brevo HTTPS ou SMTP).");
 if (!env.DATABASE_URL || placeholder(env.DATABASE_URL)) falhar("DATABASE_URL real é obrigatória.");
 
 for (const origem of String(env.CORS_ORIGINS || "").split(",").map(item => item.trim()).filter(Boolean)) {

@@ -81,7 +81,7 @@ Os dois serviços possuem `HEALTHCHECK`.
 Nunca versionar:
 
 - `.env`;
-- senha de app do Gmail;
+- chave do provedor de e-mail transacional ou senha de app SMTP;
 - JWT secret;
 - Face API key;
 - URL de banco contendo credencial real;
