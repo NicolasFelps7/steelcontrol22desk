@@ -83,3 +83,9 @@ na memória os modelos auxiliares de idade, gênero e landmarks detalhados, que
 não participam da autenticação do SteelControl. A orientação da prova de vida
 continua disponível por uma estimativa feita com os cinco pontos faciais que o
 próprio detector já retorna.
+
+Para manter a câmera responsiva em serviços com CPU limitada, o acompanhamento
+de posição em `/face/analyze` roda somente o detector em `320x320`. O modelo de
+reconhecimento `buffalo_l` continua sendo executado em `/face/embedding`, no
+cadastro e no login; portanto, a otimização não troca o algoritmo biométrico nem
+o formato dos embeddings existentes.

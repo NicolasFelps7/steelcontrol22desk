@@ -18,7 +18,7 @@ class ModelConfigTest(unittest.TestCase):
         )
 
     def test_resolucao_de_deteccao_controla_memoria(self):
-        self.assertEqual(DETECTION_SIZE, (480, 480))
+        self.assertEqual(DETECTION_SIZE, (320, 320))
 
 
 if __name__ == "__main__":

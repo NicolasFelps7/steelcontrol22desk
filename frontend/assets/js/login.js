@@ -291,7 +291,10 @@ let livenessMovementTimer =
   null;
 
 const LIVENESS_MOVEMENT_TIMEOUT_MS =
-  8000;
+  20000;
+
+const LIVENESS_MOVEMENT_TIMEOUT_SECONDS =
+  Math.round(LIVENESS_MOVEMENT_TIMEOUT_MS / 1000);
 
 let modoFace =
   "login";
@@ -1559,7 +1562,9 @@ async function analisarFrame() {
         alterarStatus(
           "analisando",
           textoAcesso("livenessCheck"),
-          textoAcesso("turnHeadTimed", { segundos: 8 })
+          textoAcesso("turnHeadTimed", {
+            segundos: LIVENESS_MOVEMENT_TIMEOUT_SECONDS
+          })
         );
 
       }
@@ -1611,7 +1616,9 @@ async function analisarFrame() {
         alterarStatus(
           "analisando",
           textoAcesso("livenessCheck"),
-          textoAcesso("turnHeadTimed", { segundos: 8 })
+          textoAcesso("turnHeadTimed", {
+            segundos: LIVENESS_MOVEMENT_TIMEOUT_SECONDS
+          })
         );
 
       }

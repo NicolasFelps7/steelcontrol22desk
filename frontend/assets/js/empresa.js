@@ -336,7 +336,9 @@ let etapaCadastroFacial = "frontal";
 let livenessCadastroBlob = null;
 let frontalCadastroBlob = null;
 let timeoutMovimentoCadastro = null;
-const FACE_ENROLL_MOVEMENT_TIMEOUT_MS = 8000;
+const FACE_ENROLL_MOVEMENT_TIMEOUT_MS = 20000;
+const FACE_ENROLL_MOVEMENT_TIMEOUT_SECONDS =
+  Math.round(FACE_ENROLL_MOVEMENT_TIMEOUT_MS / 1000);
 const FRAMES_RETORNO_NECESSARIOS = 2;
 
 // =====================================================
@@ -4538,7 +4540,7 @@ function processarAnalise(
       alterarStatusCamera(
         "analisando",
         "Prova de vida",
-        "Vire levemente a cabeça. Você tem até 8 segundos."
+        `Vire levemente a cabeça. Você tem até ${FACE_ENROLL_MOVEMENT_TIMEOUT_SECONDS} segundos.`
       );
     }
     return;
@@ -4581,7 +4583,7 @@ function processarAnalise(
       alterarStatusCamera(
         "analisando",
         "Prova de vida",
-        "Vire levemente a cabeça. Você tem até 8 segundos."
+        `Vire levemente a cabeça. Você tem até ${FACE_ENROLL_MOVEMENT_TIMEOUT_SECONDS} segundos.`
       );
     }
     return;

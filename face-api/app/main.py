@@ -6,6 +6,7 @@ import os
 import hmac
 
 from insightface.app import FaceAnalysis
+from insightface.app.common import Face
 
 from .face_rules import (
     embedding_valido,
@@ -133,6 +134,37 @@ print(
 )
 
 
+def detectar_rostos_para_orientacao(frame):
+    """Executa somente o detector no acompanhamento ao vivo.
+
+    ``FaceAnalysis.get`` tambem calcula o embedding de reconhecimento para
+    cada frame. Isso e necessario em ``/face/embedding``, mas seria trabalho
+    repetido em ``/face/analyze``, que usa apenas caixa, confianca e cinco
+    pontos faciais. Manter esses caminhos separados deixa a prova de vida
+    responsiva sem trocar ou enfraquecer o modelo biometrico.
+    """
+
+    bboxes, pontos = face_analyzer.det_model.detect(
+        frame,
+        max_num=0,
+        metric="default",
+    )
+
+    rostos = []
+
+    for indice in range(bboxes.shape[0]):
+        kps = None if pontos is None else pontos[indice]
+        rostos.append(
+            Face(
+                bbox=bboxes[indice, 0:4],
+                kps=kps,
+                det_score=bboxes[indice, 4],
+            )
+        )
+
+    return rostos
+
+
 # =========================================================
 # FUNÇÕES AUXILIARES
 # =========================================================
@@ -206,7 +238,7 @@ async def analisar_rosto(
     # DETECTAR
     # -----------------------------------------------------
 
-    rostos = face_analyzer.get(
+    rostos = detectar_rostos_para_orientacao(
         frame
     )
 

@@ -7,5 +7,8 @@ gerar o mesmo embedding facial de 512 posicoes usado pelo backend.
 
 MODEL_NAME = "buffalo_l"
 ALLOWED_MODULES = ("detection", "recognition")
-DETECTION_SIZE = (480, 480)
+# A camera do navegador envia o rosto centralizado e proximo. 320x320 reduz
+# bastante o custo do SCRFD em CPU sem trocar o modelo de reconhecimento nem
+# alterar o tamanho dos embeddings (512 posicoes).
+DETECTION_SIZE = (320, 320)
 
