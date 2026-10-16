@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { automaticoDobotAtual, prepararAutomaticoDobot } from '../src/lib/dobotAutomation.js';
+import { automaticoDobotAtual, prepararAutomaticoDobot, prepararEstadoAutomaticoDobot } from '../src/lib/dobotAutomation.js';
 
 const pose = { x: 150, y: 0, z: 80, r: 0 };
 const machine = { integracaoMeta: { fabricante: 'Dobot', dobot: { remoteControlEnabled: true, port: 'COM5' } } };
@@ -46,9 +46,13 @@ test('envelope físico, velocidade e ciclos são validados no backend', () => {
 
 test('formato antigo permanece legível e atualizável', () => {
   const legacy = { integracaoMeta: { dobot: { automaticPoints: { P0: pose }, remoteControlEnabled: true } } };
-  assert.deepEqual(automaticoDobotAtual(legacy), {
-    pontos: { P0: pose }, ciclos: 1, velocidade: 15, versao: 0, atualizadoEm: null
-  });
+  const atual = automaticoDobotAtual(legacy);
+  assert.deepEqual(atual.pontos, { P0: pose });
+  assert.equal(atual.ciclos, 1);
+  assert.equal(atual.velocidade, 15);
+  assert.equal(atual.versao, 0);
+  assert.equal(atual.atualizadoEm, null);
+  assert.equal(atual.estado, 'PARADO');
   const migrated = prepararAutomaticoDobot(legacy, { ciclos: 2 });
   assert.deepEqual(migrated.dobot.automatico.pontos.P0, pose);
   assert.equal(migrated.dobot.remoteControlEnabled, true);
@@ -58,9 +62,47 @@ test('leitura canônica preserva revisão, ciclos, velocidade e versão', () => 
   const integracaoMeta = prepararAutomaticoDobot(machine, {
     pontos: { P0: pose }, ciclos: 6, velocidade: 24, versao: 0
   }, 'revision-canonical');
-  assert.deepEqual(automaticoDobotAtual({ integracaoMeta }), {
-    pontos: { P0: pose }, ciclos: 6, velocidade: 24, versao: 1, atualizadoEm: 'revision-canonical'
-  });
+  const atual = automaticoDobotAtual({ integracaoMeta });
+  assert.deepEqual(atual.pontos, { P0: pose });
+  assert.equal(atual.ciclos, 6);
+  assert.equal(atual.velocidade, 24);
+  assert.equal(atual.versao, 1);
+  assert.equal(atual.atualizadoEm, 'revision-canonical');
+  assert.equal(atual.estado, 'PARADO');
+});
+
+test('estado de execução é compartilhado sem alterar a versão do ensino', () => {
+  const configured = prepararAutomaticoDobot(machine, { pontos: { P0: pose }, ciclos: 3 }, 'config-1');
+  const running = prepararEstadoAutomaticoDobot(
+    { integracaoMeta: configured },
+    {
+      estado: 'EXECUTANDO',
+      execucaoId: 'execution-1',
+      cicloAtual: 1,
+      etapaAtual: 2,
+      etapa: 'Aproximar da matéria-prima',
+      progresso: 15,
+      origem: 'DESKTOP'
+    },
+    'state-1'
+  );
+  const atual = automaticoDobotAtual({ integracaoMeta: running });
+  assert.equal(atual.versao, 1);
+  assert.equal(atual.estado, 'EXECUTANDO');
+  assert.equal(atual.execucaoId, 'execution-1');
+  assert.equal(atual.cicloAtual, 1);
+  assert.equal(atual.etapaAtual, 2);
+  assert.equal(atual.progresso, 15);
+
+  const edited = prepararAutomaticoDobot(
+    { integracaoMeta: running },
+    { velocidade: 12, versao: 1 },
+    'config-2'
+  );
+  const depois = automaticoDobotAtual({ integracaoMeta: edited });
+  assert.equal(depois.estado, 'EXECUTANDO');
+  assert.equal(depois.execucaoId, 'execution-1');
+  assert.equal(depois.versao, 2);
 });
 
 test('payload automático inválido é rejeitado antes de persistir', () => {

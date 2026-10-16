@@ -233,6 +233,15 @@
               ultimaMensagemStreamEm = Date.now();
               if (evento.tipo === "telemetria" || evento.tipo === "seguranca") aplicarSnapshot(evento.dados);
               else if (evento.tipo === "heartbeat") atualizarDiagnostico({ ...(diagnosticoAtual || {}), ...evento.dados });
+              else if (evento.tipo === "automatico") {
+                window.dispatchEvent(new CustomEvent("steelcontrol:dobot-automatic", { detail: evento.dados || {} }));
+                if (evento.dados?.integracaoMeta) {
+                  atualizarDiagnostico({
+                    ...(diagnosticoAtual || {}),
+                    integracaoMeta: evento.dados.integracaoMeta
+                  });
+                }
+              }
               else if (evento.tipo === "configuracao") {
                 // O backend publica este evento imediatamente após editar a
                 // máquina. Atualiza o cadastro completo no dashboard, não só

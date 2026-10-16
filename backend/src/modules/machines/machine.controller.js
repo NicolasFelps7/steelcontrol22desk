@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { prisma } from "../../lib/prisma.js";
 import { registrarAuditoria } from "../../lib/audit.js";
 import { podeAcionarSimulacao, calcularEstadoConexao } from "../../lib/machinePolicy.js";
@@ -6,7 +7,7 @@ import { processarTelemetria, validarLimitesMaquina } from "../../lib/telemetryS
 import { publicarEventoMaquina, assinarEventosMaquina, publicarEventoEmpresa } from "../../lib/realtime.js";
 import { normalizarComandoIhm, politicaComandoIhm, cargoPodeComandoIhm, expiraEmComandoIhm, avaliarPermissaoStartIhm, controleRemotoIhmHabilitado } from "../../lib/hmiPolicy.js";
 import { DOBOT_COMMANDS, comandoDobotPermitido, controleRemotoDobotHabilitado, expiraEmComandoDobot, validarPayloadDobot } from "../../lib/dobotPolicy.js";
-import { automaticoDobotAtual, prepararAutomaticoDobot } from "../../lib/dobotAutomation.js";
+import { automaticoDobotAtual, prepararAutomaticoDobot, prepararEstadoAutomaticoDobot } from "../../lib/dobotAutomation.js";
 
 function ehAdministrador(req) {
   return req.auth?.cargo === "ADMINISTRADOR";
@@ -312,10 +313,11 @@ export async function criar(req, res, next) {
     const setor = texto(req.body.setor, 120);
     const modelo = texto(req.body.modelo, 120);
     const codigo = texto(req.body.codigo, 80);
+    const tipo = texto(req.body.tipo, 120);
 
-    if (!nome || !setor || !modelo || !codigo) {
+    if (!nome || !setor || !modelo || !codigo || !tipo) {
       return res.status(400).json({
-        mensagem: "Nome, setor, modelo e código são obrigatórios."
+        mensagem: "Nome, setor, modelo, código e tipo de máquina são obrigatórios."
       });
     }
 
@@ -345,7 +347,7 @@ export async function criar(req, res, next) {
         modelo,
         codigo,
         fabricante: texto(req.body.fabricante, 120),
-        tipo: texto(req.body.tipo, 120),
+        tipo,
         descricao: texto(req.body.descricao, 1000),
         integracaoMeta: objetoJsonOpcional(req.body.integracaoMeta) ?? null,
         controlador,
@@ -490,10 +492,11 @@ export async function atualizar(req, res, next) {
       !(data.nome ?? atual.nome) ||
       !(data.setor ?? atual.setor) ||
       !(data.modelo ?? atual.modelo) ||
-      !(data.codigo ?? atual.codigo)
+      !(data.codigo ?? atual.codigo) ||
+      !(data.tipo ?? atual.tipo)
     ) {
       return res.status(400).json({
-        mensagem: "Nome, setor, modelo e código não podem ficar vazios."
+        mensagem: "Nome, setor, modelo, código e tipo de máquina não podem ficar vazios."
       });
     }
 
@@ -1172,15 +1175,18 @@ export async function criarComandoDobot(req, res, next) {
     const resultados = await prisma.$transaction(operacoes);
     const criado = resultados.at(-1);
 
-    await prisma.log.create({
-      data: { maquinaId: id, mensagem: `Comando ${comando} solicitado por ${req.auth.nome || req.auth.email}.` }
-    });
-    await registrarAuditoria({
-      req, acao: "COMANDO_DOBOT", entidade: "MAQUINA", entidadeId: id,
-      detalhes: { comando, payload, comandosAnterioresCancelados: cancelaveis }
-    });
+    // Acorda o long-poll do Edge assim que a linha está confirmada no banco.
+    // Log e auditoria continuam obrigatórios, mas não seguram o despacho físico.
     publicarEventoMaquina(id, "comando", { id: criado.id, comando, status: criado.status });
-
+    await Promise.all([
+      prisma.log.create({
+        data: { maquinaId: id, mensagem: `Comando ${comando} solicitado por ${req.auth.nome || req.auth.email}.` }
+      }),
+      registrarAuditoria({
+        req, acao: "COMANDO_DOBOT", entidade: "MAQUINA", entidadeId: id,
+        detalhes: { comando, payload, comandosAnterioresCancelados: cancelaveis }
+      })
+    ]);
     return res.status(202).json({
       mensagem: "Comando enviado para a fila segura do equipamento.",
       comando: { id: criado.id, comando: criado.comando, status: criado.status, criadoEm: criado.criadoEm, expiraEm: payload.expiresAt }
@@ -1271,6 +1277,16 @@ export async function salvarPontosAutomaticosDobot(req, res, next) {
       integracaoMeta: atualizada.integracaoMeta
     });
     const automatico = automaticoDobotAtual(atualizada);
+    publicarEventoMaquina(id, "automatico", {
+      id,
+      automatico,
+      integracaoMeta: atualizada.integracaoMeta
+    });
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.automatico", {
+      maquinaId: id,
+      estado: automatico.estado,
+      execucaoId: automatico.execucaoId
+    });
     await registrarAuditoria({
       req,
       acao: "ENSINAR_CICLO_DOBOT",
@@ -1290,6 +1306,215 @@ export async function salvarPontosAutomaticosDobot(req, res, next) {
       points: automatico.pontos,
       revision: automatico.atualizadoEm
     });
+  } catch (erro) {
+    next(erro);
+  }
+}
+
+function pontosAutomaticosRepetidos(pontos) {
+  const nomes = ["P0", "P1", "P2", "P3", "P4"];
+  for (let indice = 0; indice < nomes.length; indice += 1) {
+    for (let proximo = indice + 1; proximo < nomes.length; proximo += 1) {
+      const primeiro = pontos[nomes[indice]];
+      const segundo = pontos[nomes[proximo]];
+      if (!primeiro || !segundo) continue;
+      const distancia = Math.hypot(
+        Number(primeiro.x) - Number(segundo.x),
+        Number(primeiro.y) - Number(segundo.y),
+        Number(primeiro.z) - Number(segundo.z),
+        (Number(primeiro.r) - Number(segundo.r)) / 2
+      );
+      if (distancia < 3) return `${nomes[indice]}/${nomes[proximo]}`;
+    }
+  }
+  return null;
+}
+
+export async function controlarAutomaticoDobot(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ mensagem: "Identificador da máquina inválido." });
+    }
+
+    const maquina = await prisma.maquina.findFirst({ where: whereEmpresa(req, id) });
+    if (!maquina) return res.status(404).json({ mensagem: "Máquina não encontrada." });
+    if (String(maquina.controlador || "").toUpperCase() !== "DOBOT_MAGICIAN") {
+      return res.status(409).json({ mensagem: "Este equipamento não está configurado como Dobot Magician." });
+    }
+
+    const acao = String(req.body?.acao || "").trim().toUpperCase();
+    const acoes = new Set(["INICIAR", "PAUSAR", "CONTINUAR", "PARAR", "PROGRESSO", "CONCLUIR", "FALHAR"]);
+    if (!acoes.has(acao)) {
+      return res.status(400).json({ mensagem: "Ação do ciclo automático inválida." });
+    }
+
+    const cargo = String(req.auth?.cargo || "").toUpperCase();
+    const permitido = acao === "PARAR"
+      ? ["ADMINISTRADOR", "SUPERVISOR", "TECNICO", "OPERADOR"].includes(cargo)
+      : ["ADMINISTRADOR", "SUPERVISOR", "TECNICO"].includes(cargo);
+    if (!permitido) {
+      return res.status(403).json({ mensagem: "Seu cargo não possui permissão para controlar o ciclo automático." });
+    }
+
+    const atual = automaticoDobotAtual(maquina);
+    const ativo = ["EXECUTANDO", "PAUSADO"].includes(atual.estado);
+    const agora = new Date().toISOString();
+    const origem = texto(req.body?.origem, 40) || "STEELCONTROL";
+    const execucaoRecebida = texto(req.body?.execucaoId, 80);
+    let patch;
+
+    if (acao === "INICIAR") {
+      if (ativo) {
+        return res.status(409).json({
+          codigo: "DOBOT_AUTOMATIC_ALREADY_RUNNING",
+          mensagem: "Já existe um ciclo automático ativo. Use Pausar ou Parar no desktop ou mobile."
+        });
+      }
+      if (maquina.modoSimulacao !== false || !controleRemotoDobotHabilitado(maquina)) {
+        return res.status(409).json({ mensagem: "O controle físico do Dobot precisa estar habilitado para iniciar o automático." });
+      }
+      const estadoConexao = calcularEstadoConexao(maquina);
+      if (String(estadoConexao?.codigo || "").toUpperCase() !== "CONECTADA") {
+        return res.status(409).json({ mensagem: "O Dobot precisa estar online e com telemetria recente para iniciar o automático." });
+      }
+      const faltantes = ["P0", "P1", "P2", "P3", "P4"].filter(nome => !atual.pontos[nome]);
+      if (faltantes.length) {
+        return res.status(409).json({ mensagem: `Ensine todos os pontos antes de iniciar. Faltam: ${faltantes.join(", ")}.` });
+      }
+      const repetidos = pontosAutomaticosRepetidos(atual.pontos);
+      if (repetidos) {
+        return res.status(409).json({ mensagem: `${repetidos} possuem a mesma posição. Recapture antes de iniciar.` });
+      }
+      patch = {
+        estado: "EXECUTANDO",
+        execucaoId: randomUUID(),
+        cicloAtual: 0,
+        etapaAtual: 0,
+        etapa: "Preparando sequência",
+        progresso: 0,
+        iniciadoEm: agora,
+        iniciadoPor: req.auth.nome || req.auth.email,
+        origem,
+        erro: null
+      };
+    } else {
+      if (["PAUSAR", "CONTINUAR", "PROGRESSO", "CONCLUIR", "FALHAR"].includes(acao) && !ativo) {
+        return res.status(409).json({ mensagem: "Não existe ciclo automático ativo para esta ação." });
+      }
+      if (["PROGRESSO", "CONCLUIR", "FALHAR"].includes(acao) && (!execucaoRecebida || execucaoRecebida !== atual.execucaoId)) {
+        return res.status(409).json({
+          codigo: "DOBOT_AUTOMATIC_EXECUTION_CHANGED",
+          mensagem: "Este ciclo já foi substituído ou encerrado em outro dispositivo."
+        });
+      }
+      if (acao === "PAUSAR" && atual.estado !== "EXECUTANDO") {
+        return res.status(409).json({ mensagem: "O ciclo não está executando para ser pausado." });
+      }
+      if (acao === "CONTINUAR" && atual.estado !== "PAUSADO") {
+        return res.status(409).json({ mensagem: "O ciclo não está pausado." });
+      }
+
+      if (acao === "PAUSAR") patch = { estado: "PAUSADO", etapa: "Aguardando operador", origem };
+      if (acao === "CONTINUAR") patch = { estado: "EXECUTANDO", etapa: "Retomando sequência", origem };
+      if (acao === "PARAR") patch = { estado: "PARADO", etapa: "Parado pelo operador", progresso: atual.progresso, origem, erro: null };
+      if (acao === "PROGRESSO") {
+        patch = {
+          estado: atual.estado,
+          cicloAtual: Number(req.body?.cicloAtual),
+          etapaAtual: Number(req.body?.etapaAtual),
+          etapa: texto(req.body?.etapa, 180) || atual.etapa,
+          progresso: Number(req.body?.progresso),
+          origem
+        };
+      }
+      if (acao === "CONCLUIR") {
+        patch = {
+          estado: "CONCLUIDO",
+          cicloAtual: atual.ciclos,
+          etapa: "Pronto para novo ciclo",
+          progresso: 100,
+          origem,
+          erro: null
+        };
+      }
+      if (acao === "FALHAR") {
+        patch = {
+          estado: "FALHOU",
+          etapa: "Ciclo interrompido",
+          origem,
+          erro: texto(req.body?.erro, 500) || "Falha informada pelo executor do ciclo."
+        };
+      }
+    }
+
+    const integracaoMeta = prepararEstadoAutomaticoDobot(maquina, patch, agora);
+    const operacoes = [
+      prisma.maquina.update({ where: { id }, data: { integracaoMeta } })
+    ];
+    let deveEnfileirarStop = false;
+    if (acao === "PARAR") {
+      const conectado = String(calcularEstadoConexao(maquina)?.codigo || "").toUpperCase() === "CONECTADA";
+      deveEnfileirarStop = conectado && maquina.modoSimulacao === false;
+      if (deveEnfileirarStop) {
+        operacoes.push(prisma.comandoMaquina.updateMany({
+          where: {
+            maquinaId: id,
+            comando: { in: DOBOT_COMMANDS.filter(item => item !== "DOBOT_STOP") },
+            status: { in: ["PENDENTE", "ENTREGUE"] }
+          },
+          data: { status: "CANCELADO", concluidoEm: new Date() }
+        }));
+        operacoes.push(prisma.comandoMaquina.create({
+          data: {
+            maquinaId: id,
+            comando: "DOBOT_STOP",
+            payload: {
+              ...validarPayloadDobot("DOBOT_STOP", {}),
+              origem: "STEELCONTROL_AUTOMATICO",
+              solicitadoPor: req.auth.nome || req.auth.email,
+              usuarioId: req.auth.usuarioId,
+              expiresAt: expiraEmComandoDobot("DOBOT_STOP")
+            }
+          }
+        }));
+      }
+    }
+
+    const resultados = await prisma.$transaction(operacoes);
+    const atualizada = resultados[0];
+    const comandoStop = deveEnfileirarStop ? resultados.at(-1) : null;
+    const automatico = automaticoDobotAtual(atualizada);
+    const evento = { id, automatico, integracaoMeta: atualizada.integracaoMeta };
+    publicarEventoMaquina(id, "automatico", evento);
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.automatico", {
+      maquinaId: id,
+      estado: automatico.estado,
+      execucaoId: automatico.execucaoId
+    });
+    if (comandoStop) {
+      publicarEventoMaquina(id, "comando", {
+        id: comandoStop.id,
+        comando: comandoStop.comando,
+        status: comandoStop.status
+      });
+    }
+
+    if (acao !== "PROGRESSO") {
+      await registrarAuditoria({
+        req,
+        acao: `DOBOT_AUTOMATICO_${acao}`,
+        entidade: "MAQUINA",
+        entidadeId: id,
+        detalhes: {
+          execucaoId: automatico.execucaoId,
+          estado: automatico.estado,
+          origem
+        }
+      });
+    }
+
+    return res.json({ automatico, integracaoMeta: atualizada.integracaoMeta });
   } catch (erro) {
     next(erro);
   }

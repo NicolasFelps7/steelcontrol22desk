@@ -51,10 +51,16 @@ test('desktop abre com ensino do banco e reage ao ensino vindo do mobile', async
   } } } } });
   assert.match(h.pointOutput.textContent, /180/);
   assert.equal(h.elements.dobotAutoCycles.value, '5');
+  h.listeners['steelcontrol:dobot-automatic']({ detail: { automatico: {
+    pontos: { P0: { x: 210, y: 30, z: 95, r: 5 } }, ciclos: 2, velocidade: 10, versao: 4,
+    estado: 'EXECUTANDO', execucaoId: 'mobile-cycle', cicloAtual: 1, etapa: 'Coletar componente', progresso: 25
+  } } });
+  assert.match(h.pointOutput.textContent, /210/);
+  assert.equal(h.elements.dobotAutoCycles.value, '2');
   h.listeners['steelcontrol:machine-diagnostic']({ detail: { integracaoMeta: { dobot: { automatico: {
     pontos: {}, ciclos: 1, velocidade: 15, versao: 2
   } } } } });
-  assert.match(h.pointOutput.textContent, /180/);
+  assert.match(h.pointOutput.textContent, /210/);
 });
 test('redefinir no desktop grava no servidor com a versão que foi lida', async () => {
   const h = harness(); await settle();

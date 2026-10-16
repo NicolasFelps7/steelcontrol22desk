@@ -7,9 +7,10 @@ from edge_client import SteelControlClient
 from edge_profiles import MachineProfile
 from printer3d_normalizer import normalize_printer3d_telemetry
 
-# Vinte consultas por segundo deixam o comando local perceptivelmente imediato
-# sem criar uma fila paralela ou retirar a confirmação segura do equipamento.
-COMMAND_POLL_SECONDS = 0.075
+# O backend mantém cada consulta por até 180 ms e a libera imediatamente
+# quando um comando entra na fila. Assim o Edge reage sem polling agressivo.
+COMMAND_WAIT_MS = 180
+COMMAND_POLL_SECONDS = 0.01
 
 class MachineRuntime:
     def __init__(self, profile:MachineProfile, log:Callable[[str,str],None], status:Callable[[str,str,dict],None]):
@@ -70,7 +71,7 @@ class MachineRuntime:
                     cycle=time.time()
                     if cycle-last_hb>=10:
                         c.heartbeat(); last_hb=cycle
-                    cmd=c.next_command()
+                    cmd=c.next_command(wait_ms=COMMAND_WAIT_MS)
                     command_executed=False
                     if cmd:
                         cid=cmd.get('id'); name=str(cmd.get('comando') or ''); payload=cmd.get('payload') or {}
@@ -84,8 +85,8 @@ class MachineRuntime:
                             try:self.adapter.execute_command(name,payload); c.confirm(cid,'CONCLUIDO'); command_executed=True; self.log(f"Comando concluído: {name}")
                             except Exception as e:c.confirm(cid,'FALHOU'); self.log(f"Comando falhou: {name} | {e}")
                     # A leitura periódica continua respeitando o intervalo configurado,
-                    # mas comandos são buscados independentemente a cada 75 ms. Após
-                    # um comando, publicamos o novo estado imediatamente.
+                    # A espera no servidor acorda assim que um comando entra na fila.
+                    # Após executar, publicamos o novo estado imediatamente.
                     now=time.time()
                     if command_executed or now>=next_telemetry:
                         data=self.adapter.read_telemetry() or {}

@@ -1,6 +1,39 @@
 import { validarPayloadDobot } from "./dobotPolicy.js";
 
 const DOBOT_AUTOMATIC_POINTS = ["P0", "P1", "P2", "P3", "P4"];
+const DOBOT_AUTOMATIC_STATES = new Set([
+  "PARADO",
+  "EXECUTANDO",
+  "PAUSADO",
+  "CONCLUIDO",
+  "FALHOU"
+]);
+
+function textoOpcional(valor, max = 180) {
+  if (valor === undefined || valor === null) return null;
+  const limpo = String(valor).trim();
+  return limpo ? limpo.slice(0, max) : null;
+}
+
+function inteiroNoIntervalo(valor, minimo, maximo, fallback) {
+  const numero = Number(valor);
+  return Number.isInteger(numero) && numero >= minimo && numero <= maximo
+    ? numero
+    : fallback;
+}
+
+function numeroNoIntervalo(valor, minimo, maximo, fallback) {
+  const numero = Number(valor);
+  return Number.isFinite(numero) && numero >= minimo && numero <= maximo
+    ? numero
+    : fallback;
+}
+
+function valorDoPatch(patch, chave, fallback) {
+  return Object.prototype.hasOwnProperty.call(patch, chave)
+    ? patch[chave]
+    : fallback;
+}
 
 export function pontosAutomaticosDobot(valor) {
   if (valor === undefined || valor === null) return {};
@@ -59,6 +92,8 @@ export function automaticoDobotAtual(maquina) {
   const ciclosBruto = Number(automatico.ciclos ?? 1);
   const velocidadeBruta = Number(automatico.velocidade ?? 15);
   const versaoBruta = Number(automatico.versao ?? 0);
+  const estadoBruto = String(automatico.estado || "PARADO").trim().toUpperCase();
+  const estado = DOBOT_AUTOMATIC_STATES.has(estadoBruto) ? estadoBruto : "PARADO";
 
   return {
     pontos,
@@ -69,7 +104,18 @@ export function automaticoDobotAtual(maquina) {
       ? automatico.atualizadoEm
       : typeof dobot.automaticPointsRevision === "string"
         ? dobot.automaticPointsRevision
-        : null
+        : null,
+    estado,
+    execucaoId: textoOpcional(automatico.execucaoId, 80),
+    cicloAtual: inteiroNoIntervalo(automatico.cicloAtual, 0, 20, 0),
+    etapaAtual: inteiroNoIntervalo(automatico.etapaAtual, 0, 1000, 0),
+    etapa: textoOpcional(automatico.etapa, 180),
+    progresso: numeroNoIntervalo(automatico.progresso, 0, 100, 0),
+    iniciadoEm: textoOpcional(automatico.iniciadoEm, 80),
+    estadoAtualizadoEm: textoOpcional(automatico.estadoAtualizadoEm, 80),
+    iniciadoPor: textoOpcional(automatico.iniciadoPor, 180),
+    origem: textoOpcional(automatico.origem, 40),
+    erro: textoOpcional(automatico.erro, 500)
   };
 }
 
@@ -96,7 +142,56 @@ export function prepararAutomaticoDobot(maquina, body = {}, revisao = new Date()
   }
   const integracaoMeta = metaDobotComPontos(maquina, pontos, revisao);
   integracaoMeta.dobot.automatico = {
-    pontos, ciclos, velocidade, versao: anterior.versao + 1, atualizadoEm: revisao
+    ...anterior,
+    pontos,
+    ciclos,
+    velocidade,
+    versao: anterior.versao + 1,
+    atualizadoEm: revisao
   };
+  return integracaoMeta;
+}
+
+export function prepararEstadoAutomaticoDobot(
+  maquina,
+  patch = {},
+  revisao = new Date().toISOString()
+) {
+  if (!patch || typeof patch !== "object" || Array.isArray(patch)) {
+    const erro = new Error("O estado automático do Dobot deve ser um objeto.");
+    erro.statusCode = 400;
+    throw erro;
+  }
+
+  const anterior = automaticoDobotAtual(maquina);
+  const estadoBruto = String(patch.estado ?? anterior.estado).trim().toUpperCase();
+  if (!DOBOT_AUTOMATIC_STATES.has(estadoBruto)) {
+    const erro = new Error("Estado automático do Dobot inválido.");
+    erro.statusCode = 400;
+    throw erro;
+  }
+
+  const automatico = {
+    ...anterior,
+    ...patch,
+    estado: estadoBruto,
+    execucaoId: textoOpcional(valorDoPatch(patch, "execucaoId", anterior.execucaoId), 80),
+    cicloAtual: inteiroNoIntervalo(valorDoPatch(patch, "cicloAtual", anterior.cicloAtual), 0, 20, anterior.cicloAtual),
+    etapaAtual: inteiroNoIntervalo(valorDoPatch(patch, "etapaAtual", anterior.etapaAtual), 0, 1000, anterior.etapaAtual),
+    etapa: textoOpcional(valorDoPatch(patch, "etapa", anterior.etapa), 180),
+    progresso: numeroNoIntervalo(valorDoPatch(patch, "progresso", anterior.progresso), 0, 100, anterior.progresso),
+    iniciadoEm: textoOpcional(valorDoPatch(patch, "iniciadoEm", anterior.iniciadoEm), 80),
+    estadoAtualizadoEm: revisao,
+    iniciadoPor: textoOpcional(valorDoPatch(patch, "iniciadoPor", anterior.iniciadoPor), 180),
+    origem: textoOpcional(valorDoPatch(patch, "origem", anterior.origem), 40),
+    erro: textoOpcional(valorDoPatch(patch, "erro", anterior.erro), 500)
+  };
+
+  const integracaoMeta = metaDobotComPontos(
+    maquina,
+    automatico.pontos,
+    automatico.atualizadoEm
+  );
+  integracaoMeta.dobot.automatico = automatico;
   return integracaoMeta;
 }

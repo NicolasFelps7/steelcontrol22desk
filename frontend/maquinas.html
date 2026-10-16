@@ -518,8 +518,8 @@
                 <label for="tipoInput">Tipo de equipamento</label>
                 <div class="form-control">
                   <i class="fa-solid fa-gears"></i>
-                  <select id="tipoInput">
-                    <option value="">Configurar depois</option>
+                  <select id="tipoInput" required>
+                    <option value="">Selecione o tipo de máquina</option>
                     <option value="Braço robótico">Braço robótico</option>
                     <option value="Robô industrial">Robô industrial</option>
                     <option value="Esteira industrial">Esteira industrial</option>
@@ -905,6 +905,7 @@
           <button
             type="submit"
             class="save-machine-btn"
+            disabled
           >
 
             <i class="fa-solid fa-floppy-disk"></i>

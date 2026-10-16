@@ -12,8 +12,9 @@ class SteelControlClient:
         r=self.session.post(self._url('/heartbeat'),json={},timeout=self.timeout); r.raise_for_status(); return r.json()
     def telemetry(self,payload):
         r=self.session.post(self._url('/telemetria'),json=payload,timeout=self.timeout); r.raise_for_status(); return r.json()
-    def next_command(self):
-        r=self.session.get(self._url('/comandos/proximo'),timeout=self.timeout)
+    def next_command(self,wait_ms=180):
+        wait_ms=max(0,min(250,int(wait_ms or 0)))
+        r=self.session.get(self._url('/comandos/proximo'),params={'waitMs':wait_ms},timeout=self.timeout)
         if r.status_code==204:return None
         r.raise_for_status(); return r.json()
     def confirm(self,command_id,status):

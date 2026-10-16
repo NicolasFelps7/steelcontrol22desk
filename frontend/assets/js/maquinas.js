@@ -90,6 +90,16 @@ function atualizarResumoDashboard() {
   if (description) description.textContent = perfil?.description || "Escolha o tipo do equipamento para receber uma recomendação de indicadores.";
 }
 
+function atualizarDisponibilidadeSalvarMaquina() {
+  const botao = formMaquina?.querySelector(".save-machine-btn");
+  if (!botao) return;
+  const tipoSelecionado = Boolean(document.getElementById("tipoInput")?.value?.trim());
+  botao.disabled = !tipoSelecionado;
+  botao.title = tipoSelecionado
+    ? ""
+    : "Escolha o tipo da máquina para definir o dashboard antes de salvar.";
+}
+
 function aplicarPerfilDashboard({ preserveSaved = false, dashboard = null } = {}) {
   const perfil = perfilDashboardPorTipo(document.getElementById("tipoInput")?.value);
   const enabled = document.getElementById("dashboardEnabledInput");
@@ -99,6 +109,7 @@ function aplicarPerfilDashboard({ preserveSaved = false, dashboard = null } = {}
   if (enabled) enabled.checked = preserveSaved ? dashboard?.enabled === true : Boolean(perfil);
   inputs.forEach(input => { input.checked = modulos.includes(input.value); });
   atualizarResumoDashboard();
+  atualizarDisponibilidadeSalvarMaquina();
 }
 
 function configuracaoDashboard() {
@@ -677,7 +688,13 @@ function abrirFormularioMaquina() {
       100
     );
 
+    if (!document.getElementById("tipoInput")?.value) {
+      document.getElementById("identificationDetails")?.setAttribute("open", "");
+    }
+
   }
+
+  atualizarDisponibilidadeSalvarMaquina();
 
 }
 
@@ -2279,6 +2296,7 @@ function editarMaquina(
       ${textoMaquinas("salvarAlteracoes", "Salvar alterações")}
     `;
   }
+  atualizarDisponibilidadeSalvarMaquina();
 
   if (mensagemMaquina) {
     mensagemMaquina.textContent =
@@ -2743,6 +2761,9 @@ formMaquina
         ? maquinas.find(item => Number(item.id) === Number(maquinaEditandoId))
         : null;
       const metaAtual = maquinaAtual?.integracaoMeta || {};
+      const dobotAtual = metaAtual.dobot && typeof metaAtual.dobot === "object"
+        ? metaAtual.dobot
+        : {};
       const integracaoMeta = {
         ...metaAtual,
         dashboard: { ...(metaAtual.dashboard || {}), ...configuracaoDashboard() }
@@ -2753,6 +2774,7 @@ formMaquina
 
       if (controlador === "DOBOT_MAGICIAN") {
         integracaoMeta.dobot = {
+            ...dobotAtual,
             enabled: true,
             mode: String(document.getElementById("dobotModeInput")?.value || "MOCK").toUpperCase(),
             port: String(document.getElementById("dobotPortInput")?.value || "AUTO").trim().toUpperCase(),
@@ -2782,15 +2804,21 @@ formMaquina
         !nome ||
         !setor ||
         !modelo ||
-        !codigo
+        !codigo ||
+        !tipo
       ) {
 
         mensagemMaquina.textContent =
-          "Preencha nome, setor, modelo e código do equipamento.";
+          "Preencha nome, setor, modelo, código e escolha o tipo da máquina.";
 
 
         mensagemMaquina.className =
           "mensagem-maquina erro";
+
+        if (!tipo) {
+          document.getElementById("identificationDetails")?.setAttribute("open", "");
+          document.getElementById("tipoInput")?.focus();
+        }
 
 
         return;
@@ -2996,6 +3024,7 @@ formMaquina
             Cadastrar equipamento
           `;
         }
+        atualizarDisponibilidadeSalvarMaquina();
 
 
         await carregarMaquinas();

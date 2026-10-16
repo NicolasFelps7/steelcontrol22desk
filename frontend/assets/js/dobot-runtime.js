@@ -37,7 +37,15 @@
   let lastExtras = null;
   let requestedViewHandled = false;
   let taughtPoints = loadTaughtPoints();
-  let automatic = { running: false, paused: false, stopRequested: false, completed: 0, total: 1 };
+  let automatic = {
+    running: false,
+    paused: false,
+    stopRequested: false,
+    completed: 0,
+    total: 1,
+    executionId: null,
+    localExecutor: false
+  };
   let automaticVersion = 0;
   let automaticHydrated = false;
   let automaticSyncBusy = false;
@@ -189,25 +197,78 @@
 
   function applySharedAutomatic(source, { force = false } = {}) {
     const shared = sharedAutomaticFrom(source);
-    if (!shared || automatic.running) return false;
+    if (!shared) return false;
     const versionValue = Number(shared.versao ?? 0);
     const version = Number.isInteger(versionValue) && versionValue >= 0 ? versionValue : 0;
-    if (!force && automaticHydrated && version <= automaticVersion) return false;
-
     const cycles = Math.max(1, Math.min(20, Number(shared.ciclos) || 1));
     const speed = Math.max(1, Math.min(40, Number(shared.velocidade) || 15));
-    taughtPoints = normalizedSharedPoints(shared.pontos);
-    automaticVersion = version;
-    automaticHydrated = true;
+    const configChanged = force || !automaticHydrated || version > automaticVersion;
+    if (configChanged && !automatic.localExecutor) {
+      taughtPoints = normalizedSharedPoints(shared.pontos);
+      automaticVersion = version;
+      automaticHydrated = true;
+      if (dom.autoCycles) dom.autoCycles.value = String(cycles);
+      if (dom.autoSpeed) dom.autoSpeed.value = String(speed);
+      saveTaughtPoints();
+    }
+
+    const state = String(shared.estado || "PARADO").toUpperCase();
+    const sharedActive = state === "EXECUTANDO" || state === "PAUSADO";
+    const sharedExecutionId = shared.execucaoId ? String(shared.execucaoId) : null;
+    const sameLocalExecution = Boolean(
+      automatic.localExecutor &&
+      automatic.executionId &&
+      sharedExecutionId === automatic.executionId
+    );
+
+    if (sameLocalExecution) {
+      automatic.paused = state === "PAUSADO";
+      if (!sharedActive) automatic.stopRequested = true;
+    } else if (!automatic.localExecutor) {
+      automatic.running = sharedActive;
+      automatic.paused = state === "PAUSADO";
+      automatic.stopRequested = false;
+      automatic.executionId = sharedExecutionId;
+      automatic.completed = Math.max(0, Math.min(cycles, Number(shared.cicloAtual) || 0));
+    }
     automatic.total = cycles;
-    if (dom.autoCycles) dom.autoCycles.value = String(cycles);
-    if (dom.autoSpeed) dom.autoSpeed.value = String(speed);
-    saveTaughtPoints();
-    updateAutoUi({
-      status: Object.keys(taughtPoints).length ? "Ensino sincronizado" : "Pronto para ensinar",
-      step: Object.keys(taughtPoints).length ? "P0–P4 compartilhados com desktop e mobile" : "Capture P0 a P4 em posições reais diferentes"
+
+    const progress = Math.max(0, Math.min(100, Number(shared.progresso) || 0));
+    if (sharedActive || ["CONCLUIDO", "FALHOU"].includes(state)) {
+      if (sharedActive) setControlMode("automatic");
+      const status = state === "PAUSADO"
+        ? "Ciclo pausado"
+        : state === "CONCLUIDO"
+          ? "Sequência concluída"
+          : state === "FALHOU"
+            ? "Ciclo interrompido"
+            : `Ciclo ${Math.max(1, Number(shared.cicloAtual) || 1)} de ${cycles}`;
+      updateAutoUi({
+        status,
+        step: shared.erro || shared.etapa || (sharedActive ? "Execução sincronizada" : "Pronto para novo ciclo"),
+        progress
+      });
+    } else if (configChanged) {
+      updateAutoUi({
+        status: Object.keys(taughtPoints).length ? "Ensino sincronizado" : "Pronto para ensinar",
+        step: Object.keys(taughtPoints).length ? "P0–P4 compartilhados com desktop e mobile" : "Capture P0 a P4 em posições reais diferentes"
+      });
+    } else {
+      updateAutoUi();
+    }
+    return configChanged || sharedActive || Boolean(shared.estadoAtualizadoEm);
+  }
+
+  async function controlAutomatic(action, data = {}) {
+    const response = await fetchAuth(`${API}/maquinas/${machineId}/dobot/automatico/controle`, {
+      method: "POST",
+      body: JSON.stringify({ acao: action, origem: "DESKTOP", ...data })
     });
-    return true;
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.mensagem || "Não foi possível sincronizar o controle automático.");
+    applySharedAutomatic(result, { force: false });
+    if (result.integracaoMeta && machine) machine = { ...machine, integracaoMeta: result.integracaoMeta };
+    return result;
   }
 
   async function persistSharedAutomatic() {
@@ -584,7 +645,22 @@
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Sincronização do automático", mensagem: error.message });
       return;
     }
-    automatic = { running: true, paused: false, stopRequested: false, completed: 0, total };
+    let started;
+    try {
+      started = await controlAutomatic("INICIAR");
+    } catch (error) {
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Iniciar automático", mensagem: error.message });
+      return;
+    }
+    automatic = {
+      running: true,
+      paused: false,
+      stopRequested: false,
+      completed: 0,
+      total,
+      executionId: started?.automatico?.execucaoId || null,
+      localExecutor: true
+    };
     setControlMode("automatic");
     updateAutoUi({ status: "Ciclo em execução", step: "Preparando sequência", progress: 0 });
     try {
@@ -596,16 +672,30 @@
           const overallIndex = cycle * cycleSteps.length + index;
           const progress = (overallIndex / (total * cycleSteps.length)) * 100;
           updateAutoUi({ status: `Ciclo ${cycle + 1} de ${total}`, step: step.label, progress });
+          await controlAutomatic("PROGRESSO", {
+            execucaoId: automatic.executionId,
+            cicloAtual: cycle + 1,
+            etapaAtual: index + 1,
+            etapa: step.label,
+            progresso: progress
+          });
           await step.action(speed);
         }
         automatic.completed = cycle + 1;
         updateAutoUi({ status: `Ciclo ${automatic.completed} concluído`, step: "Peça posicionada", progress: (automatic.completed / total) * 100 });
       }
+      await controlAutomatic("CONCLUIR", { execucaoId: automatic.executionId });
       window.SteelUI?.toast?.({ tipo: "success", titulo: "Automático concluído", mensagem: `${automatic.completed} ciclo(s) executado(s) com sucesso.` });
       updateAutoUi({ status: "Sequência concluída", step: "Pronto para novo ciclo", progress: 100 });
     } catch (error) {
       if (!automatic.stopRequested) {
         try { await sendCommand("DOBOT_STOP", {}, { silent: true }); } catch (_) {}
+        try {
+          await controlAutomatic("FALHAR", {
+            execucaoId: automatic.executionId,
+            erro: error.message
+          });
+        } catch (_) {}
         window.SteelUI?.toast?.({ tipo: "error", titulo: "Ciclo automático interrompido", mensagem: error.message });
         updateAutoUi({ status: "Ciclo interrompido", step: error.message });
       } else {
@@ -615,6 +705,7 @@
       automatic.running = false;
       automatic.paused = false;
       automatic.stopRequested = false;
+      automatic.localExecutor = false;
       updateAutoUi();
     }
   }
@@ -624,15 +715,26 @@
     automatic.stopRequested = true;
     automatic.paused = false;
     updateAutoUi({ status: "Parando", step: "Enviando DOBOT_STOP" });
-    try { await sendCommand("DOBOT_STOP", {}, { silent: true }); } catch (error) {
+    try {
+      await controlAutomatic("PARAR", { execucaoId: automatic.executionId });
+    } catch (error) {
+      try { await sendCommand("DOBOT_STOP", {}, { silent: true }); } catch (_) {}
       window.SteelUI?.toast?.({ tipo: "error", titulo: "PARAR", mensagem: error.message });
     }
   }
 
-  function togglePause() {
+  async function togglePause() {
     if (!automatic.running) return;
-    automatic.paused = !automatic.paused;
-    updateAutoUi({ status: automatic.paused ? "Pausado após a etapa atual" : "Ciclo retomado", step: automatic.paused ? "Aguardando operador" : "Retomando sequência" });
+    const nextPaused = !automatic.paused;
+    try {
+      await controlAutomatic(nextPaused ? "PAUSAR" : "CONTINUAR", {
+        execucaoId: automatic.executionId
+      });
+      automatic.paused = nextPaused;
+      updateAutoUi({ status: automatic.paused ? "Pausado após a etapa atual" : "Ciclo retomado", step: automatic.paused ? "Aguardando operador" : "Retomando sequência" });
+    } catch (error) {
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Controle automático", mensagem: error.message });
+    }
   }
 
   document.querySelectorAll("[data-dobot-command]").forEach(button => button.addEventListener("click", async () => {
@@ -682,7 +784,7 @@
   dom.automaticMode?.addEventListener("click", () => setControlMode("automatic"));
   document.querySelectorAll("[data-dobot-capture]").forEach(button => button.addEventListener("click", () => capturePoint(button.dataset.dobotCapture)));
   dom.autoStart?.addEventListener("click", startAutomatic);
-  dom.autoPause?.addEventListener("click", togglePause);
+  dom.autoPause?.addEventListener("click", () => { togglePause(); });
   dom.autoStop?.addEventListener("click", stopAutomatic);
   dom.autoReset?.addEventListener("click", async () => {
     if (automatic.running) return;
@@ -721,6 +823,13 @@
     applySharedAutomatic(machine);
     openDedicatedView();
     render(event.detail?.dadosExtras);
+  });
+  window.addEventListener("steelcontrol:dobot-automatic", event => {
+    const detail = event.detail || {};
+    if (detail.integracaoMeta && machine) {
+      machine = { ...machine, integracaoMeta: detail.integracaoMeta };
+    }
+    applySharedAutomatic(detail);
   });
 
   renderTaughtPoints();

@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { processarTelemetria } from "../../lib/telemetryService.js";
-import { publicarEventoMaquina } from "../../lib/realtime.js";
+import { publicarEventoMaquina, publicarEventoEmpresa, assinarEventosMaquina } from "../../lib/realtime.js";
 import { calcularEstadoConexao } from "../../lib/machinePolicy.js";
 import { dataLimiteReentrega, comandoJaFinalizado, normalizarStatusAck } from "../../lib/industrialPolicy.js";
 import { comandoPayloadExpirado } from "../../lib/hmiPolicy.js";
@@ -54,12 +54,15 @@ export async function heartbeatDevice(req, res, next) {
       }
     });
 
-    publicarEventoMaquina(maquina.id, "heartbeat", {
+    const dadosPresenca = {
       maquinaId: maquina.id,
       ultimoHeartbeatEm: agora.toISOString(),
       intervaloLeitura: atualizada.intervaloLeitura,
       estadoConexao: calcularEstadoConexao(atualizada, agora.getTime())
-    });
+    };
+
+    publicarEventoMaquina(maquina.id, "heartbeat", dadosPresenca);
+    publicarEventoEmpresa(maquina.empresaId, "maquina.presenca", dadosPresenca);
 
     res.json({
       ok: true,
@@ -104,11 +107,8 @@ export async function configuracaoDevice(req, res) {
   });
 }
 
-export async function proximoComando(req, res, next) {
-  try {
-    const maquina = req.device.maquina;
+async function reivindicarProximoComando(maquinaId) {
     const limiteReentrega = dataLimiteReentrega(Date.now(), COMMAND_LEASE_MS);
-
     let entregue = null;
 
     // Claim otimista: evita duas requisições concorrentes entregarem o mesmo
@@ -116,7 +116,7 @@ export async function proximoComando(req, res, next) {
     for (let tentativa = 0; tentativa < 8 && !entregue; tentativa++) {
       const comando = await prisma.comandoMaquina.findFirst({
         where: {
-          maquinaId: maquina.id,
+          maquinaId,
           OR: [
             { status: "PENDENTE" },
             {
@@ -132,14 +132,14 @@ export async function proximoComando(req, res, next) {
       });
 
       if (!comando) {
-        return res.status(204).end();
+        return null;
       }
 
       // Comandos operacionais da IHM possuem TTL curto. Se o equipamento
       // ficou offline, eles não podem "acordar" e executar minutos depois.
       if (comandoPayloadExpirado(comando.payload)) {
         await prisma.comandoMaquina.updateMany({
-          where: { id: comando.id, maquinaId: maquina.id, status: { in: ["PENDENTE", "ENTREGUE"] } },
+          where: { id: comando.id, maquinaId, status: { in: ["PENDENTE", "ENTREGUE"] } },
           data: { status: "CANCELADO", concluidoEm: new Date() }
         });
         continue;
@@ -148,7 +148,7 @@ export async function proximoComando(req, res, next) {
       const claim = await prisma.comandoMaquina.updateMany({
         where: {
           id: comando.id,
-          maquinaId: maquina.id,
+          maquinaId,
           OR: [
             { status: "PENDENTE" },
             {
@@ -174,7 +174,46 @@ export async function proximoComando(req, res, next) {
       }
     }
 
+    return entregue;
+}
+
+export async function proximoComando(req, res, next) {
+  try {
+    const maquina = req.device.maquina;
+    let entregue = await reivindicarProximoComando(maquina.id);
+
+    // Long-poll curto: o Edge fica aguardando o evento de fila e acorda no
+    // mesmo instante em que desktop ou mobile cria o comando. Uma segunda
+    // consulta após assinar o canal fecha a janela de corrida entre SELECT e
+    // assinatura. O timeout curto mantém heartbeat e telemetria frequentes.
+    const waitMs = Math.max(0, Math.min(250, Number(req.query.waitMs) || 0));
+    if (!entregue && waitMs > 0) {
+      let finalizarEspera;
+      const acordou = new Promise(resolve => { finalizarEspera = resolve; });
+      const cancelar = assinarEventosMaquina(maquina.id, evento => {
+        if (evento?.tipo === "comando") finalizarEspera();
+      });
+      const timer = setTimeout(finalizarEspera, waitMs);
+      const fechar = () => finalizarEspera();
+      res.once("close", fechar);
+
+      try {
+        entregue = await reivindicarProximoComando(maquina.id);
+        if (!entregue) {
+          await acordou;
+          if (!req.destroyed && !res.destroyed && !res.writableEnded) {
+            entregue = await reivindicarProximoComando(maquina.id);
+          }
+        }
+      } finally {
+        clearTimeout(timer);
+        cancelar();
+        res.off("close", fechar);
+      }
+    }
+
     if (!entregue) {
+      if (req.destroyed || res.destroyed || res.writableEnded) return;
       return res.status(204).end();
     }
 
