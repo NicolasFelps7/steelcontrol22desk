@@ -38,6 +38,9 @@
   let requestedViewHandled = false;
   let taughtPoints = loadTaughtPoints();
   let automatic = { running: false, paused: false, stopRequested: false, completed: 0, total: 1 };
+  let automaticVersion = 0;
+  let automaticHydrated = false;
+  let automaticSyncBusy = false;
   let jogBusy = false;
   let jogPose = null;
   let jogHoldDirection = null;
@@ -146,8 +149,89 @@
   }
 
   function saveTaughtPoints() {
-    localStorage.setItem(storageKey, JSON.stringify(taughtPoints));
+    try { localStorage.setItem(storageKey, JSON.stringify(taughtPoints)); } catch (_) {}
     renderTaughtPoints();
+  }
+
+  function normalizedSharedPoints(raw) {
+    const points = {};
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return points;
+    for (const point of POINTS) {
+      const pose = raw[point];
+      if (!pose || typeof pose !== "object" || !["x", "y", "z", "r"].every(key => Number.isFinite(Number(pose[key])))) continue;
+      points[point] = Object.fromEntries(["x", "y", "z", "r"].map(key => [key, Number(pose[key])]));
+    }
+    return points;
+  }
+
+  function sharedAutomaticFrom(source) {
+    if (!source || typeof source !== "object") return null;
+    if (source.automatico && typeof source.automatico === "object") return source.automatico;
+    const meta = source.integracaoMeta && typeof source.integracaoMeta === "object"
+      ? source.integracaoMeta
+      : source;
+    const dobot = meta.dobot && typeof meta.dobot === "object" ? meta.dobot : null;
+    if (dobot?.automatico && typeof dobot.automatico === "object") return dobot.automatico;
+    if (dobot?.automaticPoints && typeof dobot.automaticPoints === "object") {
+      return {
+        pontos: dobot.automaticPoints,
+        ciclos: 1,
+        velocidade: 15,
+        versao: 0,
+        atualizadoEm: dobot.automaticPointsRevision || null
+      };
+    }
+    if (source.points && typeof source.points === "object") {
+      return { pontos: source.points, ciclos: 1, velocidade: 15, versao: 0, atualizadoEm: source.revision || null };
+    }
+    return null;
+  }
+
+  function applySharedAutomatic(source, { force = false } = {}) {
+    const shared = sharedAutomaticFrom(source);
+    if (!shared || automatic.running) return false;
+    const versionValue = Number(shared.versao ?? 0);
+    const version = Number.isInteger(versionValue) && versionValue >= 0 ? versionValue : 0;
+    if (!force && automaticHydrated && version <= automaticVersion) return false;
+
+    const cycles = Math.max(1, Math.min(20, Number(shared.ciclos) || 1));
+    const speed = Math.max(1, Math.min(40, Number(shared.velocidade) || 15));
+    taughtPoints = normalizedSharedPoints(shared.pontos);
+    automaticVersion = version;
+    automaticHydrated = true;
+    automatic.total = cycles;
+    if (dom.autoCycles) dom.autoCycles.value = String(cycles);
+    if (dom.autoSpeed) dom.autoSpeed.value = String(speed);
+    saveTaughtPoints();
+    updateAutoUi({
+      status: Object.keys(taughtPoints).length ? "Ensino sincronizado" : "Pronto para ensinar",
+      step: Object.keys(taughtPoints).length ? "P0–P4 compartilhados com desktop e mobile" : "Capture P0 a P4 em posições reais diferentes"
+    });
+    return true;
+  }
+
+  async function persistSharedAutomatic() {
+    if (automaticSyncBusy) throw new Error("A sincronização do automático ainda está em andamento.");
+    automaticSyncBusy = true;
+    const cycles = Math.max(1, Math.min(20, Number(dom.autoCycles?.value) || 1));
+    const speed = Math.max(1, Math.min(40, Number(dom.autoSpeed?.value) || 15));
+    try {
+      const response = await fetchAuth(`${API}/maquinas/${machineId}/dobot/automatico`, {
+        method: "PUT",
+        body: JSON.stringify({ pontos: taughtPoints, ciclos: cycles, velocidade: speed, versao: automaticVersion })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(data.mensagem || "Não foi possível sincronizar o ciclo automático.");
+        error.status = response.status;
+        throw error;
+      }
+      applySharedAutomatic(data, { force: true });
+      if (data.integracaoMeta && machine) machine = { ...machine, integracaoMeta: data.integracaoMeta };
+      return data;
+    } finally {
+      automaticSyncBusy = false;
+    }
   }
 
   function renderTaughtPoints() {
@@ -247,8 +331,14 @@
       const [machineResponse, diagnosticResponse] = await Promise.all([
         fetchAuth(`${API}/maquinas/${machineId}`), fetchAuth(`${API}/maquinas/${machineId}/diagnostico`)
       ]);
-      if (machineResponse.ok) machine = await machineResponse.json();
-      if (diagnosticResponse.ok) diagnostic = await diagnosticResponse.json();
+      if (machineResponse.ok) {
+        machine = await machineResponse.json();
+        applySharedAutomatic(machine);
+      }
+      if (diagnosticResponse.ok) {
+        diagnostic = await diagnosticResponse.json();
+        applySharedAutomatic(diagnostic);
+      }
       openDedicatedView();
       render(diagnostic?.dadosExtras || machine?.dadosExtrasAtuais || machine?.telemetria?.at?.(-1)?.dadosExtras || null);
     } catch (_) {}
@@ -437,16 +527,24 @@
   async function capturePoint(point) {
     try {
       if (automatic.running) throw new Error("Pare o ciclo antes de ensinar posições.");
-      // A pose exibida pode ser de uma telemetria anterior. Sempre consulta o
-      // backend novamente antes de gravar um ponto de ensino.
-      await delay(320);
+      // Consulta o backend imediatamente para nunca salvar uma pose antiga.
       const pose = await refreshDiagnosticPose();
       if (!pose) throw new Error("A posição atual do Dobot ainda não está disponível.");
       const duplicate = duplicatedPoint(point, pose);
       if (duplicate) throw new Error(`${point} está praticamente igual a ${duplicate}. Mova fisicamente o braço e capture novamente.`);
+      const previous = taughtPoints[point] ? { ...taughtPoints[point] } : null;
       taughtPoints[point] = { ...pose };
       saveTaughtPoints();
-      updateAutoUi({ status: `${point} • ${POINT_LABELS[point]} ensinado` });
+      updateAutoUi({ status: `${point} • ${POINT_LABELS[point]} sincronizando…` });
+      try {
+        await persistSharedAutomatic();
+      } catch (error) {
+        if (previous) taughtPoints[point] = previous;
+        else delete taughtPoints[point];
+        saveTaughtPoints();
+        throw error;
+      }
+      updateAutoUi({ status: `${point} • ${POINT_LABELS[point]} ensinado e sincronizado` });
       window.SteelUI?.toast?.({ tipo: "success", titulo: `${point} capturado`, mensagem: `X ${n(pose.x, 1)} / Y ${n(pose.y, 1)} / Z ${n(pose.z, 1)} / R ${n(pose.r, 1)}` });
     } catch (error) {
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Ensino do ciclo", mensagem: error.message });
@@ -480,6 +578,12 @@
     }
     const total = Math.max(1, Math.min(20, Number(dom.autoCycles?.value) || 1));
     const speed = Math.max(1, Math.min(40, Number(dom.autoSpeed?.value) || 15));
+    try {
+      await persistSharedAutomatic();
+    } catch (error) {
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Sincronização do automático", mensagem: error.message });
+      return;
+    }
     automatic = { running: true, paused: false, stopRequested: false, completed: 0, total };
     setControlMode("automatic");
     updateAutoUi({ status: "Ciclo em execução", step: "Preparando sequência", progress: 0 });
@@ -580,16 +684,44 @@
   dom.autoStart?.addEventListener("click", startAutomatic);
   dom.autoPause?.addEventListener("click", togglePause);
   dom.autoStop?.addEventListener("click", stopAutomatic);
-  dom.autoReset?.addEventListener("click", () => {
+  dom.autoReset?.addEventListener("click", async () => {
     if (automatic.running) return;
+    const previous = Object.fromEntries(Object.entries(taughtPoints).map(([point, pose]) => [point, { ...pose }]));
     taughtPoints = {};
     saveTaughtPoints();
-    updateAutoUi({ status: "Pronto para ensinar", step: "Capture P0 a P4 em posições reais diferentes", progress: 0 });
+    updateAutoUi({ status: "Sincronizando redefinição…", step: "Removendo P0 a P4 do desktop e do mobile", progress: 0 });
+    try {
+      await persistSharedAutomatic();
+      updateAutoUi({ status: "Pronto para ensinar", step: "Capture P0 a P4 em posições reais diferentes", progress: 0 });
+    } catch (error) {
+      taughtPoints = previous;
+      saveTaughtPoints();
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Redefinir pontos", mensagem: error.message });
+    }
   });
   dom.autoCycles?.addEventListener("input", () => { automatic.total = Math.max(1, Math.min(20, Number(dom.autoCycles.value) || 1)); updateAutoUi(); });
+  dom.autoCycles?.addEventListener("change", async () => {
+    try { await persistSharedAutomatic(); } catch (error) {
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Sincronização do automático", mensagem: error.message });
+    }
+  });
+  dom.autoSpeed?.addEventListener("change", async () => {
+    try { await persistSharedAutomatic(); } catch (error) {
+      window.SteelUI?.toast?.({ tipo: "error", titulo: "Sincronização do automático", mensagem: error.message });
+    }
+  });
 
-  window.addEventListener("steelcontrol:machine-diagnostic", event => { diagnostic = { ...(diagnostic || {}), ...(event.detail || {}) }; render(diagnostic?.dadosExtras); });
-  window.addEventListener("steelcontrol:machine-snapshot", event => { machine = { ...(machine || {}), ...(event.detail || {}) }; openDedicatedView(); render(event.detail?.dadosExtras); });
+  window.addEventListener("steelcontrol:machine-diagnostic", event => {
+    diagnostic = { ...(diagnostic || {}), ...(event.detail || {}) };
+    applySharedAutomatic(diagnostic);
+    render(diagnostic?.dadosExtras);
+  });
+  window.addEventListener("steelcontrol:machine-snapshot", event => {
+    machine = { ...(machine || {}), ...(event.detail || {}) };
+    applySharedAutomatic(machine);
+    openDedicatedView();
+    render(event.detail?.dadosExtras);
+  });
 
   renderTaughtPoints();
   updateAutoUi();

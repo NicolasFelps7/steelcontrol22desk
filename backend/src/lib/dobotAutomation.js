@@ -45,9 +45,43 @@ export function metaDobotComPontos(maquina, pontos, revisao) {
   };
 }
 
+export function automaticoDobotAtual(maquina) {
+  const meta = maquina?.integracaoMeta && typeof maquina.integracaoMeta === "object" && !Array.isArray(maquina.integracaoMeta)
+    ? maquina.integracaoMeta
+    : {};
+  const dobot = meta.dobot && typeof meta.dobot === "object" && !Array.isArray(meta.dobot)
+    ? meta.dobot
+    : {};
+  const automatico = dobot.automatico && typeof dobot.automatico === "object" && !Array.isArray(dobot.automatico)
+    ? dobot.automatico
+    : {};
+  const pontos = pontosAutomaticosDobot(automatico.pontos ?? dobot.automaticPoints ?? {});
+  const ciclosBruto = Number(automatico.ciclos ?? 1);
+  const velocidadeBruta = Number(automatico.velocidade ?? 15);
+  const versaoBruta = Number(automatico.versao ?? 0);
+
+  return {
+    pontos,
+    ciclos: Number.isInteger(ciclosBruto) && ciclosBruto >= 1 && ciclosBruto <= 20 ? ciclosBruto : 1,
+    velocidade: Number.isFinite(velocidadeBruta) && velocidadeBruta >= 1 && velocidadeBruta <= 40 ? velocidadeBruta : 15,
+    versao: Number.isInteger(versaoBruta) && versaoBruta >= 0 ? versaoBruta : 0,
+    atualizadoEm: typeof automatico.atualizadoEm === "string"
+      ? automatico.atualizadoEm
+      : typeof dobot.automaticPointsRevision === "string"
+        ? dobot.automaticPointsRevision
+        : null
+  };
+}
+
 export function prepararAutomaticoDobot(maquina, body = {}, revisao = new Date().toISOString()) {
-  const anterior = maquina.integracaoMeta?.dobot?.automatico || {};
-  const pontos = pontosAutomaticosDobot(body.points ?? body.pontos ?? anterior.pontos ?? maquina.integracaoMeta?.dobot?.automaticPoints);
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    const erro = new Error("A configuração automática do Dobot deve ser um objeto.");
+    erro.statusCode = 400;
+    throw erro;
+  }
+
+  const anterior = automaticoDobotAtual(maquina);
+  const pontos = pontosAutomaticosDobot(body.points ?? body.pontos ?? anterior.pontos);
   const ciclos = Number(body.ciclos ?? anterior.ciclos ?? 1);
   const velocidade = Number(body.velocidade ?? anterior.velocidade ?? 15);
   if (!Number.isInteger(ciclos) || ciclos < 1 || ciclos > 20 || !Number.isFinite(velocidade) || velocidade < 1 || velocidade > 40) {
@@ -55,14 +89,14 @@ export function prepararAutomaticoDobot(maquina, body = {}, revisao = new Date()
     erro.statusCode = 400;
     throw erro;
   }
-  if (body.versao !== undefined && Number(body.versao) !== Number(anterior.versao || 0)) {
+  if (body.versao !== undefined && Number(body.versao) !== anterior.versao) {
     const erro = new Error("O ensino foi alterado em outro dispositivo. Atualize antes de salvar.");
     erro.statusCode = 409;
     throw erro;
   }
   const integracaoMeta = metaDobotComPontos(maquina, pontos, revisao);
   integracaoMeta.dobot.automatico = {
-    pontos, ciclos, velocidade, versao: Number(anterior.versao || 0) + 1, atualizadoEm: revisao
+    pontos, ciclos, velocidade, versao: anterior.versao + 1, atualizadoEm: revisao
   };
   return integracaoMeta;
 }

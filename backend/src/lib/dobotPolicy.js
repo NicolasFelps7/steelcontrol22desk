@@ -6,6 +6,22 @@ export const DOBOT_LIMITS = Object.freeze({
   velocidade: Object.freeze({ min: 1, max: 60 })
 });
 
+export const DOBOT_COMMANDS = Object.freeze([
+  "DOBOT_HOME",
+  "DOBOT_STOP",
+  "DOBOT_CLEAR_ALARMS",
+  "DOBOT_PTP",
+  "DOBOT_ROTATE",
+  "DOBOT_SUCTION_ON",
+  "DOBOT_SUCTION_OFF",
+  "DOBOT_GRIPPER_OPEN",
+  "DOBOT_GRIPPER_CLOSE"
+]);
+
+export function comandoDobotPermitido(comando) {
+  return DOBOT_COMMANDS.includes(String(comando || "").trim().toUpperCase());
+}
+
 const TTL_MS = Object.freeze({
   DOBOT_STOP: 15_000,
   DOBOT_CLEAR_ALARMS: 10_000,

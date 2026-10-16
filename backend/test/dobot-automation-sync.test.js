@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { prepararAutomaticoDobot } from '../src/lib/dobotAutomation.js';
+import { automaticoDobotAtual, prepararAutomaticoDobot } from '../src/lib/dobotAutomation.js';
 
 const pose = { x: 150, y: 0, z: 80, r: 0 };
 const machine = { integracaoMeta: { fabricante: 'Dobot', dobot: { remoteControlEnabled: true, port: 'COM5' } } };
@@ -46,7 +46,24 @@ test('envelope físico, velocidade e ciclos são validados no backend', () => {
 
 test('formato antigo permanece legível e atualizável', () => {
   const legacy = { integracaoMeta: { dobot: { automaticPoints: { P0: pose }, remoteControlEnabled: true } } };
+  assert.deepEqual(automaticoDobotAtual(legacy), {
+    pontos: { P0: pose }, ciclos: 1, velocidade: 15, versao: 0, atualizadoEm: null
+  });
   const migrated = prepararAutomaticoDobot(legacy, { ciclos: 2 });
   assert.deepEqual(migrated.dobot.automatico.pontos.P0, pose);
   assert.equal(migrated.dobot.remoteControlEnabled, true);
+});
+
+test('leitura canônica preserva revisão, ciclos, velocidade e versão', () => {
+  const integracaoMeta = prepararAutomaticoDobot(machine, {
+    pontos: { P0: pose }, ciclos: 6, velocidade: 24, versao: 0
+  }, 'revision-canonical');
+  assert.deepEqual(automaticoDobotAtual({ integracaoMeta }), {
+    pontos: { P0: pose }, ciclos: 6, velocidade: 24, versao: 1, atualizadoEm: 'revision-canonical'
+  });
+});
+
+test('payload automático inválido é rejeitado antes de persistir', () => {
+  assert.throws(() => prepararAutomaticoDobot(machine, []), { statusCode: 400 });
+  assert.throws(() => prepararAutomaticoDobot(machine, null), { statusCode: 400 });
 });

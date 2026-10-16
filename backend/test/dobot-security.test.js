@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  DOBOT_COMMANDS,
+  comandoDobotPermitido,
   controleRemotoDobotHabilitado,
   expiraEmComandoDobot,
   validarPayloadDobot
@@ -51,6 +53,9 @@ test("comandos Dobot recebem TTL curto", () => {
 });
 
 test("rotação incremental aceita somente passo e velocidade seguros", () => {
+  assert.equal(comandoDobotPermitido("DOBOT_ROTATE"), true);
+  assert.equal(DOBOT_COMMANDS.includes("DOBOT_ROTATE"), true);
+  assert.equal(comandoDobotPermitido("DOBOT_MOVE_UNSAFE"), false);
   assert.deepEqual(
     validarPayloadDobot("DOBOT_ROTATE", { delta: -5, velocidade: 20 }),
     { delta: -5, velocidade: 20 }

@@ -5,7 +5,8 @@ import { gerarDeviceKey, hashDeviceKey, deviceKeyHint } from "../../lib/deviceSe
 import { processarTelemetria, validarLimitesMaquina } from "../../lib/telemetryService.js";
 import { publicarEventoMaquina, assinarEventosMaquina, publicarEventoEmpresa } from "../../lib/realtime.js";
 import { normalizarComandoIhm, politicaComandoIhm, cargoPodeComandoIhm, expiraEmComandoIhm, avaliarPermissaoStartIhm, controleRemotoIhmHabilitado } from "../../lib/hmiPolicy.js";
-import { controleRemotoDobotHabilitado, expiraEmComandoDobot, validarPayloadDobot } from "../../lib/dobotPolicy.js";
+import { DOBOT_COMMANDS, comandoDobotPermitido, controleRemotoDobotHabilitado, expiraEmComandoDobot, validarPayloadDobot } from "../../lib/dobotPolicy.js";
+import { automaticoDobotAtual, prepararAutomaticoDobot } from "../../lib/dobotAutomation.js";
 
 function ehAdministrador(req) {
   return req.auth?.cargo === "ADMINISTRADOR";
@@ -69,62 +70,6 @@ function objetoJsonOpcional(valor, maxBytes = 16_000) {
     throw erro;
   }
   return JSON.parse(serializado);
-}
-
-const DOBOT_COMMANDS = new Set([
-  "DOBOT_HOME",
-  "DOBOT_STOP",
-  "DOBOT_CLEAR_ALARMS",
-  "DOBOT_PTP",
-  "DOBOT_SUCTION_ON",
-  "DOBOT_SUCTION_OFF",
-  "DOBOT_GRIPPER_OPEN",
-  "DOBOT_GRIPPER_CLOSE"
-]);
-
-const DOBOT_AUTOMATIC_POINTS = ["P0", "P1", "P2", "P3", "P4"];
-
-function pontosAutomaticosDobot(valor) {
-  if (valor === undefined || valor === null) return {};
-  if (typeof valor !== "object" || Array.isArray(valor)) {
-    const erro = new Error("Os pontos automáticos do Dobot devem ser um objeto.");
-    erro.statusCode = 400;
-    throw erro;
-  }
-
-  const pontos = {};
-  for (const nome of DOBOT_AUTOMATIC_POINTS) {
-    const pose = valor[nome];
-    if (pose === undefined || pose === null) continue;
-    const validada = validarPayloadDobot("DOBOT_PTP", {
-      ...pose,
-      velocidade: 10
-    });
-    pontos[nome] = {
-      x: validada.x,
-      y: validada.y,
-      z: validada.z,
-      r: validada.r
-    };
-  }
-  return pontos;
-}
-
-function metaDobotComPontos(maquina, pontos, revisao) {
-  const metaAtual = maquina?.integracaoMeta && typeof maquina.integracaoMeta === "object" && !Array.isArray(maquina.integracaoMeta)
-    ? maquina.integracaoMeta
-    : {};
-  const dobotAtual = metaAtual.dobot && typeof metaAtual.dobot === "object" && !Array.isArray(metaAtual.dobot)
-    ? metaAtual.dobot
-    : {};
-  return {
-    ...metaAtual,
-    dobot: {
-      ...dobotAtual,
-      automaticPoints: pontos,
-      automaticPointsRevision: revisao
-    }
-  };
 }
 
 const PRINTER3D_COMMANDS = new Set([
@@ -1169,7 +1114,7 @@ export async function criarComandoDobot(req, res, next) {
     }
 
     const comando = String(req.body?.comando || "").trim().toUpperCase();
-    if (!DOBOT_COMMANDS.has(comando)) {
+    if (!comandoDobotPermitido(comando)) {
       return res.status(400).json({ mensagem: "Comando Dobot não permitido." });
     }
 
@@ -1205,7 +1150,7 @@ export async function criarComandoDobot(req, res, next) {
     };
 
     const cancelaveis = comando === "DOBOT_STOP"
-      ? [...DOBOT_COMMANDS].filter(item => item !== "DOBOT_STOP")
+      ? DOBOT_COMMANDS.filter(item => item !== "DOBOT_STOP")
       : comando === "DOBOT_PTP"
         ? ["DOBOT_PTP"]
         : [];
@@ -1270,35 +1215,28 @@ export async function obterAutomaticoDobot(req, res, next) {
       });
     }
 
-    const meta =
-      maquina.integracaoMeta &&
-      typeof maquina.integracaoMeta === "object" &&
-      !Array.isArray(maquina.integracaoMeta)
-        ? maquina.integracaoMeta
-        : {};
-
-    const dobot =
-      meta.dobot &&
-      typeof meta.dobot === "object" &&
-      !Array.isArray(meta.dobot)
-        ? meta.dobot
-        : {};
-
-    const points =
-      dobot.automaticPoints &&
-      typeof dobot.automaticPoints === "object" &&
-      !Array.isArray(dobot.automaticPoints)
-        ? dobot.automaticPoints
-        : {};
-
-    const revision =
-      typeof dobot.automaticPointsRevision === "string"
-        ? dobot.automaticPointsRevision
-        : null;
+    const automatico = automaticoDobotAtual(maquina);
+    const meta = maquina.integracaoMeta && typeof maquina.integracaoMeta === "object" && !Array.isArray(maquina.integracaoMeta)
+      ? maquina.integracaoMeta
+      : {};
+    const dobot = meta.dobot && typeof meta.dobot === "object" && !Array.isArray(meta.dobot)
+      ? meta.dobot
+      : {};
+    const integracaoMeta = {
+      ...meta,
+      dobot: {
+        ...dobot,
+        automaticPoints: automatico.pontos,
+        automaticPointsRevision: automatico.atualizadoEm,
+        automatico
+      }
+    };
 
     return res.json({
-      points,
-      revision
+      automatico,
+      integracaoMeta,
+      points: automatico.pontos,
+      revision: automatico.atualizadoEm
     });
   } catch (erro) {
     next(erro);
@@ -1307,6 +1245,9 @@ export async function obterAutomaticoDobot(req, res, next) {
 export async function salvarPontosAutomaticosDobot(req, res, next) {
   try {
     const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ mensagem: "Identificador da máquina inválido." });
+    }
     const maquina = await prisma.maquina.findFirst({ where: whereEmpresa(req, id) });
     if (!maquina) return res.status(404).json({ mensagem: "Máquina não encontrada." });
     if (String(maquina.controlador || "").toUpperCase() !== "DOBOT_MAGICIAN") {
@@ -1318,9 +1259,8 @@ export async function salvarPontosAutomaticosDobot(req, res, next) {
       return res.status(403).json({ mensagem: "Seu cargo não possui permissão para ensinar o ciclo automático." });
     }
 
-    const pontos = pontosAutomaticosDobot(req.body?.points);
     const revisao = new Date().toISOString();
-    const integracaoMeta = metaDobotComPontos(maquina, pontos, revisao);
+    const integracaoMeta = prepararAutomaticoDobot(maquina, req.body || {}, revisao);
     const atualizada = await prisma.maquina.update({
       where: { id },
       data: { integracaoMeta }
@@ -1330,15 +1270,26 @@ export async function salvarPontosAutomaticosDobot(req, res, next) {
       id,
       integracaoMeta: atualizada.integracaoMeta
     });
-    registrarAuditoria({
+    const automatico = automaticoDobotAtual(atualizada);
+    await registrarAuditoria({
       req,
       acao: "ENSINAR_CICLO_DOBOT",
       entidade: "MAQUINA",
       entidadeId: id,
-      detalhes: { pontos: Object.keys(pontos) }
+      detalhes: {
+        pontos: Object.keys(automatico.pontos),
+        ciclos: automatico.ciclos,
+        velocidade: automatico.velocidade,
+        versao: automatico.versao
+      }
     });
 
-    return res.json({ points: pontos, revision: revisao });
+    return res.json({
+      automatico,
+      integracaoMeta: atualizada.integracaoMeta,
+      points: automatico.pontos,
+      revision: automatico.atualizadoEm
+    });
   } catch (erro) {
     next(erro);
   }

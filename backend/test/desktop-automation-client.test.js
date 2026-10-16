@@ -23,7 +23,11 @@ function harness() {
     window: { STEELCONTROL_API_URL: 'https://steel.test', location: { search: '' }, addEventListener: (key, fn) => { listeners[key] = fn; } },
     document: { getElementById: id => elements[id] || null, querySelectorAll: () => [],
       querySelector: selector => selector.includes('point-value="P0"') ? pointOutput : null },
-    localStorage: { getItem: key => store.get(key) || null, removeItem: key => store.delete(key) },
+    localStorage: {
+      getItem: key => store.get(key) || null,
+      setItem: (key, value) => store.set(key, String(value)),
+      removeItem: key => store.delete(key)
+    },
     fetch: async (url, options = {}) => {
       if (options.method === 'PUT') {
         const body = JSON.parse(options.body); requests.push({ url, body });

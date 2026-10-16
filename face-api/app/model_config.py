@@ -11,4 +11,3 @@ ALLOWED_MODULES = ("detection", "recognition")
 # bastante o custo do SCRFD em CPU sem trocar o modelo de reconhecimento nem
 # alterar o tamanho dos embeddings (512 posicoes).
 DETECTION_SIZE = (320, 320)
-
