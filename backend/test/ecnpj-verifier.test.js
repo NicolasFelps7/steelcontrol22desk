@@ -1,0 +1,24 @@
+import test,{before,after} from "node:test";
+import assert from "node:assert/strict";
+import {readFile} from "node:fs/promises";
+import {criarPkiTeste} from "./support/ecnpj-fixture.js";
+import {verificarAssinaturaEcnpj,verificarFormatoCms,cnpjDoCertificado} from "../src/lib/ecnpjVerifier.js";
+let pki;
+before(async()=>{pki=await criarPkiTeste();});after(async()=>{await pki?.cleanup();});
+const documento='Autorizacao exclusiva: conta pessoa@gmail.com, CNPJ 11222333000181, nonce aleatorio de teste.\n';
+const verify=async(name="valid",extra={})=>verificarAssinaturaEcnpj({documento,assinatura:await pki.sign(documento,name),cnpj:"11222333000181",rootsPath:pki.rootsPath,crlsPath:pki.crlsPath,allowedPolicies:["2.16.76.1.2.1.999999"],...extra});
+test("assinatura real sobre os bytes exatos, cadeia confiável e CRL vigente é aceita",async()=>{const proof=await verify();assert.equal(proof.cnpj,"11222333000181");assert.match(proof.fingerprint,/^[0-9a-f]{64}$/);});
+test("CNPJ é extraído do otherName OCTET STRING ICP-Brasil, não do nome do titular",async()=>{assert.equal(cnpjDoCertificado(await readFile(pki.file("valid.pem"),"utf8")).cnpj,"11222333000181");});
+test("assinatura de e-CNPJ de outra empresa é recusada",async()=>{await assert.rejects(()=>verify("wrong"),/outra empresa/);});
+test("certificado contendo CNPJ apenas no CN não é aceito",async()=>{await assert.rejects(()=>verify("missing"),/e-CNPJ/);});
+test("certificado vencido é recusado",async()=>{await assert.rejects(()=>verify("expired"),/recusada/);});
+test("certificado revogado é recusado por OpenSSL",async()=>{await assert.rejects(()=>verify("revoked"),/recusada/);});
+test("CRL vencida não permite ativação",async()=>{await assert.rejects(()=>verify("valid",{crlsPath:pki.file("expired-crls.pem")}),/recusada/);});
+test("configuração ausente não aceita assinatura e não usa raízes do sistema",async()=>{await assert.rejects(()=>verify("valid",{rootsPath:"",crlsPath:""}),e=>e.statusCode===503);});
+test("certificado sem raiz confiável não é aceito",async()=>{await pki.run(["req","-x509","-newkey","rsa:2048","-nodes","-keyout","other.key","-out","other.pem","-days","2","-subj","/CN=Unrelated test root","-addext","basicConstraints=critical,CA:TRUE"]);await assert.rejects(()=>verify("valid",{rootsPath:pki.file("other.pem")}),/recusada/);});
+test("alterar conta, CNPJ ou bytes do documento quebra a assinatura",async()=>{for(const changed of [documento.replace("pessoa@gmail.com","atacante@gmail.com"),documento.replace("11222333000181","99888777000166"),documento+" "]){await assert.rejects(()=>verify("valid",{documento:changed}),/recusada/);}});
+test("assinatura CMS anexada é recusada: apenas arquivo original destacado",async()=>{const signature=await pki.sign(documento,"valid",["-nodetach"]);assert.throws(()=>verificarFormatoCms(signature),/destacada/);});
+test("SHA-1, dados arbitrários e certificado sem assinatura não são aceitos",async()=>{assert.throws(()=>verificarFormatoCms(Buffer.from("not a signature")));assert.throws(()=>verificarFormatoCms(Buffer.alloc(1024*1024+1)));const signature=await pki.sign(documento,"valid",["-md","sha1"]);assert.throws(()=>verificarFormatoCms(signature),/SHA-256/);});
+
+test("política diferente da lista e-CNPJ aprovada não é aceita",async()=>{await assert.rejects(()=>verify("valid",{allowedPolicies:["2.16.76.1.2.1.888888"]}),/política deste certificado/);});
+test("lista de políticas ausente não libera certificados de finalidade indefinida",async()=>{await assert.rejects(()=>verify("valid",{allowedPolicies:[]}),e=>e.statusCode===503);});

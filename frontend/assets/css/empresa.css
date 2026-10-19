@@ -2883,3 +2883,9 @@ html[data-theme="escuro"] .face-sample-item:hover {
 .sc-confirm-card {
   backdrop-filter: none;
 }
+
+/* Internal username and fixed tenant suffix are separate from contact email. */
+.employee-login-field { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.employee-login-field input { flex:1 1 150px; min-width:100px; width:auto; }
+.employee-login-suffix { max-width:100%; overflow-wrap:anywhere; font-weight:600; padding:10px 4px; }
+#funcLoginAjuda { display:block; margin-top:6px; line-height:1.5; opacity:.8; }

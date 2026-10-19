@@ -1,3 +1,7 @@
+import { respostaValidacaoEmpresa } from "../../lib/companyBootstrap.js";
+import { garantirSufixoEmpresa } from "../../lib/employeeLogin.js";
+import { publicarEventoEmpresa } from "../../lib/realtime.js";
+import { organizationAccessError } from "../../lib/organizationPolicy.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { randomUUID, randomInt } from "node:crypto";
@@ -155,14 +159,15 @@ function cargoParaTela(cargo) {
 // TOKEN
 // =========================================================
 
-function criarToken(usuario) {
+function criarToken(usuario, mfaVerified = false) {
 
   return jwt.sign(
     {
       usuarioId: usuario.id,
       empresaId: usuario.empresaId,
       cargo: usuario.cargo,
-      tokenVersion: Number(usuario.tokenVersion || 0)
+      tokenVersion: Number(usuario.tokenVersion || 0),
+      mfaVerified
     },
     env.jwtSecret,
     {
@@ -171,8 +176,10 @@ function criarToken(usuario) {
   );
 }
 
-function criarSessao(req, res, usuario) {
-  const token = criarToken(usuario);
+function criarSessao(req, res, usuario, mfaVerified = false) {
+  const acesso = organizationAccessError(usuario);
+  if (acesso) throw Object.assign(new Error(acesso.mensagem), { statusCode: 403, codigo: acesso.codigo });
+  const token = criarToken(usuario, mfaVerified);
   setSessionCookie(res, token);
 
   return clientWantsBearer(req)
@@ -574,23 +581,12 @@ async function validarDisponibilidadeCadastro({
   }
 
   if (cnpj) {
-    const empresaExiste =
-      await prisma.empresa.findUnique({
-        where: {
-          cnpj
-        }
-      });
-
-    if (empresaExiste) {
-      const erro =
-        new Error(
-          "Este CNPJ já está cadastrado."
-        );
-
-      erro.statusCode = 409;
-      throw erro;
-    }
+    const existente = await prisma.empresa.findUnique({ where: { cnpj } });
+    // A pending claim must never let an attacker permanently reserve someone else's CNPJ.
+    // Another candidate may submit their own e-CNPJ authorization; no employee access is granted.
+    if (existente && existente.status !== "PENDENTE") throw Object.assign(new Error("Esta empresa já está cadastrada. Peça ao responsável para cadastrar seu funcionário pela Gestão Industrial."), { statusCode: 409 });
   }
+
 }
 
 
@@ -1438,7 +1434,7 @@ export async function completeCompanyRegistrationWithFace(
                       verificacao.empresaCnpj
                   },
                   select: {
-                    id: true
+                    id: true, status: true, nome: true, cnpj: true, loginDomain: true
                   }
                 })
               : Promise.resolve(null),
@@ -1460,14 +1456,8 @@ export async function completeCompanyRegistrationWithFace(
             throw erro;
           }
 
-          if (empresaExiste) {
-            const erro =
-              new Error(
-                "Este CNPJ já está cadastrado."
-              );
-            erro.statusCode = 409;
-            throw erro;
-          }
+
+          if (empresaExiste && empresaExiste.status !== "PENDENTE") throw Object.assign(new Error("Empresa já cadastrada. O responsável deve cadastrar funcionários pela Gestão Industrial."), { statusCode: 409 });
 
           const candidatosDuplicidade = [
             facialFinal.embedding,
@@ -1506,7 +1496,7 @@ export async function completeCompanyRegistrationWithFace(
             throw erro;
           }
 
-          const novaEmpresa =
+          const novaEmpresa = empresaExiste ||
             await tx.empresa.create({
               data: {
                 nome:
@@ -1515,6 +1505,8 @@ export async function completeCompanyRegistrationWithFace(
                   verificacao.empresaCnpj
               }
             });
+
+          if (!empresaExiste) novaEmpresa.loginDomain = await garantirSufixoEmpresa(tx, novaEmpresa);
 
           const usuario =
             await tx.usuario.create({
@@ -1527,8 +1519,9 @@ export async function completeCompanyRegistrationWithFace(
                   verificacao.email,
                 senhaHash:
                   verificacao.senhaHash,
-                cargo:
-                  "ADMINISTRADOR"
+                cargo: "VISITANTE",
+                statusVinculo: "ADMIN_PENDENTE",
+                emailVerificadoEm: new Date()
               }
             });
 
@@ -1550,11 +1543,13 @@ export async function completeCompanyRegistrationWithFace(
               }
             });
 
-          return {
-            novaEmpresa,
-            usuario,
-            face
-          };
+          await tx.auditLog.create({ data: {
+            empresaId: novaEmpresa.id, usuarioId: usuario.id,
+            acao: "SOLICITAR_AUTORIZACAO_ECNPJ",
+            entidade: "USUARIO", entidadeId: usuario.id,
+            detalhes: { statusVinculo: usuario.statusVinculo }
+          } });
+          return { novaEmpresa, usuario, face };
         },
         {
           maxWait: 5000,
@@ -1567,39 +1562,62 @@ export async function completeCompanyRegistrationWithFace(
       verificacaoId
     );
 
-    return res
-      .status(201)
-      .json({
-        mensagem:
-          "Cadastro concluído com sucesso. E-mail e biometria facial confirmados.",
-        ...criarSessao(req, res, resultado.usuario),
-        usuario: {
-          id:
-            resultado.usuario.id,
-          nome:
-            resultado.usuario.nome,
-          email:
-            resultado.usuario.email,
-          cargo:
-            "Administrador"
-        },
-        empresa:
-          empresaParaResposta(
-            resultado.novaEmpresa
-          ),
-        facial: {
-          cadastrada: true,
-          faceId:
-            resultado.face.id
-        },
-        cadastroConcluido: true
-      });
+    publicarEventoEmpresa(resultado.usuario.empresaId, "usuario.solicitacao-recebida", {});
+    clearSessionCookie(res);
+    return res.status(202).json({
+      ...respostaValidacaoEmpresa(resultado.usuario),
+      codigo: "REGISTRATION_PENDING_APPROVAL",
+      mensagem: resultado.usuario.statusVinculo === "ADMIN_PENDENTE"
+        ? "Cadastro recebido. Assine a autorização com o e-CNPJ da empresa para validar esta conta como administradora. Nenhum acesso foi liberado."
+        : "Aguardando autorização assinada com o e-CNPJ da empresa. Nenhum acesso foi liberado.",
+      pendente: true,
+      statusVinculo: resultado.usuario.statusVinculo,
+      cadastroConcluido: true
+    });
 
   } catch (erro) {
     next(erro);
   }
 }
 
+
+async function iniciarMfa(req, res, usuario) {
+  req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
+      limparAdminMfaExpirados();
+      const challengeId = randomUUID();
+      const codigo = String(randomInt(100000, 1000000));
+      const codigoHash = await bcrypt.hash(codigo, 10);
+
+      const desafioMfa = {
+        usuarioId: usuario.id,
+        tokenVersion: Number(usuario.tokenVersion || 0),
+        email: usuario.email,
+        codigoHash,
+        expiraEm: Date.now() + ADMIN_MFA_TTL_MS,
+        tentativas: 0
+      };
+      await salvarAdminMfa(challengeId, desafioMfa);
+
+      try {
+        await enviarCodigoMfaAdministrador({
+          destino: usuario.email,
+          codigo,
+          nome: usuario.nome
+        });
+      } catch (erro) {
+        await removerAdminMfa(challengeId);
+        throw erro;
+      }
+
+      return res.status(202).json({
+        codigo: "ADMIN_MFA_REQUIRED",
+        mensagem: "Digite o código enviado ao e-mail da sua conta.",
+        mfaRequired: true,
+        challengeId,
+        email: mascararEmailFace2FA(usuario.email),
+        expiraEmSegundos: Math.floor(ADMIN_MFA_TTL_MS / 1000)
+      });
+}
 
 export async function login(
   req,
@@ -1640,6 +1658,8 @@ export async function login(
         include: {
           empresa: true
         }
+      }) || await prisma.usuario.findUnique({
+        where: { loginInterno: emailFormatado }, include: { empresa: true }
       });
 
     if (
@@ -1671,68 +1691,7 @@ export async function login(
         });
     }
 
-    if (env.adminMfaRequired && usuario.cargo === "ADMINISTRADOR") {
-      limparAdminMfaExpirados();
-      const challengeId = randomUUID();
-      const codigo = String(randomInt(100000, 1000000));
-      const codigoHash = await bcrypt.hash(codigo, 10);
-
-      const desafioMfa = {
-        usuarioId: usuario.id,
-        codigoHash,
-        expiraEm: Date.now() + ADMIN_MFA_TTL_MS,
-        tentativas: 0
-      };
-      await salvarAdminMfa(challengeId, desafioMfa);
-
-      try {
-        await enviarCodigoMfaAdministrador({
-          destino: usuario.email,
-          codigo,
-          nome: usuario.nome
-        });
-      } catch (erro) {
-        await removerAdminMfa(challengeId);
-        throw erro;
-      }
-
-      return res.status(202).json({
-        codigo: "ADMIN_MFA_REQUIRED",
-        mensagem: "Digite o código enviado ao e-mail do administrador.",
-        mfaRequired: true,
-        challengeId,
-        email: mascararEmailFace2FA(usuario.email),
-        expiraEmSegundos: Math.floor(ADMIN_MFA_TTL_MS / 1000)
-      });
-    }
-
-    return res.json({
-      mensagem:
-        "Login realizado com sucesso.",
-
-      ...criarSessao(req, res, usuario),
-
-      usuario: {
-        id:
-          usuario.id,
-
-        nome:
-          usuario.nome,
-
-        email:
-          usuario.email,
-
-        cargo:
-          cargoParaTela(
-            usuario.cargo
-          )
-      },
-
-      empresa:
-        empresaParaResposta(
-          usuario.empresa
-        )
-    });
+    return await iniciarMfa(req, res, usuario);
 
   } catch (erro) {
 
@@ -1747,7 +1706,7 @@ export async function verifyAdminMfa(req, res, next) {
     const codigo = String(req.body?.codigo || "").replace(/\D/g, "").slice(0, 6);
     const desafio = await obterAdminMfa(challengeId);
 
-    if (!desafio || codigo.length !== 6) {
+    if (!desafio || desafio.expiraEm <= Date.now() || codigo.length !== 6) {
       return res.status(401).json({
         codigo: "ADMIN_MFA_INVALID",
         mensagem: "Código administrativo inválido ou expirado."
@@ -1774,22 +1733,27 @@ export async function verifyAdminMfa(req, res, next) {
     }
 
     const usuario = await prisma.usuario.findFirst({
-      where: { id: desafio.usuarioId, ativo: true, cargo: "ADMINISTRADOR" },
+      where: { id: desafio.usuarioId, ativo: true },
       include: { empresa: true }
     });
     await removerAdminMfa(challengeId);
 
-    if (!usuario) {
-      return res.status(401).json({ mensagem: "Conta administrativa indisponível." });
+    if (!usuario || usuario.email !== desafio.email || Number(usuario.tokenVersion || 0) !== desafio.tokenVersion) {
+      return res.status(401).json({ mensagem: "Conta alterada ou sessão revogada. Faça login novamente." });
     }
 
+    await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
+    req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
+    const acesso = organizationAccessError(usuario);
+    if (acesso) return res.status(403).json(usuario.empresa?.status === "PENDENTE" && usuario.statusVinculo === "ADMIN_PENDENTE" ? respostaValidacaoEmpresa(usuario) : acesso);
     return res.json({
       mensagem: "Autenticação multifator concluída.",
-      ...criarSessao(req, res, usuario),
+      ...criarSessao(req, res, usuario, true),
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
+        loginInterno: usuario.loginInterno || null,
         cargo: cargoParaTela(usuario.cargo)
       },
       empresa: empresaParaResposta(usuario.empresa),
@@ -2606,48 +2570,7 @@ export async function loginFace(
     const usuario =
       melhor.usuario;
 
-    return res.json({
-      mensagem:
-        `Rosto reconhecido. Bem-vindo, ${usuario.nome}!`,
-
-      ...criarSessao(req, res, usuario),
-
-      usuario: {
-        id:
-          usuario.id,
-
-        nome:
-          usuario.nome,
-
-        email:
-          usuario.email,
-
-        cargo:
-          cargoParaTela(
-            usuario.cargo
-          )
-      },
-
-      empresa:
-        empresaParaResposta(
-          usuario.empresa
-        ),
-
-      reconhecimento: {
-        similaridade:
-          Number(
-            melhor.similaridade.toFixed(4)
-          ),
-
-        margem:
-          Number(
-            classificacao.margem.toFixed(4)
-          ),
-
-        faceId:
-          melhor.faceId
-      }
-    });
+    return await iniciarMfa(req, res, usuario);
 
   } catch (erro) {
 
@@ -2817,14 +2740,19 @@ export async function verifyFaceAmbiguousCode(req, res, next) {
     }
 
     await removerFace2FA(challengeId);
+    if (usuario.empresa?.status === "PENDENTE" && usuario.statusVinculo === "ADMIN_PENDENTE") {
+      await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
+      return res.status(403).json(respostaValidacaoEmpresa(usuario));
+    }
 
     return res.json({
       mensagem: `Identidade confirmada. Bem-vindo, ${usuario.nome}!`,
-      ...criarSessao(req, res, usuario),
+      ...criarSessao(req, res, usuario, true),
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
+        loginInterno: usuario.loginInterno || null,
         cargo: cargoParaTela(usuario.cargo)
       },
       empresa: empresaParaResposta(usuario.empresa),

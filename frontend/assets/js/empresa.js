@@ -2652,6 +2652,7 @@ function renderizarFuncionarios() {
             <p>
               ${escaparHtml(usuario.email)}
             </p>
+            ${usuario.loginInterno ? `<p><strong>Login:</strong> ${escaparHtml(usuario.loginInterno)}</p>` : ""}
 
             <span class="role-badge">
               ${formatarCargo(usuario.cargo)}
@@ -3002,6 +3003,8 @@ function abrirEditarFuncionario(
     document.getElementById(
       "editFuncionarioEmail"
     );
+  const campoLogin = document.getElementById("editFuncionarioLogin");
+  if (campoLogin) campoLogin.value = usuario.loginInterno || "Conta anterior: utiliza o e-mail de contato";
 
   const senha =
     document.getElementById(
@@ -3856,6 +3859,13 @@ function abrirNovoFuncionario() {
   }
 
 
+  const sufixo = empresaAtual?.loginDomain;
+  if (!sufixo) {
+    alert("Atualize o backend e execute as migrations para configurar o login interno da empresa.");
+    return;
+  }
+  document.getElementById("funcLoginSufixo").textContent = `@${sufixo}`;
+  document.getElementById("funcLoginParte").value = "";
   modalFuncionario?.classList.add(
     "ativo"
   );
@@ -3893,6 +3903,7 @@ formFuncionario
 
 
       const payload = {
+        loginParte: document.getElementById("funcLoginParte").value.trim().toLowerCase(),
 
         nome:
           document
@@ -5968,3 +5979,10 @@ document.addEventListener(
   "DOMContentLoaded",
   iniciarFallbackRevisaoEmpresa
 );
+
+document.getElementById("funcLoginParte")?.addEventListener("input", event => {
+  const parte = String(event.target.value || "").trim().toLowerCase();
+  document.getElementById("funcLoginAjuda").textContent = parte && empresaAtual?.loginDomain
+    ? `Login completo: ${parte}@${empresaAtual.loginDomain}. Os códigos serão enviados ao e-mail real de contato.`
+    : "Digite apenas a parte do funcionário. O sufixo da empresa é fixo.";
+});

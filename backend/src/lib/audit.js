@@ -17,8 +17,6 @@ export async function registrarAuditoria({
       usuarioId || req?.auth?.usuarioId || null;
 
     if (
-      !Number.isInteger(empresaFinal) ||
-      empresaFinal <= 0 ||
       !acao ||
       !entidade
     ) {
@@ -27,7 +25,7 @@ export async function registrarAuditoria({
 
     await prisma.auditLog.create({
       data: {
-        empresaId: empresaFinal,
+        empresaId: Number.isInteger(empresaFinal) && empresaFinal > 0 ? empresaFinal : null,
         usuarioId:
           usuarioFinal === null
             ? null

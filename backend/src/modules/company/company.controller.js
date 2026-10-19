@@ -1,3 +1,4 @@
+import { montarLoginInterno, emailContato } from "../../lib/employeeLogin.js";
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
 
@@ -594,6 +595,11 @@ export async function atualizarEmpresa(
     // =====================================================
     // CNPJ
     // =====================================================
+
+    const identidadeEmpresa = await prisma.empresa.findUnique({ where: { id: req.auth.empresaId }, select: { cnpj: true } });
+    if (String(cnpj || "").replace(/\D/g, "") !== String(identidadeEmpresa?.cnpj || "").replace(/\D/g, "")) {
+      return res.status(409).json({ mensagem: "O CNPJ validado não pode ser alterado pelo painel. Solicite nova análise ao responsável pela implantação." });
+    }
 
     const cnpjInformado =
       String(
@@ -1220,7 +1226,8 @@ export async function listarUsuarios(
             req.auth.empresaId,
 
           ativo:
-            true
+            true,
+          statusVinculo: "APROVADO"
 
         },
 
@@ -1261,6 +1268,7 @@ export async function listarUsuarios(
           nome:
             usuario.nome,
 
+          loginInterno: usuario.loginInterno || null,
           email:
             usuario.email,
 
@@ -1331,9 +1339,10 @@ export async function criarUsuario(
     }
 
 
-    const {
+    let {
 
       nome,
+      loginParte,
       email,
       senha,
       cargo
@@ -1406,10 +1415,19 @@ export async function criarUsuario(
     }
 
 
-    const emailFormatado =
-      String(email)
-        .trim()
-        .toLowerCase();
+    cargo = "VISITANTE"; // aprovação administrativa inicial com privilégio mínimo
+
+    const emailFormatado = emailContato(email);
+    const empresaLogin = await prisma.empresa.findUnique({
+      where: { id: req.auth.empresaId }, select: { loginDomain: true }
+    });
+    const loginInterno = montarLoginInterno(loginParte, empresaLogin?.loginDomain);
+    const loginOcupado = await prisma.usuario.findFirst({ where: {
+      OR: [{ loginInterno }, { email: loginInterno }, { loginInterno: emailFormatado }]
+    } });
+    if (loginOcupado && (loginOcupado.email !== emailFormatado || loginOcupado.empresaId !== req.auth.empresaId)) {
+      return res.status(409).json({ mensagem: "Esse login ou e-mail já está em uso. Escolha outro nome de login." });
+    }
 
 
     const usuarioExiste =
@@ -1470,6 +1488,10 @@ export async function criarUsuario(
     }
 
 
+    if (usuarioExiste && usuarioExiste.statusVinculo !== "APROVADO") return res.status(409).json({
+      mensagem: "Este e-mail possui solicitação pendente. Use a análise de solicitações de acesso."
+    });
+
     const senhaHash =
       await bcrypt.hash(
         String(senha),
@@ -1519,6 +1541,7 @@ export async function criarUsuario(
                   nome.trim(),
 
                 senhaHash,
+                loginInterno,
 
                 cargo,
 
@@ -1596,6 +1619,7 @@ export async function criarUsuario(
             nome:
               usuarioReativado.nome,
 
+            loginInterno: usuarioReativado.loginInterno || null,
             email:
               usuarioReativado.email,
 
@@ -1638,8 +1662,10 @@ export async function criarUsuario(
             emailFormatado,
 
           senhaHash,
+          loginInterno,
 
           cargo,
+          statusVinculo: "APROVADO",
 
           ativo:
             true
@@ -1706,6 +1732,7 @@ export async function criarUsuario(
           nome:
             usuario.nome,
 
+          loginInterno: usuario.loginInterno || null,
           email:
             usuario.email,
 
@@ -1816,6 +1843,10 @@ export async function atualizarUsuario(
 
     }
 
+
+    if (usuario.statusVinculo !== "APROVADO") return res.status(409).json({
+      mensagem: "Analise a solicitação de acesso antes de editar este funcionário."
+    });
 
     const {
       nome,
@@ -1991,8 +2022,8 @@ export async function atualizarUsuario(
         }
 
 
-        data.email =
-          emailFormatado;
+        data.email = emailContato(emailFormatado);
+        data.emailVerificadoEm = null;
 
       }
 
@@ -2032,7 +2063,7 @@ export async function atualizarUsuario(
     const revogarPorSenha = Boolean(data.senhaHash);
     const revogarPorDesativacao = data.ativo === false;
 
-    if (revogarPorSenha || revogarPorDesativacao) {
+    if (revogarPorSenha || revogarPorDesativacao || data.email) {
       data.tokenVersion = { increment: 1 };
     }
 
@@ -2103,6 +2134,7 @@ export async function atualizarUsuario(
         nome:
           atualizado.nome,
 
+        loginInterno: atualizado.loginInterno || null,
         email:
           atualizado.email,
 
@@ -3661,6 +3693,7 @@ export async function confirmarAlteracaoEmail(
           atualizado.id,
         nome:
           atualizado.nome,
+        loginInterno: atualizado.loginInterno || null,
         email:
           atualizado.email,
         cargo:

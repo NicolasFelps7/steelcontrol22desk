@@ -1959,6 +1959,16 @@ async function cadastrarFace(
   );
 
 
+  if (dados.pendente === true) {
+    pararCamera();
+    cadastroPendente = null;
+    localStorage.removeItem("autenticado");
+    localStorage.removeItem("token");
+    alterarStatus("sucesso", "Aguardando validação", dados.mensagem);
+    await window.abrirValidacaoEmpresarial(dados);
+    return;
+  }
+
   cadastroPendente = dados;
 
   salvarSessao(
@@ -2050,6 +2060,11 @@ async function abrirMfaAdministrador(dados) {
         })
       });
       const sessao = await resposta.json().catch(() => ({}));
+      if (sessao.codigo === "COMPANY_SIGNATURE_REQUIRED" && sessao.validacaoToken) {
+        fecharSegundoFatorFacial();
+        await window.abrirValidacaoEmpresarial(sessao);
+        return;
+      }
       if (!resposta.ok) throw new Error(sessao.mensagem || "Código inválido.");
 
       salvarSessao(sessao);
@@ -2158,6 +2173,9 @@ async function abrirSegundoFatorFacial(challengeId) {
         body: JSON.stringify({ challengeId, email })
       });
       const dados = await resposta.json().catch(() => ({}));
+      if (dados.codigo === "COMPANY_SIGNATURE_REQUIRED" && dados.validacaoToken) {
+        fecharSegundoFatorFacial(); await window.abrirValidacaoEmpresarial(dados); return;
+      }
       if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível enviar o código.");
 
       sent.textContent = `Código enviado para ${dados.email || "o e-mail confirmado"}.`;
@@ -2242,6 +2260,9 @@ async function autenticarFace(
 
 
   if (!resposta.ok) {
+    if (dados.codigo === "COMPANY_SIGNATURE_REQUIRED" && dados.validacaoToken) {
+      pararCamera(); await window.abrirValidacaoEmpresarial(dados); return;
+    }
 
     if (
       dados.codigo === "FACE_AMBIGUOUS" &&
@@ -2301,6 +2322,12 @@ async function autenticarFace(
     );
   }
 
+
+  if (dados.mfaRequired === true) {
+    pararCamera();
+    await abrirMfaAdministrador(dados);
+    return;
+  }
 
   alterarStatus(
     "sucesso",

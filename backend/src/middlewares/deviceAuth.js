@@ -16,7 +16,8 @@ export async function deviceRequired(req, res, next) {
       where: {
         id: maquinaId,
         ativo: true
-      }
+      },
+      include: { empresa: { select: { status: true } } }
     });
 
     if (
@@ -28,6 +29,11 @@ export async function deviceRequired(req, res, next) {
         mensagem: "Credencial do equipamento inválida."
       });
     }
+
+    req.auditIdentity = { empresaId: maquina.empresaId };
+    if (maquina.empresa?.status !== "ATIVA") return res.status(403).json({
+      codigo: "COMPANY_VALIDATION_PENDING", mensagem: "Empresa não autorizada para integração Edge."
+    });
 
     req.device = {
       maquina,

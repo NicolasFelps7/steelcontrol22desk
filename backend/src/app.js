@@ -1,4 +1,5 @@
 import express from "express";
+import { accessAudit } from "./middlewares/accessAudit.js";
 import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,6 +60,8 @@ app.locals.corsOrigins = env.corsOrigins;
 // =========================================================
 // SEGURANÇA / LIMITES
 // =========================================================
+
+app.use(accessAudit);
 
 app.use(
   enforceHttps
@@ -495,6 +498,10 @@ app.use(
         });
     }
 
+    if (erro?.code === "P2002") return res.status(409).json({
+      codigo: "DUPLICATE_REGISTRATION", mensagem: "CNPJ, login ou e-mail já cadastrado. Use outro login ou peça orientação ao responsável da empresa."
+    });
+
     const mensagemTecnica =
       String(
         erro?.message ||
@@ -522,6 +529,7 @@ app.use(
         500
       )
       .json({
+        codigo: erro.codigo || (erro.code === "P2002" ? "DUPLICATE_REGISTRATION" : undefined),
         mensagem:
           erroInternoBanco
             ? "Não foi possível concluir a operação no banco de dados. Verifique as migrations e reinicie o backend."

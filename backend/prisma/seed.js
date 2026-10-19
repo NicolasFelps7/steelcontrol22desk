@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { garantirSufixoEmpresa } from "../src/lib/employeeLogin.js";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma.js";
 
@@ -75,6 +76,8 @@ async function main() {
     }
   });
 
+  await prisma.$transaction(tx => garantirSufixoEmpresa(tx, empresa));
+
   await prisma.usuario.upsert({
     where: { email: configuracao.email },
     update: {},
@@ -83,7 +86,7 @@ async function main() {
       nome: configuracao.nomeAdministrador,
       email: configuracao.email,
       senhaHash,
-      cargo: "ADMINISTRADOR"
+      cargo: "ADMINISTRADOR", statusVinculo: "ADMIN_PENDENTE"
     }
   });
 

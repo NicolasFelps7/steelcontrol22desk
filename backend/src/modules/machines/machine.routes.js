@@ -1,3 +1,4 @@
+import { requireControlCredential } from "../../middlewares/controlAuthorization.js";
 import { Router } from "express";
 import { authRequired } from "../../middlewares/auth.js";
 import {
@@ -35,15 +36,15 @@ machineRoutes.post("/", criar);
 machineRoutes.get("/:id/stream", streamMaquina);
 machineRoutes.get("/:id/diagnostico", diagnostico);
 machineRoutes.post("/:id/device-key/regenerar", regenerarDeviceKey);
-machineRoutes.post("/:id/liberar-seguranca", liberarSeguranca);
-machineRoutes.post("/:id/ihm/comandos", criarComandoIhm);
-machineRoutes.post("/:id/comandos", criarComandoDobot);
+machineRoutes.post("/:id/liberar-seguranca", requireControlCredential, liberarSeguranca);
+machineRoutes.post("/:id/ihm/comandos", requireControlCredential, criarComandoIhm);
+machineRoutes.post("/:id/comandos", requireControlCredential, criarComandoDobot);
 machineRoutes.put("/:id/dobot/automatic-points", salvarPontosAutomaticosDobot);
 machineRoutes.get("/:id/dobot/automatico", obterAutomaticoDobot);
 machineRoutes.put("/:id/dobot/automatico", salvarPontosAutomaticosDobot);
-machineRoutes.post("/:id/dobot/automatico/controle", controlarAutomaticoDobot);
+machineRoutes.post("/:id/dobot/automatico/controle", requireControlCredential, controlarAutomaticoDobot);
 machineRoutes.get("/:id/comandos/:comandoId", statusComandoDobot);
-machineRoutes.post("/:id/impressora3d/comandos", criarComandoImpressora3D);
+machineRoutes.post("/:id/impressora3d/comandos", requireControlCredential, criarComandoImpressora3D);
 machineRoutes.post("/:id/demonstracao", demonstracao);
 
 machineRoutes.post("/:id/simular", simular);

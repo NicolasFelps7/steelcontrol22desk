@@ -1,7 +1,8 @@
 import { Router } from "express";
 import multer from "multer";
 
-import { authRequired } from "../../middlewares/auth.js";
+import { listarSolicitacoes, decidirSolicitacao } from "./access.controller.js";
+import { authRequired, requireRoles } from "../../middlewares/auth.js";
 import { criarRateLimit } from "../../middlewares/security.js";
 
 import {
@@ -25,6 +26,8 @@ import {
 } from "./company.controller.js";
 
 export const companyRoutes = Router();
+companyRoutes.get("/solicitacoes", authRequired, requireRoles("ADMINISTRADOR"), listarSolicitacoes);
+companyRoutes.post("/solicitacoes/:usuarioId/decisao", authRequired, requireRoles("ADMINISTRADOR"), decidirSolicitacao);
 
 const limiteSolicitacaoAlteracaoEmail =
   criarRateLimit({

@@ -1,3 +1,9 @@
+> **Ativação por e-CNPJ:** siga [AUTORIZACAO_ECNPJ.md](AUTORIZACAO_ECNPJ.md). A aprovação manual foi desativada. Configure as raízes e LCRs antes de usar a validação.
+
+> **Login interno dos funcionários:** veja [LOGIN_INTERNO_FUNCIONARIOS.md](LOGIN_INTERNO_FUNCIONARIOS.md) para usar a parte digitável + sufixo fixo da empresa e e-mail real separado.
+
+> **Atualização de cadastro e autorização (19/10/2026):** leia [CORRECAO_VALIDACAO_EMPRESARIAL.md](CORRECAO_VALIDACAO_EMPRESARIAL.md) antes de instalar. A migration exige revisão das empresas existentes.
+
 # SteelControl — Gestão Industrial Inteligente
 
 Projeto de TCC para monitoramento e gestão de máquinas industriais, com frontend HTML/CSS/JavaScript, API Node.js/Express, PostgreSQL/Prisma e serviço Python de reconhecimento facial.

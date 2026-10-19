@@ -66,7 +66,7 @@
         </h1>
 <p class="login-description">
 
-          Entre com seu e-mail corporativo e acesse
+          Entre com seu login interno ou e-mail de contato e acesse
           o ambiente de gestão da sua empresa no SteelControl.
 
         </p>
@@ -93,12 +93,12 @@
 <form id="loginForm">
 <!-- EMAIL -->
 <div class="input-group">
-<label data-i18n="emailLabel" for="email">
-              E-mail
+<label data-i18n="loginIdentifierLabel" for="email">
+              Login interno ou e-mail
             </label>
 <div class="input-box">
 <i class="fa-regular fa-envelope"></i>
-<input autocomplete="email" id="email" placeholder="nome@empresa.com" required="" type="email"/>
+<input autocomplete="username" id="email" placeholder="nome@empresa.com" required="" type="email"/>
 </div>
 </div>
 <!-- SENHA -->
@@ -277,7 +277,7 @@
 <!-- EMAIL -->
 <div class="input-group">
 <label for="emailCadastro">
-              E-mail corporativo
+              E-mail de contato
             </label>
 <div class="input-box">
 <i class="fa-regular fa-envelope"></i>
@@ -303,7 +303,7 @@
     <strong>03 &nbsp; Biometria facial</strong>
     <p>
       Depois de confirmar o código do e-mail, a câmera abrirá automaticamente
-      para cadastrar o rosto do administrador.
+      para confirmar sua identidade. CNPJ, e-mail e rosto não comprovam autorização empresarial. O acesso depende de análise do responsável ou aprovação do administrador.
     </p>
   </div>
   <button class="registration-face-retry" id="btnRefazerFaceCadastro" type="button" hidden>
@@ -323,7 +323,7 @@
       <p>
         Enviamos um código de 6 dígitos para
         <b id="verificationEmail">seu e-mail</b>.
-        A empresa só será criada depois da confirmação.
+        O cadastro ficará pendente até a validação do responsável.
       </p>
     </div>
   </div>
@@ -537,6 +537,7 @@
 <canvas id="captureCanvas" style="display:none"></canvas>
 <!-- SCRIPTS -->
 <script src="assets/js/config.js?v=20261013_THEME_I18N_FINAL_3"></script>
+<script src="assets/js/company-validation.js?v=20261019"></script>
 <script src="assets/js/login.js?v=20261015_LIVENESS_RELIABLE_1"></script>
 </body>
 </html>

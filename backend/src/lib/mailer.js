@@ -797,7 +797,7 @@ export async function enviarCodigoCadastroEmpresa({
         `Recebemos uma solicitação para cadastrar a empresa ${empresaSegura} no SteelControl. Digite o código abaixo na tela de cadastro.`,
 
       mensagemSecundaria:
-        "A empresa e o administrador só serão criados depois da confirmação deste código."
+        "E-mail e rosto confirmam identidade. O acesso exige validação independente da empresa ou aprovação de seu administrador."
     });
 
 
@@ -848,19 +848,19 @@ export async function enviarCodigoSegundoFatorFacial({
 
 export async function enviarCodigoMfaAdministrador({ destino, codigo, nome }) {
   const html = criarTemplateEmail({
-    titulo: "Confirme o acesso administrativo",
+    titulo: "Confirme seu acesso",
     subtitulo: "Autenticação multifator SteelControl",
     nome,
     codigo,
     mensagemPrincipal:
-      "Uma autenticação com senha tentou acessar uma conta administradora. Digite este código para concluir o login.",
+      "Uma autenticação por senha ou biometria tentou acessar sua conta. Digite este código para concluir o login.",
     mensagemSecundaria:
       "O código é de uso único. Se a tentativa não foi sua, altere a senha e revise a auditoria da empresa."
   });
 
   return enviarEmail({
     destino,
-    subject: "SteelControl — código de acesso administrativo",
+    subject: "SteelControl — código de segundo fator",
     html
   });
 }

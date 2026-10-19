@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { organizationAccessError } from "../lib/organizationPolicy.js";
 
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
@@ -69,7 +70,10 @@ export async function authRequired(
           ativo: true,
           tokenVersion: true,
           email: true,
-          nome: true
+          loginInterno: true,
+          nome: true,
+          statusVinculo: true,
+          empresa: { select: { status: true } }
         }
       });
 
@@ -96,6 +100,13 @@ export async function authRequired(
         });
     }
 
+    req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
+    const acesso = organizationAccessError(usuario);
+    if (acesso) return res.status(403).json(acesso);
+    if (payload.mfaVerified !== true) return res.status(401).json({
+      codigo: "MFA_REQUIRED", mensagem: "Faça login novamente e confirme o segundo fator."
+    });
+
     req.auth = {
       usuarioId:
         usuario.id,
@@ -103,6 +114,7 @@ export async function authRequired(
         usuario.empresaId,
       cargo:
         usuario.cargo,
+      loginInterno: usuario.loginInterno || null,
       email:
         usuario.email,
       nome:

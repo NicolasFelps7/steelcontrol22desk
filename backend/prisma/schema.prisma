@@ -15,9 +15,25 @@ enum Cargo {
   VISITANTE
 }
 
+enum StatusEmpresa {
+  PENDENTE
+  ATIVA
+  REJEITADA
+}
+
+enum StatusVinculo {
+  ADMIN_PENDENTE
+  SOLICITADO
+  APROVADO
+  REJEITADO
+}
+
 model Empresa {
   id      Int     @id @default(autoincrement())
   nome    String
+  loginDomain String? @unique
+  status  StatusEmpresa @default(PENDENTE)
+  validadaEm DateTime?
   cnpj    String? @unique
   logoUrl  String?
   logoData Bytes?
@@ -42,6 +58,7 @@ model Empresa {
   criadaEm     DateTime @default(now())
   atualizadaEm DateTime @default(now()) @updatedAt
 
+  autorizacoes CompanyAuthorization[]
   usuarios  Usuario[]
   maquinas  Maquina[]
   auditLogs AuditLog[]
@@ -52,13 +69,17 @@ model Usuario {
   empresaId Int
   nome      String
   email     String   @unique
+  loginInterno String? @unique
   senhaHash String
+  statusVinculo StatusVinculo @default(SOLICITADO)
+  emailVerificadoEm DateTime?
   cargo     Cargo    @default(VISITANTE)
   ativo        Boolean  @default(true)
   tokenVersion Int      @default(0)
   criadaEm     DateTime @default(now())
 
   empresa   Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  autorizacoes CompanyAuthorization[]
   faces     FaceEmbedding[]
   auditLogs AuditLog[]
 
@@ -250,7 +271,7 @@ model ComandoMaquina {
 
 model AuditLog {
   id         Int      @id @default(autoincrement())
-  empresaId  Int
+  empresaId  Int?
   usuarioId  Int?
   acao       String
   entidade   String
@@ -258,10 +279,29 @@ model AuditLog {
   detalhes   Json?
   criadoEm   DateTime @default(now())
 
-  empresa Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  empresa Empresa? @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([empresaId, criadoEm])
   @@index([usuarioId])
   @@index([entidade, entidadeId])
+}
+
+model CompanyAuthorization {
+  id String @id
+  empresaId Int
+  usuarioId Int
+  documento String @db.Text
+  documentoHash String
+  expiraEm DateTime
+  criadaEm DateTime @default(now())
+  usadoEm DateTime?
+  revogadoEm DateTime?
+  tentativas Int @default(0)
+  assinaturaHash String?
+  certificadoFingerprint String?
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  @@index([usuarioId, criadaEm])
+  @@index([empresaId, expiraEm])
 }

@@ -1057,14 +1057,21 @@
 
         <div class="form-group">
 
-          <label for="funcEmail">
-            E-mail
-          </label>
+          <label for="funcLoginParte">Login interno do funcionário</label>
+          <div class="employee-login-field">
+            <input id="funcLoginParte" type="text" placeholder="joao.silva" autocomplete="off"
+              pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}" maxlength="64" required aria-describedby="funcLoginAjuda">
+            <span id="funcLoginSufixo" class="employee-login-suffix"></span>
+          </div>
+          <small id="funcLoginAjuda">Digite apenas a parte do funcionário. O sufixo da empresa é fixo.</small>
+        </div>
+        <div class="form-group">
+          <label for="funcEmail">E-mail real de contato (para códigos de acesso)</label>
 
           <input
             type="email"
             id="funcEmail"
-            placeholder="funcionario@empresa.com"
+            placeholder="E-mail real, por exemplo nome@gmail.com"
             required
           >
 
@@ -1096,36 +1103,10 @@
             Cargo
           </label>
 
-          <select
-            id="funcCargo"
-            required
-          >
-
-            <option value="">
-              Selecione o cargo
-            </option>
-
-            <option value="ADMINISTRADOR">
-              Administrador
-            </option>
-
-            <option value="SUPERVISOR">
-              Supervisor
-            </option>
-
-            <option value="TECNICO">
-              Técnico
-            </option>
-
-            <option value="OPERADOR">
-              Operador
-            </option>
-
-            <option value="VISITANTE">
-              Visitante
-            </option>
-
+          <select id="funcCargo" required disabled>
+            <option value="VISITANTE" selected>Visitante</option>
           </select>
+          <p>O acesso inicial é Visitante. Altere o cargo após conferir as responsabilidades do funcionário.</p>
 
         </div>
 
@@ -1199,7 +1180,9 @@
         </div>
 
         <div class="form-group">
-          <label for="editFuncionarioEmail">E-mail de acesso</label>
+          <label for="editFuncionarioLogin">Login interno</label>
+          <input type="text" id="editFuncionarioLogin" readonly>
+          <label for="editFuncionarioEmail">E-mail real de contato</label>
           <input type="email" id="editFuncionarioEmail" required>
           <small class="field-help">
             Ao alterar o próprio e-mail de administrador,
@@ -1443,6 +1426,7 @@
 
   <script src="assets/js/empresa.js?v=20261015_LIVENESS_RELIABLE_1"></script>
 
+  <script src="assets/js/company-approvals.js?v=20261019"></script>
 </body>
 
 </html>

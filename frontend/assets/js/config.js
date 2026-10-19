@@ -434,6 +434,8 @@ const PT = {
   loginConfiancaTexto:
     "Centralize máquinas, produção, manutenção, alertas, equipes e segurança em uma única plataforma.",
 
+  loginIdentifierLabel: 'Login interno ou e-mail',
+
   emailLabel:
     "E-mail",
 
@@ -516,7 +518,7 @@ const PT = {
     "Seu nome completo",
 
   emailCorporativo:
-    "E-mail corporativo",
+    "E-mail de contato",
 
   emailCorporativoPlaceholder:
     "admin@empresa.com",
@@ -1525,6 +1527,8 @@ const EN = {
   loginConfiancaTexto:
     "Centralize machines, production, maintenance, alerts, teams and security on a single platform.",
 
+  loginIdentifierLabel: 'Internal login or email',
+
   emailLabel:
     "Email",
 
@@ -1604,7 +1608,7 @@ const EN = {
     "Your full name",
 
   emailCorporativo:
-    "Business email",
+    "Contact email",
 
   emailCorporativoPlaceholder:
     "admin@company.com",
@@ -2573,6 +2577,8 @@ const ES = {
   loginConfiancaTexto:
     "Centraliza máquinas, producción, mantenimiento, alertas, equipos y seguridad en una sola plataforma.",
 
+  loginIdentifierLabel: 'Usuario interno o correo',
+
   emailLabel:
     "Correo electrónico",
 
@@ -3519,6 +3525,8 @@ const FR = {
   loginConfiancaTitulo:
     "Confiez votre activité à SteelControl",
 
+  loginIdentifierLabel: 'Identifiant interne ou e-mail',
+
   emailLabel:
     "E-mail",
 
@@ -4282,6 +4290,8 @@ const DE = {
   loginConfiancaTitulo:
     "Vertrauen Sie Ihren Betrieb SteelControl an",
 
+  loginIdentifierLabel: 'Interner Login oder E-Mail',
+
   emailLabel:
     "E-Mail",
 
@@ -5038,6 +5048,8 @@ const IT = {
 
   loginConfiancaTitulo:
     "Affida la tua attività a SteelControl",
+
+  loginIdentifierLabel: 'Login interno o e-mail',
 
   emailLabel:
     "E-mail",

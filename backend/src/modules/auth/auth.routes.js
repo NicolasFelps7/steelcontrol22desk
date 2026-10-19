@@ -1,3 +1,5 @@
+import { companyBootstrapRequired } from "../../lib/companyBootstrap.js";
+import { emitirAutorizacao, concluirAutorizacao } from "../company/companyAuthorization.controller.js";
 import { Router } from "express";
 import multer from "multer";
 
@@ -113,6 +115,11 @@ const limiteAnaliseFacial =
     mensagem:
       "Muitas análises faciais em sequência. Aguarde alguns segundos."
   });
+
+const limiteEcnpj = criarRateLimit({ janelaMs: 10 * 60_000, limite: 12, prefixo: "ecnpj" });
+const uploadEcnpj = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024, files: 1, fields: 1, fieldSize: 100 } });
+authRoutes.post("/company-authorization/challenge", limiteEcnpj, companyBootstrapRequired, emitirAutorizacao);
+authRoutes.post("/company-authorization/verify", limiteEcnpj, companyBootstrapRequired, uploadEcnpj.single("assinatura"), concluirAutorizacao);
 
 authRoutes.post(
   "/login",
