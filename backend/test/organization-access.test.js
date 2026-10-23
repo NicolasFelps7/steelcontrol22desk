@@ -15,7 +15,6 @@ const { deviceRequired } = await import("../src/middlewares/deviceAuth.js");
 const { requireControlCredential } = await import("../src/middlewares/controlAuthorization.js");
 const { organizationAccessError } = await import("../src/lib/organizationPolicy.js");
 const { decidirSolicitacao } = await import("../src/modules/company/access.controller.js");
-const { reviewCompany } = await import("../tools/review-company.js");
 const { gerarDeviceKey, hashDeviceKey } = await import("../src/lib/deviceSecurity.js");
 const auth = await import("../src/modules/auth/auth.controller.js");
 const originalFetch = globalThis.fetch;
@@ -108,16 +107,6 @@ test("solicitação de outro tenant ou já analisada não é aprovada", async ()
   patch(prisma, "$transaction", async fn => fn({ usuario: { updateMany: async () => ({ count: 0 }) } }));
   assert.equal((await call(decidirSolicitacao, { auth: { empresaId: 3, usuarioId: 7 }, params: { usuarioId: 8 }, body: { decisao: "APROVAR" } })).res.statusCode, 409);
 });
-test("ativação inicial exige referência de análise independente", async () => {
-  await assert.rejects(() => reviewCompany({}, { empresaId: 3, usuarioId: 7, decisao: "APROVAR", revisor: "", referencia: "" }), /análise independente/);
-});
-test("ativação manual exige e-mail confirmado e não aceita empresa já ativa", async () => {
-  for (const [status, email] of [["ATIVA", new Date()], ["PENDENTE", null]]) {
-    const db = { $transaction: fn => fn({ $queryRaw: async () => [], empresa: { findUnique: async () => ({ status }) }, usuario: { findFirst: async () => user({ statusVinculo: "ADMIN_PENDENTE", emailVerificadoEm: email }) } }) };
-    await assert.rejects(() => reviewCompany(db, { empresaId: 3, usuarioId: 7, decisao: "APROVAR", revisor: "Revisor", referencia: "Analise-2026-001" }));
-  }
-});
-
 async function mockMailAndFace() {
   let code;
   globalThis.fetch = async (url, options) => {
@@ -133,19 +122,19 @@ async function mockMailAndFace() {
   return () => code;
 }
 for (const existing of [false, true, "pending"]) {
-  test(`cadastro com Gmail ${existing === "pending" ? "permite outro candidato sem conceder acesso nem duplicar empresa pendente" : existing ? "é recusado para CNPJ ativo: funcionário é cadastrado pelo administrador" : "cria empresa pendente sem sessão"}`, async () => {
+  test(`cadastro com Gmail ${existing === "pending" ? "recusa duplicar CNPJ pendente" : existing ? "é recusado para CNPJ ativo: funcionário é cadastrado pelo administrador" : "conclui empresa ativa e administrador sem certificado"}`, async () => {
     const mailCode = await mockMailAndFace(); let companyCreates = 0, savedUser;
     patch(prisma.usuario, "findUnique", async () => null);
     patch(prisma.empresa, "findUnique", async () => existing ? { id: 3, status: existing === "pending" ? "PENDENTE" : "ATIVA" } : null);
     const tx = {
       $queryRawUnsafe: async () => [],
-      empresa: { findUnique: async q => q.where.cnpj && existing === "pending" ? { id: 3, status: "PENDENTE", nome: "Empresa Teste", cnpj: "11.222.333/0001-81", loginDomain: "empresateste.com" } : null, update: async () => ({}), create: async ({ data }) => { companyCreates++; return { id: 3, status: "PENDENTE", ...data }; } },
-      usuario: { findUnique: async () => null, create: async ({ data }) => { savedUser = { id: 7, ...data }; return savedUser; } },
+      empresa: { findUnique: async q => q.where.cnpj && existing === "pending" ? { id: 3, status: "PENDENTE", nome: "Empresa Teste", cnpj: "11.222.333/0001-81", loginDomain: "empresateste.com" } : null, update: async () => ({}), create: async ({ data }) => { companyCreates++; return { id: 3, status: "ATIVA", ...data }; } },
+      usuario: { findUnique: async () => null, create: async ({ data }) => { savedUser = { id: 7, ativo: true, tokenVersion: 0, ...data }; return savedUser; } },
       faceEmbedding: { findMany: async () => [], create: async () => ({ id: 1 }) },
       auditLog: { create: async () => ({}) }
     };
     patch(prisma, "$transaction", async fn => fn(tx));
-    if (existing && existing !== "pending") {
+    if (existing) {
       await assert.rejects(() => call(auth.requestCompanyRegistrationCode, { body: {
         empresa: { nome: "Empresa Teste", cnpj: "11.222.333/0001-81" },
         administrador: { nome: "Pessoa", email: "existing@gmail.com", senha: "senha-forte-123" }
@@ -164,11 +153,16 @@ for (const existing of [false, true, "pending"]) {
     assert.equal(confirmed.res.statusCode, 200);
     const image = { buffer: Buffer.from([0xff, 0xd8, 0xff, 0x00]) };
     const { res } = await call(auth.completeCompanyRegistrationWithFace, { body: { verificacaoId }, files: { imagem: [image], inicial: [image], liveness: [image] } });
-    assert.equal(res.statusCode, 202); assert.equal(res.body.pendente, true); assert.equal(res.body.token, undefined);
-    assert.equal(companyCreates, existing ? 0 : 1); assert.equal(savedUser.cargo, "VISITANTE");
-    assert.equal(savedUser.statusVinculo, "ADMIN_PENDENTE");
+    assert.equal(res.statusCode, 201); assert.equal(res.body.pendente, undefined); assert.equal(res.body.validacaoToken, undefined);
+    assert.equal(res.body.empresa.status, "ATIVA");
+    assert.equal(companyCreates, existing ? 0 : 1); assert.equal(savedUser.cargo, "ADMINISTRADOR");
+    assert.equal(savedUser.statusVinculo, "APROVADO");
     assert.ok(savedUser.emailVerificadoEm);
-    assert.ok(!JSON.stringify(res.headers).includes("eyJ"));
+    assert.equal(res.body.usuario.cargo, "Administrador");
+    const sessionCookie = String(res.headers["Set-Cookie"]);
+    const sessionToken = sessionCookie.match(/=([^;]+)/)?.[1];
+    assert.equal(jwt.verify(sessionToken, process.env.JWT_SECRET).mfaVerified, true);
+    assert.ok(JSON.stringify(res.headers).includes("eyJ"));
   });
 }
 test("senha correta exige MFA mesmo com ADMIN_MFA_REQUIRED=false", async () => {
@@ -192,7 +186,7 @@ test("login facial não libera sessão sem segundo fator", async () => {
   assert.equal(res.statusCode, 202); assert.equal(res.body.mfaRequired, true); assert.equal(res.body.token, undefined);
 });
 
-test("MFA confirma e-mail de conta legada pendente sem emitir token", async () => {
+test("MFA não emite mais token de assinatura empresarial para estado legado pendente", async () => {
   const code = await mockMailAndFace();
   const pending = user({ statusVinculo: "ADMIN_PENDENTE", emailVerificadoEm: null, empresa: { status: "PENDENTE" }, senhaHash: await bcrypt.hash("senha-teste-123", 4) });
   let confirmed = false;
@@ -202,8 +196,8 @@ test("MFA confirma e-mail de conta legada pendente sem emitir token", async () =
   const challenge = (await call(auth.login, { body: { email: pending.email, senha: "senha-teste-123" } })).res.body;
   const { res } = await call(auth.verifyAdminMfa, { body: { challengeId: challenge.challengeId, codigo: code() } });
   assert.equal(confirmed, true); assert.equal(res.statusCode, 403);
-  assert.equal(res.body.codigo, "COMPANY_SIGNATURE_REQUIRED");
-  assert.ok(res.body.validacaoToken);
+  assert.equal(res.body.codigo, "COMPANY_VALIDATION_PENDING");
+  assert.equal(res.body.validacaoToken, undefined);
   assert.equal(res.body.token, undefined); assert.equal(res.headers["Set-Cookie"], undefined);
 });
 test("alterar conta após emissão do desafio invalida MFA", async () => {
@@ -214,6 +208,9 @@ test("alterar conta após emissão do desafio invalida MFA", async () => {
   const { res } = await call(auth.verifyAdminMfa, { body: { challengeId: challenge.challengeId, codigo: code() } });
   assert.equal(res.statusCode, 401); assert.equal(res.body.token, undefined);
 });
-test("aprovação manual não pode contornar a assinatura e-CNPJ", async () => {
-  await assert.rejects(() => reviewCompany({}, { empresaId: 3, usuarioId: 7, decisao: "APROVAR", revisor: "Revisor", referencia: "Documento-Conferido-001" }), /manual desativada/);
+
+test("rotas de assinatura empresarial não estão publicadas", async () => {
+  const { authRoutes } = await import("../src/modules/auth/auth.routes.js");
+  const paths = authRoutes.stack.filter(layer => layer.route).map(layer => layer.route.path);
+  assert.ok(!paths.some(path => path.includes("company-authorization")));
 });

@@ -72,7 +72,8 @@ async function main() {
     update: {},
     create: {
       nome: configuracao.nomeEmpresa,
-      cnpj: configuracao.cnpjEmpresa
+      cnpj: configuracao.cnpjEmpresa,
+      status: "ATIVA"
     }
   });
 
@@ -86,7 +87,7 @@ async function main() {
       nome: configuracao.nomeAdministrador,
       email: configuracao.email,
       senhaHash,
-      cargo: "ADMINISTRADOR", statusVinculo: "ADMIN_PENDENTE"
+      cargo: "ADMINISTRADOR", statusVinculo: "APROVADO"
     }
   });
 

@@ -1,9 +1,9 @@
-// Identity (email/face) never grants authority over an organization.
+// Estados administrativos e vínculos continuam sendo verificados em cada chamada.
 export function organizationAccessError(usuario) {
   if (!usuario?.ativo) return { codigo: "ACCOUNT_DISABLED", mensagem: "Conta inexistente ou desativada." };
   if (usuario.empresa?.status !== "ATIVA") return {
     codigo: "COMPANY_VALIDATION_PENDING",
-    mensagem: "Empresa aguardando validação independente do responsável. E-mail, CNPJ e rosto não comprovam autorização empresarial."
+    mensagem: "Empresa indisponível para acesso. Entre em contato com o responsável pelo sistema."
   };
   if (usuario.statusVinculo !== "APROVADO") return {
     codigo: "MEMBERSHIP_PENDING",

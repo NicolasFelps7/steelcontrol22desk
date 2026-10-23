@@ -81,8 +81,8 @@ Para Flutter, atualize o projeto mobile e execute `flutter pub get`,
 ## O que esta alteração não faz
 
 O nome da empresa e o sufixo interno não validam a autorização do primeiro
-administrador. A autorização inicial agora exige assinatura com e-CNPJ. Leia
-`AUTORIZACAO_ECNPJ.md` para esse procedimento.
+administrador. Na demonstração, o primeiro cadastro conclui sem certificado empresarial. Leia
+`DEMONSTRACAO_SEM_VALIDACAO.md` para esse procedimento.
 Este login interno não atribui automaticamente permissão sobre máquinas.
 
 ## Verificação

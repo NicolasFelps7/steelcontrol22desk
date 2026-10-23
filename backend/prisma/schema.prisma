@@ -32,7 +32,7 @@ model Empresa {
   id      Int     @id @default(autoincrement())
   nome    String
   loginDomain String? @unique
-  status  StatusEmpresa @default(PENDENTE)
+  status  StatusEmpresa @default(ATIVA)
   validadaEm DateTime?
   cnpj    String? @unique
   logoUrl  String?

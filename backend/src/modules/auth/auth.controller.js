@@ -1,4 +1,3 @@
-import { respostaValidacaoEmpresa } from "../../lib/companyBootstrap.js";
 import { garantirSufixoEmpresa } from "../../lib/employeeLogin.js";
 import { publicarEventoEmpresa } from "../../lib/realtime.js";
 import { organizationAccessError } from "../../lib/organizationPolicy.js";
@@ -582,9 +581,8 @@ async function validarDisponibilidadeCadastro({
 
   if (cnpj) {
     const existente = await prisma.empresa.findUnique({ where: { cnpj } });
-    // A pending claim must never let an attacker permanently reserve someone else's CNPJ.
-    // Another candidate may submit their own e-CNPJ authorization; no employee access is granted.
-    if (existente && existente.status !== "PENDENTE") throw Object.assign(new Error("Esta empresa já está cadastrada. Peça ao responsável para cadastrar seu funcionário pela Gestão Industrial."), { statusCode: 409 });
+    // O cadastro público cria somente empresas novas; funcionários são cadastrados internamente.
+    if (existente) throw Object.assign(new Error("Esta empresa já está cadastrada. Peça ao responsável para cadastrar seu funcionário pela Gestão Industrial."), { statusCode: 409 });
   }
 
 }
@@ -1457,7 +1455,7 @@ export async function completeCompanyRegistrationWithFace(
           }
 
 
-          if (empresaExiste && empresaExiste.status !== "PENDENTE") throw Object.assign(new Error("Empresa já cadastrada. O responsável deve cadastrar funcionários pela Gestão Industrial."), { statusCode: 409 });
+          if (empresaExiste) throw Object.assign(new Error("Empresa já cadastrada. O responsável deve cadastrar funcionários pela Gestão Industrial."), { statusCode: 409 });
 
           const candidatosDuplicidade = [
             facialFinal.embedding,
@@ -1502,7 +1500,8 @@ export async function completeCompanyRegistrationWithFace(
                 nome:
                   verificacao.empresaNome,
                 cnpj:
-                  verificacao.empresaCnpj
+                  verificacao.empresaCnpj,
+                status: "ATIVA"
               }
             });
 
@@ -1519,8 +1518,8 @@ export async function completeCompanyRegistrationWithFace(
                   verificacao.email,
                 senhaHash:
                   verificacao.senhaHash,
-                cargo: "VISITANTE",
-                statusVinculo: "ADMIN_PENDENTE",
+                cargo: "ADMINISTRADOR",
+                statusVinculo: "APROVADO",
                 emailVerificadoEm: new Date()
               }
             });
@@ -1545,7 +1544,7 @@ export async function completeCompanyRegistrationWithFace(
 
           await tx.auditLog.create({ data: {
             empresaId: novaEmpresa.id, usuarioId: usuario.id,
-            acao: "SOLICITAR_AUTORIZACAO_ECNPJ",
+            acao: "CADASTRAR_EMPRESA_DEMONSTRACAO",
             entidade: "USUARIO", entidadeId: usuario.id,
             detalhes: { statusVinculo: usuario.statusVinculo }
           } });
@@ -1562,16 +1561,17 @@ export async function completeCompanyRegistrationWithFace(
       verificacaoId
     );
 
-    publicarEventoEmpresa(resultado.usuario.empresaId, "usuario.solicitacao-recebida", {});
-    clearSessionCookie(res);
-    return res.status(202).json({
-      ...respostaValidacaoEmpresa(resultado.usuario),
-      codigo: "REGISTRATION_PENDING_APPROVAL",
-      mensagem: resultado.usuario.statusVinculo === "ADMIN_PENDENTE"
-        ? "Cadastro recebido. Assine a autorização com o e-CNPJ da empresa para validar esta conta como administradora. Nenhum acesso foi liberado."
-        : "Aguardando autorização assinada com o e-CNPJ da empresa. Nenhum acesso foi liberado.",
-      pendente: true,
-      statusVinculo: resultado.usuario.statusVinculo,
+    return res.status(201).json({
+      mensagem: "Cadastro concluído. Bem-vindo ao SteelControl!",
+      ...criarSessao(req, res, { ...resultado.usuario, empresa: resultado.novaEmpresa }, true),
+      usuario: {
+        id: resultado.usuario.id,
+        nome: resultado.usuario.nome,
+        email: resultado.usuario.email,
+        loginInterno: resultado.usuario.loginInterno || null,
+        cargo: cargoParaTela(resultado.usuario.cargo)
+      },
+      empresa: empresaParaResposta(resultado.novaEmpresa),
       cadastroConcluido: true
     });
 
@@ -1745,7 +1745,7 @@ export async function verifyAdminMfa(req, res, next) {
     await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
     req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
     const acesso = organizationAccessError(usuario);
-    if (acesso) return res.status(403).json(usuario.empresa?.status === "PENDENTE" && usuario.statusVinculo === "ADMIN_PENDENTE" ? respostaValidacaoEmpresa(usuario) : acesso);
+    if (acesso) return res.status(403).json(acesso);
     return res.json({
       mensagem: "Autenticação multifator concluída.",
       ...criarSessao(req, res, usuario, true),
@@ -2740,10 +2740,8 @@ export async function verifyFaceAmbiguousCode(req, res, next) {
     }
 
     await removerFace2FA(challengeId);
-    if (usuario.empresa?.status === "PENDENTE" && usuario.statusVinculo === "ADMIN_PENDENTE") {
-      await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
-      return res.status(403).json(respostaValidacaoEmpresa(usuario));
-    }
+    const acesso = organizationAccessError(usuario);
+    if (acesso) return res.status(403).json(acesso);
 
     return res.json({
       mensagem: `Identidade confirmada. Bem-vindo, ${usuario.nome}!`,

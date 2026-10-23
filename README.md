@@ -1,4 +1,4 @@
-> **Ativação por e-CNPJ:** siga [AUTORIZACAO_ECNPJ.md](AUTORIZACAO_ECNPJ.md). A aprovação manual foi desativada. Configure as raízes e LCRs antes de usar a validação.
+> **Demonstração do TCC:** o cadastro não exige certificado ou validação empresarial. Veja [DEMONSTRACAO_SEM_VALIDACAO.md](DEMONSTRACAO_SEM_VALIDACAO.md) para atualizar o banco e o aplicativo.
 
 > **Login interno dos funcionários:** veja [LOGIN_INTERNO_FUNCIONARIOS.md](LOGIN_INTERNO_FUNCIONARIOS.md) para usar a parte digitável + sufixo fixo da empresa e e-mail real separado.
 
