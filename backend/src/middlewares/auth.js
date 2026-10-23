@@ -73,6 +73,7 @@ export async function authRequired(
           loginInterno: true,
           nome: true,
           statusVinculo: true,
+          emailVerificadoEm: true,
           empresa: { select: { status: true } }
         }
       });
@@ -103,8 +104,8 @@ export async function authRequired(
     req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
     const acesso = organizationAccessError(usuario);
     if (acesso) return res.status(403).json(acesso);
-    if (payload.mfaVerified !== true) return res.status(401).json({
-      codigo: "MFA_REQUIRED", mensagem: "Faça login novamente e confirme o segundo fator."
+    if (!usuario.emailVerificadoEm) return res.status(401).json({
+      codigo: "EMAIL_CONFIRMATION_REQUIRED", mensagem: "Confirme seu e-mail uma única vez para concluir o cadastro."
     });
 
     req.auth = {

@@ -1,4 +1,4 @@
-import { montarLoginInterno, emailContato } from "../../lib/employeeLogin.js";
+import { montarLoginInterno, emailContato, atualizarEmpresaComLogins } from "../../lib/employeeLogin.js";
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
 
@@ -726,18 +726,7 @@ export async function atualizarEmpresa(
     // ATUALIZAR
     // =====================================================
 
-    const empresa =
-      await prisma.empresa.update({
-
-        where: {
-
-          id:
-            req.auth.empresaId
-
-        },
-
-
-        data: {
+    const empresa = await prisma.$transaction(tx => atualizarEmpresaComLogins(tx, req.auth.empresaId, {
 
           nome:
             nome.trim(),
@@ -801,9 +790,7 @@ export async function atualizarEmpresa(
             ) ||
             "Brasil"
 
-        }
-
-      });
+        }));
 
 
     publicarEventoEmpresa(

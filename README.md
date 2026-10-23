@@ -1,3 +1,5 @@
+> **Cadastro, login e facial atualizados:** veja [ATUALIZACAO_TCC.md](ATUALIZACAO_TCC.md).
+
 > **Demonstração do TCC:** o cadastro não exige certificado ou validação empresarial. Veja [DEMONSTRACAO_SEM_VALIDACAO.md](DEMONSTRACAO_SEM_VALIDACAO.md) para atualizar o banco e o aplicativo.
 
 > **Login interno dos funcionários:** veja [LOGIN_INTERNO_FUNCIONARIOS.md](LOGIN_INTERNO_FUNCIONARIOS.md) para usar a parte digitável + sufixo fixo da empresa e e-mail real separado.

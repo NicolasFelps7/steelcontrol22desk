@@ -393,8 +393,8 @@ body.cadastro-ativo .auth-core {
 .access-welcome-brand .welcome-mascot-body { position:absolute !important; z-index:2; left:13px; bottom:3px; width:74px !important; height:74px !important; margin:0 !important; filter:none !important; }
 .access-welcome-brand .welcome-hardhat { position:absolute !important; z-index:5; left:17px; top:5px; width:66px !important; height:42px !important; margin:0 !important; filter:none !important; opacity:0; }
 .welcome-impact { position:absolute; z-index:1; left:50%; bottom:12px; width:96px; height:96px; border:1px solid rgba(255,121,0,.42); border-radius:50%; opacity:0; transform:translateX(-50%) scale(.35); }
-.access-welcome-overlay.sequence-running .welcome-hardhat { animation:hardhatHitsHead 1.75s cubic-bezier(.18,.88,.22,1) both; }
-.access-welcome-overlay.sequence-running .welcome-impact { animation:hardhatImpact 1s 1.12s ease-out both; }
+.access-welcome-overlay.sequence-running .welcome-hardhat { animation:hardhatHitsHead 2.8s cubic-bezier(.18,.88,.22,1) both; }
+.access-welcome-overlay.sequence-running .welcome-impact { animation:hardhatImpact 1.074s 1.876s ease-out both; }
 
 @keyframes headerHardhatDrop {
   0%,8% { transform:translateY(-42px) rotate(-9deg); opacity:0; }
@@ -647,23 +647,23 @@ html[data-theme="escuro"] .login-shell .image-area::before {
 }
 .welcome-helmet-drop img { width: 31px; height: 31px; filter: brightness(0); }
 .access-welcome-overlay.sequence-running .welcome-helmet-drop {
-  animation: welcomeHelmetLanding 1.75s cubic-bezier(.2,.9,.25,1) both;
+  animation: welcomeHelmetLanding 2.8s cubic-bezier(.2,.9,.25,1) both;
 }
 
 .access-welcome-overlay.is-visible .access-welcome-check {
-  animation: welcomeCheckReveal .58s 1.65s cubic-bezier(.18,.9,.22,1.25) both;
+  animation: welcomeCheckReveal .58s 2.7s cubic-bezier(.18,.9,.22,1.25) both;
 }
 .access-welcome-overlay.is-visible .access-welcome-card h2 {
-  animation: welcomeContentReveal .5s 1.9s ease-out both;
+  animation: welcomeContentReveal .5s 2.95s ease-out both;
 }
 .access-welcome-overlay.is-visible .access-welcome-card > p {
-  animation: welcomeContentReveal .5s 2.08s ease-out both;
+  animation: welcomeContentReveal .5s 3.13s ease-out both;
 }
 .access-welcome-overlay.is-visible .access-welcome-loading {
-  animation: welcomeContentReveal .45s 2.28s ease-out both;
+  animation: welcomeContentReveal .45s 3.33s ease-out both;
 }
 .access-welcome-loading > span::after {
-  animation: steelWelcomeProgress 2s 2.35s ease-out both !important;
+  animation: steelWelcomeProgress 2s 3.4s ease-out both !important;
 }
 
 @keyframes brandHelmetLanding {

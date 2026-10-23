@@ -3,7 +3,7 @@
 document.documentElement.lang = localStorage.getItem("idiomaSistema") || "pt";
 
 // Mantém a transição visível até a animação industrial terminar por completo.
-const TEMPO_ENTRADA_PAINEL_MS = 4500;
+const TEMPO_ENTRADA_PAINEL_MS = 5800;
 
 // =========================================================
 // CNPJ — MÁSCARA E VALIDAÇÃO
@@ -261,6 +261,7 @@ const faceStatusTexto =
 
 
 let faceStream = null;
+let faceRunId = 0;
 
 let faceInterval = null;
 
@@ -1203,6 +1204,7 @@ async function abrirFaceId() {
 // ========================================================
 
 async function abrirCameraFace() {
+  const runId = ++faceRunId;
 
   limparTimeoutLivenessMovimento();
 
@@ -1258,7 +1260,7 @@ async function abrirCameraFace() {
 
   try {
 
-    faceStream =
+    const newStream =
       await navigator
         .mediaDevices
         .getUserMedia({
@@ -1284,11 +1286,14 @@ async function abrirCameraFace() {
         });
 
 
+    if (runId !== faceRunId) { newStream.getTracks().forEach(track => track.stop()); return; }
+    faceStream = newStream;
     faceVideo.srcObject =
       faceStream;
 
 
     await faceVideo.play();
+    if (runId !== faceRunId) return;
 
 
     cameraLoading.style.display =
@@ -1450,6 +1455,7 @@ async function capturarBlob() {
 // ========================================================
 
 async function analisarFrame() {
+  const runId = faceRunId;
 
   if (
     analisando ||
@@ -1522,6 +1528,7 @@ async function analisarFrame() {
     }
 
 
+    if (runId !== faceRunId) return;
     atualizarDeteccao(
       dados
     );
@@ -1596,6 +1603,12 @@ async function analisarFrame() {
     }
 
 
+    if (etapaLiveness !== "movimento" && (!Number.isFinite(dados?.pose?.yaw) || Math.abs(dados.pose.yaw) > 8)) {
+      framesCorretos = 0;
+      alterarStatus("analisando", textoAcesso("adjustPosition"), textoAcesso("lookFrontAgain"));
+      return;
+    }
+
     if (!dados.pronto) {
 
       framesCorretos =
@@ -1659,8 +1672,8 @@ async function analisarFrame() {
     ) {
 
       alterarStatus(
-        "sucesso",
-        textoAcesso("livenessComplete"),
+        "analisando",
+        textoAcesso("lookFrontAgain"),
         textoAcesso("lookCameraCount", { atual: framesCorretos })
       );
 
@@ -1678,6 +1691,7 @@ async function analisarFrame() {
 
 
   } catch (erro) {
+    if (runId !== faceRunId) return;
 
     console.error(
       erro
@@ -1701,8 +1715,7 @@ async function analisarFrame() {
 
   } finally {
 
-    analisando =
-      false;
+    if (runId === faceRunId) analisando = false;
 
   }
 
@@ -2601,6 +2614,7 @@ function fecharFaceId() {
 // ========================================================
 
 function pararCamera() {
+  faceRunId++;
 
   limparTimeoutLivenessMovimento();
 

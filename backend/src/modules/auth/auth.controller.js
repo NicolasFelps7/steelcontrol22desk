@@ -1581,6 +1581,20 @@ export async function completeCompanyRegistrationWithFace(
 }
 
 
+function responderLogin(req, res, usuario, metodo) {
+  req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
+  const acesso = organizationAccessError(usuario);
+  if (acesso) return res.status(403).json(acesso);
+  return res.json({
+    mensagem: `Bem-vindo, ${usuario.nome}!`,
+    ...criarSessao(req, res, usuario, false),
+    usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email,
+      loginInterno: usuario.loginInterno || null, cargo: cargoParaTela(usuario.cargo) },
+    empresa: empresaParaResposta(usuario.empresa),
+    autenticacao: { metodo }, mfa: { verificado: false }
+  });
+}
+
 async function iniciarMfa(req, res, usuario) {
   req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
       limparAdminMfaExpirados();
@@ -1691,7 +1705,8 @@ export async function login(
         });
     }
 
-    return await iniciarMfa(req, res, usuario);
+    if (!usuario.emailVerificadoEm) return await iniciarMfa(req, res, usuario);
+    return responderLogin(req, res, usuario, "senha");
 
   } catch (erro) {
 
@@ -2035,6 +2050,12 @@ export async function loginFaceImage(
           orientacao:
             "Vire levemente a cabeça para um dos lados e retorne para a câmera."
         });
+    }
+
+    const frontal = await analisarImagemFacial(imagemFinal);
+    const yawFinal = frontal?.pose?.yaw;
+    if (frontal?.pronto !== true || frontal.quantidadeRostos !== 1 || !Number.isFinite(yawFinal) || Math.abs(yawFinal) > 8) {
+      return res.status(401).json({ codigo: "FACE_FINAL_POSITION_INVALID", mensagem: "Retorne à posição frontal e aguarde a validação da câmera." });
     }
 
     /*
@@ -2570,7 +2591,8 @@ export async function loginFace(
     const usuario =
       melhor.usuario;
 
-    return await iniciarMfa(req, res, usuario);
+    if (!usuario.emailVerificadoEm) return await iniciarMfa(req, res, usuario);
+    return responderLogin(req, res, usuario, "facial");
 
   } catch (erro) {
 
@@ -2740,6 +2762,7 @@ export async function verifyFaceAmbiguousCode(req, res, next) {
     }
 
     await removerFace2FA(challengeId);
+    await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
     const acesso = organizationAccessError(usuario);
     if (acesso) return res.status(403).json(acesso);
 

@@ -17,7 +17,8 @@
     "check": "node ../tools/check-production.mjs",
     "email:test": "node tools/test-email.js",
     "face:audit": "node tools/audit-face-duplicates.js",
-    "face:encrypt": "node tools/encrypt-face-data.js"
+    "face:encrypt": "node tools/encrypt-face-data.js",
+    "demo:limpar": "node tools/reset-demo.js"
   },
   "dependencies": {
     "@prisma/client": "6.12.0",

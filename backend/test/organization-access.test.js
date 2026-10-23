@@ -71,9 +71,9 @@ test("usuário pendente não lê nem controla máquinas com token antigo", async
   const { res, next } = await call(authRequired, { headers: { authorization: `Bearer ${token()}` } });
   assert.equal(res.body.codigo, "MEMBERSHIP_PENDING"); assert.equal(next, false);
 });
-test("sessão sem MFA e sessão revogada são rejeitadas", async () => {
+test("sessão de e-mail confirmado dispensa MFA recorrente e continua revogável", async () => {
   patch(prisma.usuario, "findUnique", async () => user());
-  assert.equal((await call(authRequired, { headers: { authorization: `Bearer ${token({ mfaVerified: false })}` } })).res.body.codigo, "MFA_REQUIRED");
+  assert.equal((await call(authRequired, { headers: { authorization: `Bearer ${token({ mfaVerified: false })}` } })).next, true);
   assert.equal((await call(authRequired, { headers: { authorization: `Bearer ${token({ tokenVersion: 8 })}` } })).res.body.codigo, "SESSION_REVOKED");
 });
 test("Visitante aprovado não pode controlar equipamento", async () => {
@@ -165,9 +165,9 @@ for (const existing of [false, true, "pending"]) {
     assert.ok(JSON.stringify(res.headers).includes("eyJ"));
   });
 }
-test("senha correta exige MFA mesmo com ADMIN_MFA_REQUIRED=false", async () => {
+test("e-mail não confirmado exige código uma vez e rejeita replay", async () => {
   const code = await mockMailAndFace();
-  patch(prisma.usuario, "findUnique", async () => user({ senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
+  patch(prisma.usuario, "findUnique", async () => user({ emailVerificadoEm: null, senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
   patch(prisma.usuario, "findFirst", async () => user());
   patch(prisma.usuario, "update", async () => user());
   const challenge = (await call(auth.login, { body: { email: "pessoa@gmail.com", senha: "senha-teste-123" } })).res;
@@ -178,12 +178,14 @@ test("senha correta exige MFA mesmo com ADMIN_MFA_REQUIRED=false", async () => {
   const replay = (await call(auth.verifyAdminMfa, { body: { challengeId: challenge.body.challengeId, codigo: code() } })).res;
   assert.equal(replay.statusCode, 401);
 });
-test("login facial não libera sessão sem segundo fator", async () => {
+test("facial inequívoca de e-mail confirmado dispensa código recorrente", async () => {
   await mockMailAndFace();
   const embedding = Array.from({ length: 512 }, (_, i) => i === 0 ? 1 : 0);
   patch(prisma.faceEmbedding, "findMany", async () => [{ id: 1, usuarioId: 7, embedding, usuario: user() }]);
   const { res } = await call(auth.loginFace, { body: { embedding } });
-  assert.equal(res.statusCode, 202); assert.equal(res.body.mfaRequired, true); assert.equal(res.body.token, undefined);
+  assert.equal(res.statusCode, 200); assert.equal(res.body.mfaRequired, undefined);
+  assert.equal(res.body.autenticacao.metodo, "facial");
+  assert.equal(jwt.verify(res.body.token, process.env.JWT_SECRET).mfaVerified, false);
 });
 
 test("MFA não emite mais token de assinatura empresarial para estado legado pendente", async () => {
@@ -202,7 +204,7 @@ test("MFA não emite mais token de assinatura empresarial para estado legado pen
 });
 test("alterar conta após emissão do desafio invalida MFA", async () => {
   const code = await mockMailAndFace();
-  patch(prisma.usuario, "findUnique", async () => user({ senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
+  patch(prisma.usuario, "findUnique", async () => user({ emailVerificadoEm: null, senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
   patch(prisma.usuario, "findFirst", async () => user({ tokenVersion: 1 }));
   const challenge = (await call(auth.login, { body: { email: "pessoa@gmail.com", senha: "senha-teste-123" } })).res.body;
   const { res } = await call(auth.verifyAdminMfa, { body: { challengeId: challenge.challengeId, codigo: code() } });
@@ -213,4 +215,23 @@ test("rotas de assinatura empresarial não estão publicadas", async () => {
   const { authRoutes } = await import("../src/modules/auth/auth.routes.js");
   const paths = authRoutes.stack.filter(layer => layer.route).map(layer => layer.route.path);
   assert.ok(!paths.some(path => path.includes("company-authorization")));
+});
+
+test("senha com e-mail confirmado entra sem enviar código nem afirmar MFA", async () => {
+  patch(prisma.usuario, "findUnique", async () => user({ senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
+  globalThis.fetch = async () => { throw new Error("Não deve enviar e-mail"); };
+  const {res} = await call(auth.login, {body:{email:"pessoa@gmail.com",senha:"senha-teste-123"}});
+  assert.equal(res.statusCode,200); assert.equal(res.body.autenticacao.metodo,"senha");
+  assert.equal(jwt.verify(res.body.token,process.env.JWT_SECRET).mfaVerified,false);
+});
+test("conta sem e-mail confirmado não usa token antigo para acessar API", async () => {
+  patch(prisma.usuario, "findUnique", async () => user({ emailVerificadoEm:null }));
+  const {res,next}=await call(authRequired,{headers:{authorization:`Bearer ${token()}`}});
+  assert.equal(res.body.codigo,"EMAIL_CONFIRMATION_REQUIRED"); assert.equal(next,false);
+});
+test("API facial recusa retorno ainda virado antes de comparar a identidade", async () => {
+  globalThis.fetch=async()=>Response.json({detectado:true,quantidadeRostos:1,pronto:true,pose:{yaw:15}});
+  const image={buffer:Buffer.from([0xff,0xd8,0xff,0])};
+  const {res}=await call(auth.loginFaceImage,{files:{imagem:[image],liveness:[image]}});
+  assert.equal(res.statusCode,401); assert.equal(res.body.codigo,"FACE_FINAL_POSITION_INVALID");
 });

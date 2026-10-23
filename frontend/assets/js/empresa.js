@@ -1032,6 +1032,7 @@ async function carregarEmpresa() {
 
     empresaAtual =
       empresa;
+    atualizarSufixoFuncionario();
 
 
     // =================================================
@@ -3838,7 +3839,7 @@ function aplicarPermissoes() {
 // MODAL NOVO FUNCIONÁRIO
 // =====================================================
 
-function abrirNovoFuncionario() {
+async function abrirNovoFuncionario() {
 
   if (
     !usuarioEhAdministrador()
@@ -3859,6 +3860,7 @@ function abrirNovoFuncionario() {
   }
 
 
+  await carregarEmpresa();
   const sufixo = empresaAtual?.loginDomain;
   if (!sufixo) {
     alert("Atualize o backend e execute as migrations para configurar o login interno da empresa.");
@@ -3866,6 +3868,7 @@ function abrirNovoFuncionario() {
   }
   document.getElementById("funcLoginSufixo").textContent = `@${sufixo}`;
   document.getElementById("funcLoginParte").value = "";
+  atualizarSufixoFuncionario();
   modalFuncionario?.classList.add(
     "ativo"
   );
@@ -5983,6 +5986,16 @@ document.addEventListener(
 document.getElementById("funcLoginParte")?.addEventListener("input", event => {
   const parte = String(event.target.value || "").trim().toLowerCase();
   document.getElementById("funcLoginAjuda").textContent = parte && empresaAtual?.loginDomain
-    ? `Login completo: ${parte}@${empresaAtual.loginDomain}. Os códigos serão enviados ao e-mail real de contato.`
+    ? `Login completo: ${parte}@${empresaAtual.loginDomain}. O e-mail real de contato é usado na confirmação inicial.`
     : "Digite apenas a parte do funcionário. O sufixo da empresa é fixo.";
 });
+
+function atualizarSufixoFuncionario() {
+  const suffix = document.getElementById("funcLoginSufixo");
+  const help = document.getElementById("funcLoginAjuda");
+  const prefix = document.getElementById("funcLoginParte")?.value.trim().toLowerCase() || "";
+  if (suffix) suffix.textContent = empresaAtual?.loginDomain ? `@${empresaAtual.loginDomain}` : "";
+  if (help) help.textContent = prefix && empresaAtual?.loginDomain
+    ? `Login completo: ${prefix}@${empresaAtual.loginDomain}. Use um e-mail real de contato separado.`
+    : "Digite apenas o nome de login do funcionário.";
+}

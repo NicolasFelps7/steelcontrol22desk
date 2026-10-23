@@ -38,3 +38,30 @@ export function emailContato(valor) {
   }
   return email;
 }
+
+// Atualiza nome, namespace e identificadores juntos. Nunca altera o e-mail real.
+export async function atualizarEmpresaComLogins(tx, empresaId, dados) {
+  await tx.$queryRawUnsafe("SELECT pg_advisory_xact_lock(2026101923)::text AS lock");
+  const atual = await tx.empresa.findUnique({ where: { id: empresaId } });
+  if (!atual) throw Object.assign(new Error("Empresa não encontrada."), { statusCode: 404 });
+  const base = nomeParaSufixo(dados.nome ?? atual.nome);
+  const usuarios = await tx.usuario.findMany({ where: { empresaId, loginInterno: { not: null } }, select: { id: true, loginInterno: true } });
+  let dominio;
+  for (let tentativa = 0; tentativa < 100; tentativa++) {
+    const candidato = `${base}${tentativa ? `-${empresaId}${tentativa > 1 ? `-${tentativa}` : ""}` : ""}.com`;
+    const dono = await tx.empresa.findUnique({ where: { loginDomain: candidato } });
+    if (dono && dono.id !== empresaId) continue;
+    const logins = usuarios.map(u => ({ id: u.id, login: `${u.loginInterno.split("@")[0]}@${candidato}` }));
+    const conflito = logins.length ? await tx.usuario.findFirst({ where: { OR: logins.map(u => ({ email: u.login, id: { not: u.id } })) }, select: { id: true } }) : null;
+    if (conflito) continue;
+    dominio = candidato;
+    break;
+  }
+  if (!dominio) throw Object.assign(new Error("Não foi possível atualizar o sufixo. Escolha outro nome de empresa."), { statusCode: 409 });
+  const empresa = await tx.empresa.update({ where: { id: empresaId }, data: { ...dados, loginDomain: dominio } });
+  for (const usuario of usuarios) {
+    const loginInterno = `${usuario.loginInterno.split("@")[0]}@${dominio}`;
+    if (loginInterno !== usuario.loginInterno) await tx.usuario.update({ where: { id: usuario.id }, data: { loginInterno } });
+  }
+  return empresa;
+}

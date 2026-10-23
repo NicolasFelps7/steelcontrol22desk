@@ -5,7 +5,7 @@ Depois de confirmar o e-mail e concluir a etapa facial já existente, a empresa
 fica ATIVA e o primeiro usuário é ADMINISTRADOR/APROVADO. O CNPJ permanece
 um identificador único; outro cadastro público com o mesmo CNPJ é recusado.
 Funcionários são cadastrados pelo administrador na Gestão Industrial e começam
-como VISITANTE. Login por senha ou facial continua com código por e-mail.
+como VISITANTE. Após confirmar o e-mail inicialmente, senha ou facial inequívoca entram sem códigos recorrentes.
 Permissões, separação dos dados entre empresas, auditoria e chave do Edge continuam.
 
 ## Aplicar no desktop e Railway
@@ -77,6 +77,6 @@ O comando padrão `npm start` aplica as migrations. Se o Start Command personali
 for `node src/server.js`, configure `npm run start:prod` para Root Directory backend;
 se a raiz do serviço for a raiz do desktop, configure `npm start`.
 Não rode as migrations no banco local esperando atualizar o banco Railway.
-Abra o site novamente e faça novo login com novo código. Se continuar aparecendo
+Abra o site novamente e faça novo login. Se continuar aparecendo
 a mensagem de assinatura, o servidor antigo ainda está atendendo: confira a
 branch, o commit e o ambiente Production no Railway.

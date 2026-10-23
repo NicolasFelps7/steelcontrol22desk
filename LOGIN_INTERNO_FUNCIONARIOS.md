@@ -1,3 +1,5 @@
+> Fluxo atual: consulte `ATUALIZACAO_TCC.md` para sufixo dinâmico e login sem código recorrente.
+
 # Login do funcionário com sufixo fixo da empresa
 
 Atualização de 19/10/2026, sobre a correção de autorização empresarial.
@@ -24,8 +26,7 @@ não muda a empresa nem o login atribuído.
 
 **O endereço gerado é um identificador interno. Não registra domínio nem cria
 caixa de e-mail.** O e-mail real de contato é separado e recebe os códigos do
-segundo fator. A senha e a biometria continuam funcionando; ambos os caminhos
-exigem o segundo fator antes de liberar a sessão.
+primeiro contato. Depois disso, senha e facial inequívoca não exigem códigos recorrentes.
 
 Na tela de entrada, o funcionário pode usar o login completo e a senha.
 O e-mail real também continua aceito como alternativa, com os mesmos controles.
@@ -36,7 +37,7 @@ O administrador inicial continua usando seu e-mail real.
 O sufixo vem do nome da empresa sem espaços, acentos ou pontuação. Por exemplo,
 `Metalúrgica Alfa` gera `metalurgicaalfa.com`. Empresas com nome igual recebem
 um complemento numérico apenas quando necessário, para não compartilhar logins.
-O sistema preserva o sufixo quando o nome de exibição da empresa muda.
+Ao salvar outro nome de empresa, o sufixo e os logins internos são atualizados juntos.
 
 Novos nomes de login aceitam letras sem acentos, números, ponto, hífen e
 sublinhado; não aceitam `@`, espaços nem mais de 64 caracteres. Não é possível
