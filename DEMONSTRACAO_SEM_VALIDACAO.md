@@ -55,3 +55,28 @@ feitos no computador do grupo, depois de publicar o backend atualizado.
 Na versão demonstrativa, não validamos a autorização do primeiro administrador
 para representar a empresa. Como melhoria futura, propomos e-CNPJ ou outro
 mecanismo independente de validação. Não apresente essa proteção como já ativa.
+
+## Se ainda aparecer a mensagem de assinatura depois do código
+
+A mensagem “Confirme a autorização da empresa com uma assinatura e-CNPJ” vem
+do backend antigo. Atualizar somente o APK não modifica o servidor Railway.
+Copie também os arquivos do desktop, incluindo backend/src/modules/auth/auth.controller.js,
+backend/src/modules/auth/auth.routes.js, backend/package.json e todas as migrations.
+Depois, na pasta desktop:
+
+```powershell
+git status
+git add .
+git commit -m "Remove assinatura empresarial do cadastro e login"
+git push
+```
+
+No Railway, verifique que o novo deploy pertence a esse commit e ao repositório
+do desktop, não ao mobile. Aguarde ficar ativo; se falhar, verifique os logs.
+O comando padrão `npm start` aplica as migrations. Se o Start Command personalizado
+for `node src/server.js`, configure `npm run start:prod` para Root Directory backend;
+se a raiz do serviço for a raiz do desktop, configure `npm start`.
+Não rode as migrations no banco local esperando atualizar o banco Railway.
+Abra o site novamente e faça novo login com novo código. Se continuar aparecendo
+a mensagem de assinatura, o servidor antigo ainda está atendendo: confira a
+branch, o commit e o ambiente Production no Railway.
