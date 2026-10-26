@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $EdgeDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Split-Path -Parent $EdgeDir
 $Venv = Join-Path $Root '.venv-edge'
@@ -54,22 +54,25 @@ if ($IsAdmin) {
   Write-Host 'Execute o instalador como Administrador se o Windows bloquear o TCP/4211 do Edge.' -ForegroundColor Yellow
 }
 
-Write-Host '[5/6] Registrando protocolo steelcontrol:// para abrir o Edge...' -ForegroundColor Yellow
+Write-Host '[5/6] Registrando protocolo steelcontrol:// para este usuario...' -ForegroundColor Yellow
+$Handler = Join-Path $EdgeDir 'steelcontrol-protocol-handler.ps1'
+if (-not (Test-Path $Handler)) { throw "Manipulador de protocolo nao encontrado: $Handler" }
 $ProtocolKey = 'HKCU:\Software\Classes\steelcontrol'
-$ProtocolCommand = Join-Path $EdgeDir 'ABRIR_STEELCONTROL_EDGE.ps1'
 New-Item -Path $ProtocolKey -Force | Out-Null
 Set-Item -Path $ProtocolKey -Value 'URL:SteelControl Edge Protocol'
 New-ItemProperty -Path $ProtocolKey -Name 'URL Protocol' -Value '' -PropertyType String -Force | Out-Null
-New-Item -Path (Join-Path $ProtocolKey 'shell\open\command') -Force | Out-Null
-$Command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + $ProtocolCommand + '" "%1"'
-Set-Item -Path (Join-Path $ProtocolKey 'shell\open\command') -Value $Command
+$CommandKey = Join-Path $ProtocolKey 'shell\open\command'
+New-Item -Path $CommandKey -Force | Out-Null
+$PowerShellExe = Join-Path $PSHOME 'powershell.exe'
+$OpenCommand = '"' + $PowerShellExe + '" -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $Handler + '" "%1"'
+Set-Item -Path $CommandKey -Value $OpenCommand
+Write-Host 'Protocolo steelcontrol:// registrado para o usuario atual.' -ForegroundColor Green
 
 Write-Host '[6/6] Validando instalacao...' -ForegroundColor Yellow
 & $Py -c "import requests, serial, tkinter, pymodbus, paho.mqtt.client, asyncua; print('Dependencias Edge 2.1 OK')"
 
 Write-Host ''
 Write-Host 'SteelControl Edge 2.1 instalado com sucesso.' -ForegroundColor Green
-Write-Host 'Protocolo steelcontrol:// registrado para este usuario.' -ForegroundColor Green
 Write-Host "Atalho: $ShortcutPath" -ForegroundColor Gray
 Write-Host ''
 Write-Host 'Abrindo SteelControl Edge...' -ForegroundColor Cyan
