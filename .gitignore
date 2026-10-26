@@ -28,6 +28,8 @@ backend/uploads/
 *.log
 *.pid
 *.zip
+!frontend/downloads/
+!frontend/downloads/SteelControl-Edge-Windows.zip
 *.rar
 
 # Editores e sistema operacional
