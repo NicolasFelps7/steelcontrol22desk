@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<title>SteelControl — Conexões</title><link rel="stylesheet" href="connections.css">
+</head>
+<body>
+<header><div><span class="eyebrow">STEELCONTROL DESKTOP</span><h1>Conexões das máquinas</h1><p>Configure uma vez. As conexões habilitadas voltam quando você entra no Windows.</p></div><span id="worker" class="badge" role="status">Iniciando…</span></header>
+<section class="startup"><label><input type="checkbox" id="autoStart"> Iniciar com o Windows</label><span>Fechar a janela mantém as conexões ativas. Para encerrar, use “Sair”.</span></section>
+<p id="notice" role="status" aria-live="polite"></p>
+<main>
+<aside><div class="list-heading"><h2>Minhas conexões</h2><button id="new" type="button">+ Conectar máquina</button></div><div id="profiles"></div><button id="refresh" class="secondary" type="button">Atualizar</button></aside>
+<section class="editor">
+<h2 id="formTitle">Conectar uma máquina</h2>
+<p class="hint">No sistema, cadastre a máquina e use “Copiar para Edge” ao gerar a chave. Cole esse pacote abaixo. Você também pode preencher o ID e a chave manualmente.</p>
+<details><summary>Colar pacote de conexão</summary><textarea id="package" rows="3" placeholder="Cole o pacote copiado do SteelControl"></textarea><button type="button" id="import" class="secondary">Preencher com o pacote</button></details>
+<form id="connection">
+<div class="grid"><label>Nome local<input name="label" maxlength="120" placeholder="Ex.: Torno 01"></label><label>Servidor<input name="serverUrl" type="url" required></label>
+<label>ID da máquina<input name="machineId" type="number" min="1" required></label><label>Chave da máquina<input name="deviceKey" type="password" autocomplete="off" placeholder="Device Key gerada no sistema"></label>
+<label>Driver<select name="driver"><option value="AUTO">Automático pelo cadastro</option></select></label><label>Leitura a cada (ms)<input name="intervalMs" type="number" value="2000" min="500" required></label></div>
+<details open><summary>Comunicação com a máquina</summary><div class="grid">
+<label>IP / host / broker<input name="host" placeholder="Ex.: 192.168.1.50"></label><label>Porta TCP<input name="port" type="number" min="1" max="65535"></label>
+<label>Porta serial / USB<input name="serialPort" list="serialPorts" placeholder="AUTO"><datalist id="serialPorts"></datalist></label><label>Baud rate<input name="baud" type="number" value="115200" min="1"></label>
+<label>Unit ID (Modbus)<input name="unitId" type="number" value="1" min="0" max="247"></label><label>Endpoint<input name="endpoint" placeholder="Caminho HTTP ou endpoint OPC UA"></label>
+<label>Tópico MQTT<input name="topic"></label><label>Endpoint / tópico de comando<input name="commandEndpoint"></label>
+</div><label>Parâmetros avançados (JSON opcional)<textarea name="advanced" rows="3" placeholder='{"registerMap":{"temperatura":0}}'></textarea></label><button id="detect" type="button" class="secondary">Detectar portas USB / serial</button></details>
+<div class="safety"><label><input name="allowCommands" type="checkbox"> Permitir comandos físicos nesta máquina</label><p>Ative somente se estiver autorizado. O sistema também exige as permissões do usuário e o controle remoto habilitado. Conectar ou iniciar o Windows não executa movimento por si só.</p></div>
+<div class="actions"><button id="save" type="submit">Salvar e conectar</button><button id="cancel" type="button" class="secondary">Limpar formulário</button></div>
+</form>
+</section></main>
+<footer>O computador e a máquina precisam permanecer ligados. “Desconectar” encerra a comunicação; não substitui a parada de emergência física.</footer>
+<script src="connections.js"></script>
+</body></html>

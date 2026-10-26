@@ -28,7 +28,8 @@ class MachineRuntime:
         # Não deixa um worker antigo conservar a COM enquanto o substituto
         # começa. Nunca tenta dar join na própria thread.
         if wait and self.thread and self.thread.is_alive() and threading.current_thread() is not self.thread:
-            self.thread.join(timeout=4.0)
+            self.thread.join(timeout=12.0)
+        return not (self.thread and self.thread.is_alive())
     def _params(self,server_cfg):
         p=dict(self.profile.params or {}); meta=server_cfg.get('integracaoMeta') or {}; edge=meta.get('edge') if isinstance(meta,dict) else None
         if isinstance(edge,dict): p={**edge,**p}
@@ -36,6 +37,9 @@ class MachineRuntime:
         for src,dst in [('host','host'),('porta','port'),('unitId','unitId'),('endpoint','endpoint'),('topico','topic')]:
             if p.get(dst) in (None,'') and server_cfg.get(src) not in (None,''):p[dst]=server_cfg.get(src)
         p.setdefault('intervalMs',server_cfg.get('intervaloLeitura') or self.profile.interval_ms)
+        # Somente a configuração autenticada do servidor pode liberar o controle
+        # remoto; um parâmetro local nunca pode forjar essa autorização.
+        p['serverRemoteControlEnabled']=False
         dobot=meta.get('dobot') if isinstance(meta,dict) else None
         if isinstance(dobot,dict):
             p.setdefault('serialPort',dobot.get('port') or 'AUTO'); p.setdefault('baud',dobot.get('baudRate') or 115200)
@@ -49,10 +53,13 @@ class MachineRuntime:
         except Exception:return True
     def _run(self):
         backoff=1
+        self.status('CONNECTING')
         while not self.stop_event.is_set():
             try:
                 c=SteelControlClient(self.profile.server_url,self.profile.machine_id,self.profile.device_key)
-                cfg=c.config(); self.profile.label=str(cfg.get('nome') or self.profile.label)
+                cfg=c.config()
+                if self.stop_event.is_set():break
+                self.profile.label=str(cfg.get('nome') or self.profile.label)
                 requested=self.profile.driver
                 driver=infer_driver(cfg.get('controlador'),cfg.get('protocolo'),False) if requested=='AUTO' else requested
                 params=self._params(cfg)
@@ -72,6 +79,7 @@ class MachineRuntime:
                     if cycle-last_hb>=10:
                         c.heartbeat(); last_hb=cycle
                     cmd=c.next_command(wait_ms=COMMAND_WAIT_MS)
+                    if self.stop_event.is_set():break
                     command_executed=False
                     if cmd:
                         cid=cmd.get('id'); name=str(cmd.get('comando') or ''); payload=cmd.get('payload') or {}
@@ -105,6 +113,9 @@ class MachineRuntime:
                 self.adapter=None
                 if self.stop_event.wait(backoff):break
                 backoff=min(backoff*2,30)
+        try:
+            if self.adapter:self.adapter.close()
+        except Exception:pass
         self.status('STOPPED')
 
 class EdgeRuntimeManager:
@@ -125,19 +136,29 @@ class EdgeRuntimeManager:
         # um novo provisionamento tenha criado outro UUID local.
         with self.lock:
             conflicts=[(pid,rt) for pid,rt in self.runtimes.items() if self._conflicts(rt.profile,p)]
-            for pid,_ in conflicts:self.runtimes.pop(pid,None)
-        for _,rt in conflicts:rt.stop(wait=True)
+        for pid,rt in conflicts:
+            if not rt.stop(wait=True):
+                raise AdapterError('O driver anterior ainda está encerrando. Aguarde antes de reconectar.')
+            with self.lock:self.runtimes.pop(pid,None)
         rt=MachineRuntime(p,self.log,self.status)
         with self.lock:self.runtimes[p.id]=rt
         rt.start()
     def stop(self,pid):
-        with self.lock:rt=self.runtimes.pop(pid,None)
-        if rt:rt.stop(wait=True)
+        with self.lock:rt=self.runtimes.get(pid)
+        if rt:
+            if not rt.stop(wait=True):
+                raise AdapterError('O driver ainda está encerrando. Aguarde antes de reconectar.')
+            with self.lock:self.runtimes.pop(pid,None)
     def start_all(self,profiles):
         for p in profiles:
             if p.enabled:self.start(p)
     def stop_all(self):
         with self.lock:pids=list(self.runtimes)
+        # Sinaliza todos primeiro; nenhuma máquina continua recebendo comandos
+        # enquanto aguardamos o encerramento das demais.
+        for pid in pids:
+            with self.lock:rt=self.runtimes.get(pid)
+            if rt:rt.stop(wait=False)
         for pid in pids:self.stop(pid)
     def reconcile(self,profiles):
         active_ids={p.id for p in profiles}

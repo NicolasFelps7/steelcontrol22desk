@@ -12,6 +12,8 @@ DRIVER_NAMES={
 }
 
 def config_dir()->Path:
+    if os.environ.get('STEELCONTROL_EDGE_HOME'):
+        return Path(os.environ['STEELCONTROL_EDGE_HOME'])
     base=os.environ.get('PROGRAMDATA') or os.environ.get('APPDATA') or str(Path.home())
     return Path(base)/'SteelControl'/'Edge'
 def profiles_path()->Path:return config_dir()/'edge-profiles.json'
@@ -50,7 +52,13 @@ def save_store(store:EdgeStore)->Path:
     items=[]
     for p in store.profiles:
         p.validate(); raw=asdict(p); raw.pop('device_key',None); raw['device_key_protected']=protect_text(p.device_key); items.append(raw)
-    payload={'schema':3,'profiles':items}; target.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8'); return target
+    payload={'schema':3,'profiles':items}
+    temporary=target.with_suffix('.tmp')
+    temporary.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding='utf-8')
+    try:temporary.chmod(0o600)
+    except OSError:pass
+    os.replace(temporary,target)
+    return target
 
 def load_store()->EdgeStore:
     target=profiles_path()

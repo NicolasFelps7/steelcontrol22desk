@@ -13,7 +13,9 @@ const scopedDirs = [
   "face-api/app",
   "face-api/tests",
   "dobot-gateway",
-  "device-examples"
+  "device-examples",
+  "steelcontrol-edge",
+  "desktop"
 ];
 
 const scopedFiles = [
@@ -30,11 +32,15 @@ const ignored = new Set([
   ".venv",
   "__pycache__",
   ".pytest_cache",
-  ".insightface"
+  ".insightface",
+  "release",
+  "edge-dist",
+  "build-edge",
+  ".venv-build"
 ]);
 
 const textExtensions = new Set([
-  ".js", ".mjs", ".json", ".prisma", ".sql", ".py",
+  ".js", ".mjs", ".cjs", ".json", ".prisma", ".sql", ".py",
   ".html", ".css", ".md", ".txt", ".toml", ".yml", ".yaml",
   ".ino", ".bat", ".ps1", ".env"
 ]);

@@ -24,3 +24,6 @@ dobot-gateway
 *.pid
 .DS_Store
 Thumbs.db
+
+# Aplicativo Windows separado da API Railway
+desktop

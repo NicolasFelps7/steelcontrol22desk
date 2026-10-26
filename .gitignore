@@ -35,3 +35,10 @@ backend/uploads/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Desktop / empacotamento do Edge
+.desktop-cache/
+desktop/release/
+desktop/edge-dist/
+desktop/build-edge/
+desktop/.venv-build/

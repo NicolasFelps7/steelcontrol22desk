@@ -569,7 +569,7 @@ function mostrarDeviceKey(chave, titulo = "Chave do equipamento", maquinaId = nu
         tipo: ok ? "success" : "error",
         titulo: ok ? "Pacote do Edge copiado" : "Não foi possível copiar",
         mensagem: ok
-          ? "Abra o SteelControl Edge e clique em Importar do clipboard."
+          ? "No SteelControl Desktop, abra Máquinas → Conectar máquina e cole o pacote de conexão."
           : "Copie a Device Key e o ID da máquina manualmente."
       });
     });

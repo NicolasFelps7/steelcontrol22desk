@@ -74,3 +74,11 @@ evita que determinados firmwares Magician/Lite aceitem o item sem avançar a fil
 interna. O Edge só conclui PTP depois de confirmar movimento e posição pela pose
 real; limites, alarmes, permissão local e STOP permanecem ativos.
 Configurações avançadas podem ser colocadas em `integracaoMeta.edge` pelo integrador, por exemplo mapas de registradores Modbus ou NodeIds OPC UA.
+
+## Desktop com Edge integrado
+
+A distribuição Windows integrada está na pasta `desktop/`. Consulte
+[`DESKTOP_EDGE_INTEGRADO.md`](../DESKTOP_EDGE_INTEGRADO.md) para gerar o instalador,
+conectar máquinas pela interface e iniciar com o Windows. Os scripts antigos
+continuam disponíveis para instalações separadas; não execute os dois Edge ao
+mesmo tempo. O novo Desktop não modifica os perfis antigos em ProgramData.
