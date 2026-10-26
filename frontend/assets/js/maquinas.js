@@ -1999,14 +1999,8 @@ function criarCardMaquina(
               ${textoMaquinas("editar", "Editar")}
             </button>
 
-            <button
-              type="button"
-              class="machine-key-btn"
-              title="Gerar nova chave do equipamento"
-            >
-              <i class="fa-solid fa-key"></i>
-              Chave
-            </button>
+            <button type="button" class="machine-connect-btn"><i class="fa-solid fa-plug"></i> Conectar</button>
+
 
             <button
               type="button"
@@ -2060,6 +2054,10 @@ function criarCardMaquina(
     );
   }
 
+
+  article.querySelector(".machine-connect-btn")?.addEventListener("click", event => {
+    event.preventDefault(); event.stopPropagation(); window.abrirConexaoMaquina(maquina);
+  });
 
   const botaoChave =
     article.querySelector(
@@ -2671,7 +2669,7 @@ formMaquina
             "controladorInput"
           )
           ?.value ||
-        "";
+        (modoSimulacao ? "" : "OUTRO");
 
 
       const protocolo =
@@ -2975,14 +2973,8 @@ formMaquina
         mensagemMaquina.className =
           "mensagem-maquina sucesso";
 
-        if (dados.deviceKey) {
-          mostrarDeviceKey(
-            dados.deviceKey,
-            editando
-              ? "Chave gerada para o equipamento"
-              : "Chave do novo equipamento",
-            dados.maquina?.id || maquinaEditandoId
-          );
+        if (dados.deviceKey && dados.maquina?.id) {
+          window.abrirConexaoMaquina(dados.maquina);
         }
 
         const maquinaAlteradaId = Number(dados.maquina?.id || maquinaEditandoId || 0);
@@ -3151,6 +3143,7 @@ async function sair(confirmar = true) {
 
   }
 
+  await window.SteelControlBrowserBridge?.close();
   await window.encerrarSessaoServidor?.();
 
   localStorage.removeItem(

@@ -1,3 +1,12 @@
+> Fluxo atual sem instalador: consulte `CONEXOES_INTEGRADAS.md`.
+> Este documento descreve a ponte Windows opcional, não necessária para USB / serial JSON pelo navegador.
+
+# Atualização
+
+A versão 1.1 usa a página de máquinas para configurar as conexões. Siga
+[CONEXOES_INTEGRADAS.md](CONEXOES_INTEGRADAS.md). O procedimento da versão 1.0
+abaixo descreve a janela antiga, que não é mais aberta na versão integrada.
+
 # SteelControl Desktop com Edge integrado
 
 Esta atualização cria o aplicativo Windows que abre o SteelControl e mantém as

@@ -53,6 +53,8 @@ test(
       res.headers["X-Frame-Options"],
       "DENY"
     );
+    assert.match(res.headers["Permissions-Policy"], /serial=\(self\)/);
+    assert.match(res.headers["Permissions-Policy"], /usb=\(\)/);
 
     assert.match(
       res.headers["Content-Security-Policy"],

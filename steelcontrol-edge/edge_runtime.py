@@ -68,8 +68,8 @@ class MachineRuntime:
                 if driver=='DOBOT_MAGICIAN' and not commands_allowed:
                     self.log('Dobot em monitoramento: comandos exigem liberação no cadastro e no Edge local.')
                 self.log(f"Configuração validada | driver={driver} | protocolo={cfg.get('protocolo') or '—'}")
-                self.adapter=create_adapter(driver,params); self.adapter.connect(); self.status('ONLINE',driver=driver,controller=cfg.get('controlador'),protocol=cfg.get('protocolo')); self.log('Driver conectado.')
-                backoff=1; last_hb=0; next_telemetry=0
+                self.adapter=create_adapter(driver,params); self.adapter.connect(); self.log('Driver aberto. Aguardando telemetria da máquina.')
+                backoff=1; last_hb=0; next_telemetry=0; confirmed=False
                 # Para ensino e confirmação de movimentos do Dobot, a pose
                 # precisa chegar quase em tempo real. Outros controladores
                 # continuam respeitando o intervalo configurado.
@@ -102,6 +102,9 @@ class MachineRuntime:
                             if str(cfg.get('controlador') or '').upper() == 'IMPRESSORA_3D':
                                 data = normalize_printer3d_telemetry(data, protocol=cfg.get('protocolo') or driver)
                             data.setdefault('origem',driver); c.telemetry(data)
+                            if not confirmed:
+                                self.status('ONLINE',driver=driver,controller=cfg.get('controlador'),protocol=cfg.get('protocolo'))
+                                confirmed=True
                         next_telemetry=now+interval
                     elapsed=time.time()-cycle
                     self.stop_event.wait(max(0.01,COMMAND_POLL_SECONDS-elapsed))

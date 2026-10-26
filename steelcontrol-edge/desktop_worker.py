@@ -26,6 +26,7 @@ class DesktopWorker:
         self.store = load_store()
         self.states = {}
         self.manager = manager_factory(self.log, self.status)
+        self.cloud = None
 
     def log(self, pid, message):
         # Exceções de drivers podem conter endpoints locais. Não são enviadas ao site.
@@ -68,6 +69,10 @@ class DesktopWorker:
         save_store(self.store)
 
     def dispatch(self, action, data):
+        if action == "pair":
+            if self.cloud is None:
+                raise ValueError("Conexão interna ainda não inicializada.")
+            return self.cloud.pairing()
         if action == "list":
             return self.snapshot()
         if action == "ports":
@@ -142,6 +147,8 @@ class DesktopWorker:
                     self.status(p.id, "ERROR", {})
 
     def close(self):
+        if self.cloud:
+            self.cloud.close()
         self.manager.stop_all()
 
 
@@ -167,7 +174,18 @@ def main():
         return 2
     worker = DesktopWorker(emit)
     try:
-        worker.autostart()
+        from cloud_connection import CloudConnection
+        worker.cloud = CloudConnection(worker)
+        worker.cloud.claimed = worker.cloud.state.get("vinculado") is True
+        worker.cloud.start()
+        # Perfis remotos só iniciam depois de revalidar o vínculo no servidor.
+        # Configurações da tela antiga são preservadas, mas não ficam operando
+        # fora da gestão centralizada da empresa.
+        legacy = [p for p in worker.store.profiles if not p.id.startswith("cloud-") and p.enabled]
+        if legacy:
+            for profile in legacy:
+                profile.enabled = False
+            save_store(worker.store)
         emit({"event": "ready"})
         while True:
             line = sys.stdin.readline(MAX_MESSAGE + 1)

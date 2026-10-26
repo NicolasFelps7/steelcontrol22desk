@@ -58,6 +58,8 @@ model Empresa {
   criadaEm     DateTime @default(now())
   atualizadaEm DateTime @default(now()) @updatedAt
 
+  computadores ConnectionHost[]
+  conexoes MachineConnection[]
   autorizacoes CompanyAuthorization[]
   usuarios  Usuario[]
   maquinas  Maquina[]
@@ -89,6 +91,7 @@ model Usuario {
 }
 
 model Maquina {
+  conexao MachineConnection?
   id         Int @id @default(autoincrement())
   discoveryId String? @unique
   empresaId  Int
@@ -304,4 +307,41 @@ model CompanyAuthorization {
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   @@index([usuarioId, criadaEm])
   @@index([empresaId, expiraEm])
+}
+
+// Ponte local da empresa. As interfaces nunca recebem as credenciais internas.
+model ConnectionHost {
+  tipo String @default("EDGE")
+  empresa Empresa? @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  empresaId   Int?
+  nome        String
+  tokenHash   String   @unique
+  pairingHash String?  @unique
+  pairingAte  DateTime
+  revogadoEm  DateTime?
+  vistoEm     DateTime @default(now())
+  portas      Json     @default("[]")
+  criadaEm    DateTime @default(now())
+  links       MachineConnection[]
+  @@index([empresaId])
+}
+
+model MachineConnection {
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  maquina Maquina @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  maquinaId   Int      @unique
+  empresaId   Int
+  hostId      String
+  host        ConnectionHost @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  driver      String
+  parametros  Json     @default("{}")
+  ativa       Boolean  @default(true)
+  comandos    Boolean  @default(false)
+  versao      Int      @default(1)
+  segredo     String?
+  estado      String   @default("CONNECTING")
+  atualizadoEm DateTime @default(now()) @updatedAt
+  @@index([empresaId, hostId])
 }

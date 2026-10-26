@@ -18,7 +18,7 @@
 
   <link
     rel="stylesheet"
-    href="assets/css/maquinas.css?v=20261023_DESKTOP_EDGE_1"
+    href="assets/css/maquinas.css?v=20261026_CONEXOES_1"
   >
 
   <link rel="stylesheet" href="assets/vendor/steel-icons/steel-icons.css?v=1">
@@ -40,6 +40,10 @@
   <link rel="stylesheet" href="assets/css/steelcontrol-refinement.css?v=20261007_BIOMETRIC_GATE_372">
   <link rel="stylesheet" href="assets/css/steelcontrol-unified-ui.css?v=20261013_THEME_I18N_FINAL_7">
 
+  <link rel="stylesheet" href="assets/css/machine-connections.css?v=20261026_2">
+  <script defer src="assets/js/machine-adapters.js?v=20261026_2"></script>
+  <script defer src="assets/js/browser-machine-bridge.js?v=20261026_2"></script>
+  <script defer src="assets/js/machine-connections.js?v=20261026_2"></script>
 </head>
 
 
@@ -518,7 +522,8 @@
                 <label for="tipoInput">Tipo de equipamento</label>
                 <div class="form-control">
                   <i class="fa-solid fa-gears"></i>
-                  <select id="tipoInput" required>
+                  <input id="tipoInput" list="categoriasMaquina" maxlength="120" placeholder="Digite qualquer categoria" required>
+                  <datalist id="categoriasMaquina">
                     <option value="">Selecione o tipo de máquina</option>
                     <option value="Braço robótico">Braço robótico</option>
                     <option value="Robô industrial">Robô industrial</option>
@@ -531,7 +536,7 @@
                     <option value="CNC">CNC</option>
                     <option value="Impressora 3D">Impressora 3D</option>
                     <option value="Outro">Outro</option>
-                  </select>
+                  </datalist>
                 </div>
               </div>
 
@@ -1110,7 +1115,7 @@
 
   <script src="assets/js/config.js?v=20261013_THEME_I18N_FINAL_3"></script>
 
-  <script src="assets/js/maquinas.js?v=20261023_DESKTOP_EDGE_1"></script>
+  <script src="assets/js/maquinas.js?v=20261026_CONEXOES_1"></script>
 
 </body>
 

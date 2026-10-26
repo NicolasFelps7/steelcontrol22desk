@@ -3,10 +3,9 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, dialog, session } = require('el
 const path = require('node:path');
 const fs = require('node:fs');
 const { WorkerClient } = require('./worker-client.cjs');
-const { SERVER_URL, trustedRemote, trustedLocal } = require('./security.cjs');
+const { SERVER_URL, trustedRemote } = require('./security.cjs');
 app.setName('SteelControl');
-const PANEL = path.join(__dirname, 'ui', 'connections.html');
-let mainWindow, connectionsWindow, tray, worker;
+let mainWindow, tray, worker;
 let quitting = false, shutdownStarted = false;
 let workerState = { running: false, message: 'Iniciando conexões…' };
 let settings = { autoStart: true };
@@ -41,26 +40,24 @@ function autoStart(enabled) {
   app.setLoginItemSettings({ ...loginOptions(), openAtLogin: enabled });
   return app.getLoginItemSettings(loginOptions()).openAtLogin;
 }
-function notifyPanel() {
-  if (connectionsWindow && !connectionsWindow.isDestroyed()) connectionsWindow.webContents.send('edge:changed');
-}
-function securedWindow(options, local = false) {
+
+function securedWindow(options) {
   const win = new BrowserWindow({
     backgroundColor: '#0c131b', icon: path.join(__dirname, 'assets', 'steelcontrol.png'),
     ...options,
     webPreferences: {
       nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
       allowRunningInsecureContent: false, webviewTag: false,
-      partition: local ? 'steelcontrol-connections' : 'persist:steelcontrol',
-      ...(local ? { preload: path.join(__dirname, 'preload.cjs') } : {})
+      partition: 'persist:steelcontrol',
+      preload: path.join(__dirname, 'computer-preload.cjs')
     }
   });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', (event, url) => {
-    if (local || !trustedRemote(url)) event.preventDefault();
+    if (!trustedRemote(url)) event.preventDefault();
   });
   win.webContents.on('will-redirect', (event, url) => {
-    if (local || !trustedRemote(url)) event.preventDefault();
+    if (!trustedRemote(url)) event.preventDefault();
   });
   win.webContents.on('will-attach-webview', event => event.preventDefault());
   win.on('close', event => {
@@ -68,24 +65,25 @@ function securedWindow(options, local = false) {
   });
   return win;
 }
-function openSystem() {
+function openSystem(target) {
+  const destination = typeof target === 'string' && trustedRemote(target) ? target : SERVER_URL + '/app/login';
   if (!mainWindow || mainWindow.isDestroyed()) {
     mainWindow = securedWindow({ width: 1360, height: 880, minWidth: 1000, minHeight: 680, title: 'SteelControl' });
-    mainWindow.loadURL(SERVER_URL + '/app/login').catch(() => {
+    mainWindow.loadURL(destination).catch(error => {
+      if (error.code === 'ERR_ABORTED') return;
       dialog.showMessageBox(mainWindow, { type: 'warning', title: 'Sem conexão com o site',
         message: 'Não foi possível abrir o SteelControl. Confira a internet e use Sistema → Recarregar.',
         detail: 'As conexões locais continuam tentando reconectar. Use Máquinas → Conectar máquina para configurar o Edge.' });
     });
+  } else if (typeof target === 'string' && trustedRemote(target)) {
+    mainWindow.loadURL(destination).catch(() => {});
   }
   mainWindow.show(); mainWindow.focus();
 }
 function openConnections() {
-  if (!connectionsWindow || connectionsWindow.isDestroyed()) {
-    connectionsWindow = securedWindow({ width: 1120, height: 820, minWidth: 880, minHeight: 640, title: 'SteelControl — Conexões das máquinas' }, true);
-    connectionsWindow.loadFile(PANEL);
-  }
-  connectionsWindow.show(); connectionsWindow.focus();
+  openSystem(SERVER_URL + '/app/maquinas?conexoes=1');
 }
+
 async function start() {
   app.setAppUserModelId('br.com.steelcontrol.desktop');
   try {
@@ -106,9 +104,6 @@ async function start() {
   remote.setPermissionCheckHandler((wc, permission, origin, details) =>
     Boolean(wc) && trustedRemote(wc.getURL()) && trustedRemote(origin) && details.isMainFrame === true &&
     (permission === 'clipboard-sanitized-write' || (permission === 'media' && details.mediaType === 'video')));
-  const local = session.fromPartition('steelcontrol-connections');
-  local.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
-  local.setPermissionCheckHandler(() => false);
   const command = app.isPackaged ? path.join(process.resourcesPath, 'edge', 'SteelControlEdge.exe') :
     (process.env.STEELCONTROL_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'));
   const args = app.isPackaged ? [] : ['-u', path.join(__dirname, '..', 'steelcontrol-edge', 'desktop_worker.py')];
@@ -116,23 +111,15 @@ async function start() {
     cwd: app.isPackaged ? path.dirname(command) : path.join(__dirname, '..', 'steelcontrol-edge'),
     env: { ...process.env, STEELCONTROL_EDGE_HOME: path.join(app.getPath('userData'), 'Edge'), PYTHONUNBUFFERED: '1' }
   });
-  worker.on('state', state => { workerState = state; tray?.setToolTip('SteelControl — ' + state.message); notifyPanel(); });
-  worker.on('status', notifyPanel);
-  ipcMain.handle('edge:request', async (event, action, data) => {
-    if (!trustedLocal(event.senderFrame, connectionsWindow, PANEL)) throw new Error('Origem não autorizada.');
-    if (typeof action !== 'string' || JSON.stringify(data ?? {}).length > 16000) throw new Error('Operação inválida.');
-    if (action === 'settings') return { ...settings, packaged: app.isPackaged, worker: workerState, serverUrl: SERVER_URL };
-    if (action === 'autoStart') {
-      if (typeof data?.enabled !== 'boolean') throw new Error('Configuração inválida.');
-      const enabled = autoStart(data.enabled);
-      settings.autoStart = enabled; saveSettings(); return { enabled };
-    }
-    if (!['list', 'save', 'connect', 'disconnect', 'remove', 'ports'].includes(action)) throw new Error('Operação não permitida.');
-    return worker.request(action, data);
+  worker.on('state', state => { workerState = state; tray?.setToolTip('SteelControl — ' + state.message); });
+  ipcMain.handle('computer:pair', async event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame || !trustedRemote(event.senderFrame.url)) throw new Error('Origem inválida.');
+    return worker.request('pair');
   });
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Sistema', submenu: [
       { label: 'Abrir SteelControl', click: openSystem },
+      { label: 'Iniciar com o Windows', type: 'checkbox', checked: settings.autoStart, enabled: app.isPackaged && process.platform === 'win32', click: item => { settings.autoStart = autoStart(item.checked); saveSettings(); } },
       { label: 'Recarregar', accelerator: 'CmdOrCtrl+R', click: () => mainWindow?.reload() },
       { type: 'separator' }, { label: 'Sair e desconectar máquinas', click: () => app.quit() }
     ] },

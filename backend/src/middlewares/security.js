@@ -72,7 +72,7 @@ export function securityHeaders(req, res, next) {
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader(
     "Permissions-Policy",
-    "camera=(self), geolocation=(), microphone=(), payment=(), usb=()"
+    "camera=(self), geolocation=(), microphone=(), payment=(), usb=(), serial=(self)"
   );
   res.setHeader("Cross-Origin-Resource-Policy", "same-site");
   res.setHeader("X-Permitted-Cross-Domain-Policies", "none");

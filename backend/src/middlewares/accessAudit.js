@@ -1,6 +1,6 @@
 import { registrarAuditoria } from "../lib/audit.js";
 export function accessAudit(req, res, next) {
-  if (!/^\/(auth|empresa|maquinas|device|descoberta)(\/|$)/.test(req.path)) return next();
+  if (!/^\/(auth|empresa|maquinas|device|descoberta|conexoes)(\/|$)/.test(req.path)) return next();
   const rota = req.path;
   // All authentication attempts, all denials, and industrial write attempts.
   res.once("finish", () => {

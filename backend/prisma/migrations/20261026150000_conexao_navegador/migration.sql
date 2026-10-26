@@ -1,0 +1,1 @@
+ALTER TABLE "ConnectionHost" ADD COLUMN "tipo" TEXT NOT NULL DEFAULT 'EDGE';
