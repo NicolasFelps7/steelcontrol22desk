@@ -1999,7 +1999,7 @@ function criarCardMaquina(
               ${textoMaquinas("editar", "Editar")}
             </button>
 
-            <button type="button" class="machine-connect-btn" ${maquina.modoSimulacao ? 'disabled title="A simulação funciona no sistema, sem Edge."' : ''}><i class="fa-solid fa-plug"></i> ${maquina.modoSimulacao ? 'Simulação' : 'Conectar no Edge'}</button>
+            <button type="button" class="machine-connect-btn"><i class="fa-solid fa-plug"></i> Configurar Edge</button>
 
 
             <button
@@ -2056,7 +2056,9 @@ function criarCardMaquina(
 
 
   article.querySelector(".machine-connect-btn")?.addEventListener("click", event => {
-    event.preventDefault(); event.stopPropagation(); window.abrirSteelControlEdge(maquina);
+    event.preventDefault(); event.stopPropagation();
+    // Fluxo legado: configurar o Edge pela Device Key copiada, sem vínculo de computador.
+    renovarChaveMaquina(maquina);
   });
 
   const botaoChave =
@@ -2973,8 +2975,8 @@ formMaquina
         mensagemMaquina.className =
           "mensagem-maquina sucesso";
 
-        if (!editando && dados.maquina?.id && dados.maquina.modoSimulacao === false) {
-          window.abrirSteelControlEdge(dados.maquina, { automatic: true });
+        if (dados.deviceKey && dados.maquina?.id) {
+          mostrarDeviceKey(dados.deviceKey, `Chave do equipamento — ${dados.maquina.nome || "SteelControl Edge"}`, dados.maquina.id);
         }
 
         const maquinaAlteradaId = Number(dados.maquina?.id || maquinaEditandoId || 0);
@@ -3143,6 +3145,7 @@ async function sair(confirmar = true) {
 
   }
 
+  await window.SteelControlBrowserBridge?.close();
   await window.encerrarSessaoServidor?.();
 
   localStorage.removeItem(
