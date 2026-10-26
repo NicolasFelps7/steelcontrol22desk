@@ -24,7 +24,7 @@ export function validateConnection(body) {
     throw new Error('Configuração de comunicação inválida.');
   if (params.port != null && (!Number.isInteger(Number(params.port)) || Number(params.port)<1 || Number(params.port)>65535))
     throw new Error('A porta de rede deve estar entre 1 e 65535.');
-  if (params.serialPort && !/^(AUTO|COM\d+|browser-[a-f0-9-]{36}|\/dev\/[\w./-]+)$/i.test(String(params.serialPort)))
+  if (params.serialPort && !/^(AUTO|COM\d+|\/dev\/[\w./-]+)$/i.test(String(params.serialPort)))
     throw new Error('Selecione uma porta serial válida.');
   if(params.baud!=null&&(!Number.isInteger(Number(params.baud))||Number(params.baud)<300||Number(params.baud)>4000000))throw new Error('Baud rate inválido.');
   for(const name of ['fieldMap','commandMap'])if(params[name]!=null){

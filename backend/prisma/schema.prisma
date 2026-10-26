@@ -59,6 +59,7 @@ model Empresa {
   atualizadaEm DateTime @default(now()) @updatedAt
 
   computadores ConnectionHost[]
+  diagnosticos DiagnosticEvent[]
   conexoes MachineConnection[]
   autorizacoes CompanyAuthorization[]
   usuarios  Usuario[]
@@ -83,7 +84,9 @@ model Usuario {
   empresa   Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   autorizacoes CompanyAuthorization[]
   faces     FaceEmbedding[]
+  diagnosticos DiagnosticEvent[]
   auditLogs AuditLog[]
+  comandosSolicitados ComandoMaquina[]
 
   @@index([empresaId])
   @@index([cargo])
@@ -167,6 +170,7 @@ model Maquina {
   manutencoes Manutencao[]
   telemetria  TelemetryReading[]
   comandos    ComandoMaquina[]
+  diagnosticos DiagnosticEvent[]
 
   @@unique([empresaId, codigo])
   @@index([empresaId])
@@ -257,6 +261,8 @@ model TelemetryReading {
 }
 
 model ComandoMaquina {
+  solicitanteId Int?
+  solicitante Usuario? @relation(fields:[solicitanteId],references:[id],onDelete:SetNull)
   id        Int      @id @default(autoincrement())
   maquinaId Int
   comando   String
@@ -270,6 +276,7 @@ model ComandoMaquina {
   maquina Maquina @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
 
   @@index([maquinaId, status, criadoEm])
+  @@index([solicitanteId])
 }
 
 model AuditLog {
@@ -344,4 +351,22 @@ model MachineConnection {
   estado      String   @default("CONNECTING")
   atualizadoEm DateTime @default(now()) @updatedAt
   @@index([empresaId, hostId])
+}
+
+model DiagnosticEvent {
+  id String @id @default(uuid())
+  empresaId Int
+  maquinaId Int?
+  usuarioId Int?
+  codigo String
+  nivel String
+  origem String
+  eventoCliente String?
+  criadoEm DateTime @default(now())
+  empresa Empresa @relation(fields:[empresaId],references:[id],onDelete:Cascade)
+  maquina Maquina? @relation(fields:[maquinaId],references:[id],onDelete:SetNull)
+  usuario Usuario? @relation(fields:[usuarioId],references:[id],onDelete:SetNull)
+  @@index([empresaId,criadoEm])
+  @@index([maquinaId,criadoEm])
+  @@unique([empresaId,eventoCliente])
 }

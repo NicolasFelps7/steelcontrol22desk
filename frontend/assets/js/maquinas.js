@@ -1999,7 +1999,7 @@ function criarCardMaquina(
               ${textoMaquinas("editar", "Editar")}
             </button>
 
-            <button type="button" class="machine-connect-btn"><i class="fa-solid fa-plug"></i> Conectar</button>
+            <button type="button" class="machine-connect-btn" ${maquina.modoSimulacao ? 'disabled title="A simulação funciona no sistema, sem Edge."' : ''}><i class="fa-solid fa-plug"></i> ${maquina.modoSimulacao ? 'Simulação' : 'Conectar no Edge'}</button>
 
 
             <button
@@ -2056,7 +2056,7 @@ function criarCardMaquina(
 
 
   article.querySelector(".machine-connect-btn")?.addEventListener("click", event => {
-    event.preventDefault(); event.stopPropagation(); window.abrirConexaoMaquina(maquina);
+    event.preventDefault(); event.stopPropagation(); window.abrirSteelControlEdge(maquina);
   });
 
   const botaoChave =
@@ -2973,8 +2973,8 @@ formMaquina
         mensagemMaquina.className =
           "mensagem-maquina sucesso";
 
-        if (dados.deviceKey && dados.maquina?.id) {
-          window.abrirConexaoMaquina(dados.maquina);
+        if (!editando && dados.maquina?.id && dados.maquina.modoSimulacao === false) {
+          window.abrirSteelControlEdge(dados.maquina, { automatic: true });
         }
 
         const maquinaAlteradaId = Number(dados.maquina?.id || maquinaEditandoId || 0);
@@ -3143,7 +3143,6 @@ async function sair(confirmar = true) {
 
   }
 
-  await window.SteelControlBrowserBridge?.close();
   await window.encerrarSessaoServidor?.();
 
   localStorage.removeItem(

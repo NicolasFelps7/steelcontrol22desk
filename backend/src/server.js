@@ -3,9 +3,11 @@ import { prisma } from "./lib/prisma.js";
 import { env } from "./config/env.js";
 import { startDeviceDiscovery, stopDeviceDiscovery } from "./lib/deviceDiscovery.js";
 import { requireRedis } from "./lib/redisStore.js";
+import { startDiagnosticMonitor } from "./lib/diagnostics.js";
 
 let server;
 let encerrando = false;
+let stopDiagnosticMonitor=()=>{};
 
 async function encerrar(
   sinal
@@ -23,6 +25,7 @@ async function encerrar(
   const finalizar =
     async () => {
       stopDeviceDiscovery();
+      stopDiagnosticMonitor();
 
       await prisma
         .$disconnect()
@@ -74,6 +77,7 @@ async function iniciar() {
           );
 
           startDeviceDiscovery();
+          stopDiagnosticMonitor=startDiagnosticMonitor();
         }
       );
   } catch (erro) {

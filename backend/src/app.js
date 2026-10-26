@@ -11,6 +11,7 @@ import { requestMonitoring, prometheusMetrics } from "./lib/monitoring.js";
 import { redisHealth } from "./lib/redisStore.js";
 
 import { connectionRoutes } from "./modules/connections/connection.routes.js";
+import { diagnosticRoutes } from "./modules/connections/diagnostic.routes.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { machineRoutes } from "./modules/machines/machine.routes.js";
 import { maintenanceRoutes } from "./modules/maintenance/maintenance.routes.js";
@@ -289,6 +290,7 @@ app.use(
 );
 
 app.use("/conexoes", connectionRoutes);
+app.use("/diagnostico", diagnosticRoutes);
 
 app.use(
   "/descoberta",

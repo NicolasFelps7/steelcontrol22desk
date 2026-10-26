@@ -14,6 +14,7 @@ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listeni
 const base=`http://127.0.0.1:${server.address().port}/conexoes`;
 after(async()=>{await new Promise(r=>server.close(r));await prisma.$disconnect();});
 function auth(cargo='ADMINISTRADOR'){
+ patch(prisma.diagnosticEvent,'create',async()=>({id:'diagnostic-test'}));
  patch(prisma.usuario,'findUnique',async()=>({id:7,empresaId:3,nome:'Teste',email:'unit@example.test',ativo:true,emailVerificadoEm:new Date(),cargo,tokenVersion:0,statusVinculo:'APROVADO',empresa:{status:'ATIVA'}}));
  patch(prisma.auditLog,'create',async()=>({id:1}));
  return {authorization:'Bearer '+jwt.sign({usuarioId:7,tokenVersion:0},process.env.JWT_SECRET)};
@@ -74,11 +75,9 @@ test('sincronização ignora empresa forjada e usa apenas empresa do host autent
  const r=await call('/computador/sincronizar',{method:'POST',headers:{'x-connection-token':'t'.repeat(40)},body:{empresaId:99,portas:[]}});
  assert.equal(r.status,200);assert.equal(r.data.vinculado,true);
 });
-test('sessão de navegador exige administrador e recebe empresa do usuário, sem confiar no body',async()=>{
-  const headers=auth();let saved;
-  patch(prisma.connectionHost,'create',async q=>{saved=q.data;return {id:'browser',pairingAte:q.data.pairingAte};});
-  const r=await call('/navegador/iniciar',{method:'POST',headers,body:{empresaId:999}});
-  assert.equal(r.status,201);assert.equal(saved.tipo,'NAVEGADOR');assert.equal(saved.empresaId,3);assert.equal(saved.tokenHash,digest(r.data.token));assert.equal(r.data.empresaId,3);
+test('ponte de navegador retirada não pode ser criada novamente',async()=>{
+  const headers=auth();patch(prisma.connectionHost,'create',async()=>assert.fail('Não deve criar host de navegador'));
+  const r=await call('/navegador/iniciar',{method:'POST',headers,body:{empresaId:999}});assert.equal(r.status,410);
 });
 test('funcionário não inicia ponte USB no navegador',async()=>{
   assert.equal((await call('/navegador/iniciar',{method:'POST',headers:auth('OPERADOR'),body:{}})).status,403);
@@ -87,8 +86,8 @@ test('sessão de navegador expirada é recusada mesmo vinculada a empresa',async
   patch(prisma.connectionHost,'findUnique',async()=>({id:'h',empresaId:3,tipo:'NAVEGADOR',pairingAte:new Date(0)}));
   assert.equal((await call('/computador/sincronizar',{method:'POST',headers:{'x-connection-token':'x'.repeat(40)},body:{}})).status,401);
 });
-test('porta de navegador válida e mapeamentos rejeitam caminhos de protótipo',()=>{
-  assert.equal(validateConnection({parametros:{serialPort:'browser-12345678-1234-1234-1234-123456789abc'}}).driver,'AUTO');
+test('porta de navegador retirada e mapeamentos inseguros são recusados',()=>{
+  assert.throws(()=>validateConnection({parametros:{serialPort:'browser-12345678-1234-1234-1234-123456789abc'}}));
   assert.throws(()=>validateConnection({parametros:{fieldMap:{temperatura:'constructor.prototype'}}}));
   assert.throws(()=>validateConnection({parametros:{commandMap:{IHM_START:{arbitrary:'object'}}}}));
 });

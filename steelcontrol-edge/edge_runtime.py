@@ -15,6 +15,7 @@ COMMAND_POLL_SECONDS = 0.01
 class MachineRuntime:
     def __init__(self, profile:MachineProfile, log:Callable[[str,str],None], status:Callable[[str,str,dict],None]):
         self.profile=profile; self.log_cb=log; self.status_cb=status; self.stop_event=threading.Event(); self.thread=None; self.adapter=None
+        self.command_results={}
     def log(self,msg): self.log_cb(self.profile.id,msg)
     def status(self,state,**extra): self.status_cb(self.profile.id,state,extra)
     def start(self):
@@ -85,13 +86,26 @@ class MachineRuntime:
                         cid=cmd.get('id'); name=str(cmd.get('comando') or ''); payload=cmd.get('payload') or {}
                         # STOP sempre pode ser aceito quando o driver o implementa; demais comandos exigem liberação explícita.
                         emergency=name in {'DOBOT_STOP','PARAR_SEGURANCA','IHM_STOP'}
-                        if self._expired(payload) and not emergency:
-                            self.log(f"Comando expirado recusado pelo Edge: {name}"); c.confirm(cid,'FALHOU')
+                        if cid in self.command_results:
+                            c.confirm(cid,self.command_results[cid])
+                        elif int(cmd.get('tentativaEntrega') or 0)>1 and not emergency:
+                            self.command_results[cid]='FALHOU';c.confirm(cid,'FALHOU');self.log('Comando reentregue recusado para evitar repetição física.')
+                        elif self._expired(payload) and not emergency:
+                            self.command_results[cid]='FALHOU';self.log(f"Comando expirado recusado pelo Edge: {name}"); c.confirm(cid,'FALHOU')
                         elif not commands_allowed and not emergency:
-                            self.log(f"Comando BLOQUEADO por política local: {name}"); c.confirm(cid,'FALHOU')
+                            self.command_results[cid]='FALHOU';self.log(f"Comando BLOQUEADO por política local: {name}"); c.confirm(cid,'FALHOU')
                         else:
-                            try:self.adapter.execute_command(name,payload); c.confirm(cid,'CONCLUIDO'); command_executed=True; self.log(f"Comando concluído: {name}")
-                            except Exception as e:c.confirm(cid,'FALHOU'); self.log(f"Comando falhou: {name} | {e}")
+                            try:
+                                if driver in {'SERIAL_JSON','USB_SERIAL'}:self.adapter.execute_command(name,payload,command_id=cid)
+                                else:self.adapter.execute_command(name,payload)
+                            except Exception as e:
+                                self.command_results[cid]='FALHOU';self.log(f"Comando falhou: {name} | {e}")
+                            else:
+                                self.command_results[cid]='CONCLUIDO';command_executed=True;self.log(f"Comando concluído: {name}")
+                            # Guarda o resultado antes da chamada HTTP. Uma perda de ACK
+                            # de rede nunca deve repetir um movimento já executado.
+                            c.confirm(cid,self.command_results[cid])
+                        while len(self.command_results)>1000:self.command_results.pop(next(iter(self.command_results)))
                     # A leitura periódica continua respeitando o intervalo configurado,
                     # A espera no servidor acorda assim que um comando entra na fila.
                     # Após executar, publicamos o novo estado imediatamente.

@@ -3,9 +3,11 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, dialog, session } = require('el
 const path = require('node:path');
 const fs = require('node:fs');
 const { WorkerClient } = require('./worker-client.cjs');
-const { SERVER_URL, trustedRemote } = require('./security.cjs');
+const { SERVER_URL, trustedRemote, parseEdgeLink, trustedRemoteFrame } = require('./security.cjs');
 app.setName('SteelControl');
-let mainWindow, tray, worker;
+let mainWindow, edgeWindow, tray, worker;
+let ready=false, pendingLink=process.argv.map(parseEdgeLink).find(Boolean)||null;
+let edgeMachineId=null;
 let quitting = false, shutdownStarted = false;
 let workerState = { running: false, message: 'Iniciando conexões…' };
 let settings = { autoStart: true };
@@ -13,14 +15,22 @@ const loginOptions = () => ({ path: process.execPath, args: ['--background'] });
 
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => openSystem());
+  app.on('second-instance', (_event,argv) => {
+    const link=argv.map(parseEdgeLink).find(Boolean);
+    if(link){pendingLink=link;if(ready){pendingLink=null;openConnections(link.machineId);}}
+    else if(ready)openConnections();
+  });
   app.whenReady().then(start).catch(() => {
     dialog.showErrorBox('SteelControl', 'Não foi possível iniciar o aplicativo. Reinstale o SteelControl Desktop.');
     app.exit(1);
   });
 }
+app.on('open-url',(event,value)=>{
+  event.preventDefault();const link=parseEdgeLink(value);if(!link)return;
+  pendingLink=link;if(ready){pendingLink=null;openConnections(link.machineId);}
+});
 app.on('window-all-closed', () => { /* O ícone mantém o Edge ativo. */ });
-app.on('activate', () => openSystem());
+app.on('activate', () => {if(ready)openConnections();else pendingLink={machineId:null};});
 app.on('before-quit', event => {
   if (quitting) return;
   event.preventDefault();
@@ -43,7 +53,7 @@ function autoStart(enabled) {
 
 function securedWindow(options) {
   const win = new BrowserWindow({
-    backgroundColor: '#0c131b', icon: path.join(__dirname, 'assets', 'steelcontrol.png'),
+    backgroundColor: '#f5f3ed', icon: path.join(__dirname, 'assets', 'steelcontrol.png'),
     ...options,
     webPreferences: {
       nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
@@ -80,12 +90,30 @@ function openSystem(target) {
   }
   mainWindow.show(); mainWindow.focus();
 }
-function openConnections() {
-  openSystem(SERVER_URL + '/app/maquinas?conexoes=1');
+function edgeDestination(){
+  return SERVER_URL+'/app/maquinas?edge=1'+(edgeMachineId?'&maquinaId='+edgeMachineId:'');
+}
+function openConnections(machineId=null) {
+  edgeMachineId=Number.isInteger(machineId)&&machineId>0&&machineId<=2147483647?machineId:null;
+  if(!edgeWindow||edgeWindow.isDestroyed()){
+    edgeWindow=securedWindow({width:1140,height:900,minWidth:900,minHeight:680,title:'SteelControl Edge',autoHideMenuBar:true});
+    edgeWindow.webContents.on('page-title-updated',event=>{event.preventDefault();edgeWindow?.setTitle('SteelControl Edge');});
+    edgeWindow.webContents.on('did-finish-load',()=>{
+      if(!edgeWindow||edgeWindow.isDestroyed())return;
+      const url=new URL(edgeWindow.webContents.getURL());
+      // O primeiro login usa a sessão normal do sistema. Retoma a máquina depois dele.
+      if(url.origin===new URL(SERVER_URL).origin&&url.pathname==='/app/maquinas'&&url.searchParams.get('edge')!=='1')edgeWindow.loadURL(edgeDestination()).catch(()=>{});
+    });
+  }
+  edgeWindow.loadURL(edgeDestination()).catch(error=>{
+    if(error.code!=='ERR_ABORTED')dialog.showMessageBox(edgeWindow,{type:'warning',title:'SteelControl Edge',message:'Não foi possível carregar a configuração. Confira a internet e abra o Edge novamente pelo ícone próximo ao relógio.'});
+  });
+  if(edgeWindow.isMinimized())edgeWindow.restore();edgeWindow.show();edgeWindow.focus();
 }
 
 async function start() {
   app.setAppUserModelId('br.com.steelcontrol.desktop');
+  if(app.isPackaged)app.setAsDefaultProtocolClient('steelcontrol');
   try {
     const saved = JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'desktop-settings.json'), 'utf8'));
     settings.autoStart = saved.autoStart !== false;
@@ -113,27 +141,34 @@ async function start() {
   });
   worker.on('state', state => { workerState = state; tray?.setToolTip('SteelControl — ' + state.message); });
   ipcMain.handle('computer:pair', async event => {
-    if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame || !trustedRemote(event.senderFrame.url)) throw new Error('Origem inválida.');
+    if(!trustedRemoteFrame(event,[mainWindow,edgeWindow]))throw new Error('Origem inválida.');
     return worker.request('pair');
+  });
+  ipcMain.handle('computer:open-edge',(event,machineId)=>{
+    if(!trustedRemoteFrame(event,[mainWindow,edgeWindow]))throw new Error('Origem inválida.');
+    if(machineId!==null&&machineId!==undefined&&(!Number.isInteger(machineId)||machineId<=0||machineId>2147483647))throw new Error('Máquina inválida.');
+    openConnections(machineId);return {aberto:true};
   });
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Sistema', submenu: [
       { label: 'Abrir SteelControl', click: openSystem },
       { label: 'Iniciar com o Windows', type: 'checkbox', checked: settings.autoStart, enabled: app.isPackaged && process.platform === 'win32', click: item => { settings.autoStart = autoStart(item.checked); saveSettings(); } },
-      { label: 'Recarregar', accelerator: 'CmdOrCtrl+R', click: () => mainWindow?.reload() },
+      { label: 'Recarregar', accelerator: 'CmdOrCtrl+R', click: () => (BrowserWindow.getFocusedWindow()||edgeWindow||mainWindow)?.reload() },
       { type: 'separator' }, { label: 'Sair e desconectar máquinas', click: () => app.quit() }
     ] },
-    { label: 'Máquinas', submenu: [{ label: 'Conectar máquina / Gerenciar conexões', accelerator: 'CmdOrCtrl+Shift+M', click: openConnections }] },
+    { label: 'Máquinas', submenu: [{ label: 'Abrir SteelControl Edge', accelerator: 'CmdOrCtrl+Shift+M', click: ()=>openConnections() }] },
     { label: 'Visualizar', submenu: [{ role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'togglefullscreen' }] }
   ]));
   tray = new Tray(path.join(__dirname, 'assets', 'steelcontrol.png'));
   tray.setToolTip('SteelControl');
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Abrir SteelControl', click: openSystem },
-    { label: 'Conectar máquina / Conexões', click: openConnections },
+    { label: 'Abrir SteelControl Edge', click: ()=>openConnections() },
     { type: 'separator' }, { label: 'Sair e desconectar máquinas', click: () => app.quit() }
   ]));
-  tray.on('double-click', openSystem);
+  tray.on('double-click', ()=>openConnections());
   worker.start();
-  if (!process.argv.includes('--background')) openSystem();
+  ready=true;
+  if(pendingLink){const link=pendingLink;pendingLink=null;openConnections(link.machineId);}
+  else if (!process.argv.includes('--background')) openConnections();
 }

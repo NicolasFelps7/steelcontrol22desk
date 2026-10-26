@@ -1078,7 +1078,7 @@ export async function criarComandoIhm(req, res, next) {
     }
 
     operacoes.push(
-      prisma.comandoMaquina.create({ data: { maquinaId: id, comando, payload } }),
+      prisma.comandoMaquina.create({ data: { maquinaId: id, solicitanteId:req.auth.usuarioId, comando, payload } }),
       prisma.log.create({ data: { maquinaId: id, mensagem: `IHM: ${comando} solicitado por ${req.auth.nome || req.auth.email}.` } })
     );
 
@@ -1170,7 +1170,7 @@ export async function criarComandoDobot(req, res, next) {
       }));
     }
     operacoes.push(prisma.comandoMaquina.create({
-      data: { maquinaId: id, comando, payload }
+      data: { maquinaId: id, solicitanteId:req.auth.usuarioId, comando, payload }
     }));
     const resultados = await prisma.$transaction(operacoes);
     const criado = resultados.at(-1);
@@ -1469,6 +1469,7 @@ export async function controlarAutomaticoDobot(req, res, next) {
           data: {
             maquinaId: id,
             comando: "DOBOT_STOP",
+            solicitanteId:req.auth.usuarioId,
             payload: {
               ...validarPayloadDobot("DOBOT_STOP", {}),
               origem: "STEELCONTROL_AUTOMATICO",
@@ -1556,7 +1557,7 @@ export async function criarComandoImpressora3D(req, res, next) {
     const payload = req.body?.payload && typeof req.body.payload === "object" && !Array.isArray(req.body.payload)
       ? JSON.parse(JSON.stringify(req.body.payload))
       : {};
-    const criado = await prisma.comandoMaquina.create({ data: { maquinaId: id, comando, payload } });
+    const criado = await prisma.comandoMaquina.create({ data: { maquinaId: id, solicitanteId:req.auth.usuarioId, comando, payload } });
     await prisma.log.create({ data: { maquinaId: id, mensagem: `Impressora 3D: ${comando} solicitado por ${req.auth.nome || req.auth.email}.` } });
     await registrarAuditoria({ req, acao: "COMANDO_IMPRESSORA_3D", entidade: "MAQUINA", entidadeId: id, detalhes: { comando } });
     publicarEventoMaquina(id, "comando", { id: criado.id, comando, status: criado.status });
@@ -1729,6 +1730,7 @@ export async function liberarSeguranca(req, res, next) {
           data: {
             maquinaId: id,
             comando: "LIBERAR_OPERACAO",
+            solicitanteId:req.auth.usuarioId,
             payload: { autorizadoPor: req.auth.nome }
           }
         })

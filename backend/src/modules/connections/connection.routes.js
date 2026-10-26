@@ -8,6 +8,7 @@ import { registrarAuditoria } from '../../lib/audit.js';
 import { gerarDeviceKey, hashDeviceKey, deviceKeyHint } from '../../lib/deviceSecurity.js';
 import { digest, online, seal, unseal, validateConnection } from './connectionSecurity.js';
 import { adapterCatalog, connectionCapabilities } from './adapterCatalog.js';
+import { transitionConnection,recordDiagnostic } from '../../lib/diagnostics.js';
 
 export const connectionRoutes = Router();
 const admin = requireRoles('ADMINISTRADOR');
@@ -34,7 +35,7 @@ async function hostAuth(req,res,next) {
     if(token.length<32)return fail(res,401,'Conexão local não autorizada.');
     const host=await prisma.connectionHost.findUnique({where:{tokenHash:digest(token)}});
     if(!host||host.revogadoEm)return fail(res,401,'Conexão local revogada ou inválida.');
-    if(host.tipo==='NAVEGADOR'&&new Date(host.pairingAte)<new Date())return fail(res,401,'A sessão de conexão do navegador expirou. Autorize a porta novamente.');
+    if(host.tipo==='NAVEGADOR')return fail(res,401,'Conexão pelo navegador desativada. Use o SteelControl Edge.');
     if(!host.empresaId&&new Date(host.pairingAte)<new Date())return fail(res,401,'Vínculo expirado.');
     if(host.empresaId){
       const company=await prisma.empresa.findUnique({where:{id:host.empresaId},select:{status:true}});
@@ -55,6 +56,7 @@ connectionRoutes.post('/computador/sincronizar',hostAuth,run(async(req,res)=>{
     if(!['ONLINE','ERROR','STOPPED','CONNECTING'].includes(r.estado))continue;
     const link=links.find(x=>x.id===r.id&&x.versao===Number(r.versao));
     if(!link)continue;
+    await transitionConnection(link,r.estado);
     await prisma.machineConnection.updateMany({where:{id:link.id,hostId:host.id,versao:link.versao},data:{estado:r.estado,...(r.salvo===true?{segredo:null}:{})}});
   }
   const result=[];
@@ -68,13 +70,7 @@ connectionRoutes.post('/computador/sincronizar',hostAuth,run(async(req,res)=>{
 }));
 connectionRoutes.use(authRequired);
 connectionRoutes.get('/adaptadores', (req,res)=>res.json({adaptadores:adapterCatalog,cadastroLivre:true}));
-connectionRoutes.get('/navegador/autorizacao',admin,(req,res)=>res.json({empresaId:req.auth.empresaId}));
-connectionRoutes.post('/navegador/iniciar',admin,criarRateLimit({janelaMs:60000,limite:6,prefixo:'browser-enroll'}),run(async(req,res)=>{
-  const token=crypto.randomBytes(32).toString('base64url');
-  const host=await prisma.connectionHost.create({data:{tipo:'NAVEGADOR',empresaId:req.auth.empresaId,nome:String(req.body?.nome||'Navegador USB').slice(0,100),tokenHash:digest(token),pairingAte:new Date(Date.now()+8*3600000)}});
-  await audit(req,'INICIAR_CONEXAO_NAVEGADOR',{computadorId:host.id});
-  res.status(201).json({id:host.id,token,empresaId:req.auth.empresaId,expiraEm:host.pairingAte});
-}));
+connectionRoutes.all('/navegador/:acao',admin,(req,res)=>fail(res,410,'A ponte do navegador foi desativada. Abra o SteelControl Edge para conectar a máquina.'));
 connectionRoutes.post('/vincular',admin,criarRateLimit({janelaMs:60000,limite:8,prefixo:'connection-claim'}),run(async(req,res)=>{
   const code=String(req.body?.codigo||'').replace(/\s|-/g,'').toUpperCase();
   if(!/^[A-F0-9]{16}$/.test(code))return fail(res,400,'Código de vínculo inválido.');
@@ -86,7 +82,7 @@ connectionRoutes.post('/vincular',admin,criarRateLimit({janelaMs:60000,limite:8,
   res.json({mensagem:'Computador vinculado à empresa.'});
 }));
 connectionRoutes.get('/computadores',run(async(req,res)=>{
-  const hosts=await prisma.connectionHost.findMany({where:{empresaId:req.auth.empresaId,revogadoEm:null,OR:[{tipo:'EDGE'},{tipo:'NAVEGADOR',pairingAte:{gt:new Date()}}]},select:{id:true,nome:true,tipo:true,vistoEm:true,portas:true}});
+  const hosts=await prisma.connectionHost.findMany({where:{empresaId:req.auth.empresaId,revogadoEm:null,tipo:'EDGE'},select:{id:true,nome:true,tipo:true,vistoEm:true,portas:true}});
   res.json({computadores:hosts.map(h=>({...h,online:online(h.vistoEm)}))});
 }));
 connectionRoutes.delete('/computadores/:hostId',admin,run(async(req,res)=>{
@@ -98,7 +94,10 @@ connectionRoutes.delete('/computadores/:hostId',admin,run(async(req,res)=>{
     for(const link of links){
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${link.maquinaId})`;
       const current=await tx.machineConnection.findFirst({where:{id:link.id,hostId:host.id,empresaId:req.auth.empresaId}});
-      if(current)await tx.maquina.updateMany({where:{id:link.maquinaId,empresaId:req.auth.empresaId},data:{deviceKeyHash:null,deviceKeyHint:null}});
+      if(current){
+        await tx.maquina.updateMany({where:{id:link.maquinaId,empresaId:req.auth.empresaId},data:{deviceKeyHash:null,deviceKeyHint:null}});
+        await recordDiagnostic({empresaId:req.auth.empresaId,maquinaId:link.maquinaId,usuarioId:req.auth.usuarioId,codigo:'CONEXAO_ENCERRADA',origem:'SISTEMA'},tx);
+      }
     }
     await tx.connectionHost.update({where:{id:host.id},data:{revogadoEm:new Date()}});
     await tx.machineConnection.updateMany({where:{hostId:host.id},data:{ativa:false,segredo:null,comandos:false,estado:'STOPPED'}});
@@ -122,7 +121,7 @@ connectionRoutes.put('/maquinas/:id',admin,run(async(req,res)=>{
   const host=await prisma.connectionHost.findFirst({where:{id:hostId,empresaId:req.auth.empresaId,revogadoEm:null}});
   if(!host)return fail(res,404,'Computador não encontrado nesta empresa.');
   if(!online(host.vistoEm))return fail(res,409,'Abra o SteelControl no computador conectado à máquina antes de continuar.');
-  if(host.tipo==='NAVEGADOR'&&(cfg.driver!=='SERIAL_JSON'||new Date(host.pairingAte)<new Date()))return fail(res,409,'Este navegador oferece USB / serial JSON. Outros protocolos precisam de um adaptador compatível.');
+  if(host.tipo==='NAVEGADOR')return fail(res,409,'Use um computador com SteelControl Edge. A ponte do navegador foi desativada.');
   if(['DOBOT_MAGICIAN','SERIAL_JSON','MODBUS_RTU'].includes(cfg.driver)&&(!cfg.parametros.serialPort||cfg.parametros.serialPort==='AUTO'))return fail(res,400,'Selecione a porta USB / serial da máquina.');
   if(['MODBUS_TCP','TCP_IP','MQTT'].includes(cfg.driver)&&!String(cfg.parametros.host||'').trim())return fail(res,400,'Informe o IP ou host da máquina.');
   if(cfg.parametros.serialPort&&cfg.parametros.serialPort!=='AUTO'&&!(Array.isArray(host.portas)&&host.portas.some(p=>p.porta===cfg.parametros.serialPort)))return fail(res,409,'Essa porta não está disponível no computador selecionado.');
@@ -151,6 +150,7 @@ connectionRoutes.put('/maquinas/:id',admin,run(async(req,res)=>{
   });
   if(!changed)return fail(res,404,'Máquina não encontrada.');
   await audit(req,'CONFIGURAR_CONEXAO',{maquinaId:id,computadorId:hostId,driver:cfg.driver,comandos:cfg.comandos});
+  await recordDiagnostic({empresaId:req.auth.empresaId,maquinaId:id,usuarioId:req.auth.usuarioId,codigo:'CONEXAO_AGUARDANDO',origem:'SISTEMA'});
   res.json({mensagem:'Configuração enviada. Aguardando confirmação da máquina.'});
 }));
 connectionRoutes.delete('/maquinas/:id',admin,run(async(req,res)=>{
@@ -160,5 +160,7 @@ connectionRoutes.delete('/maquinas/:id',admin,run(async(req,res)=>{
     await tx.machineConnection.updateMany({where:{maquinaId:id,empresaId:req.auth.empresaId},data:{ativa:false,comandos:false,estado:'STOPPED',segredo:null,versao:{increment:1}}});
     await tx.maquina.updateMany({where:{id,empresaId:req.auth.empresaId},data:{deviceKeyHash:null,deviceKeyHint:null}});
   });
+  const owned=await prisma.maquina.findFirst({where:{id,empresaId:req.auth.empresaId},select:{id:true}});
+  if(owned)await recordDiagnostic({empresaId:req.auth.empresaId,maquinaId:id,usuarioId:req.auth.usuarioId,codigo:'CONEXAO_ENCERRADA',origem:'SISTEMA'});
   await audit(req,'DESCONECTAR_MAQUINA',{maquinaId:id});res.json({mensagem:'Conexão desativada. O histórico foi preservado.'});
 }));
