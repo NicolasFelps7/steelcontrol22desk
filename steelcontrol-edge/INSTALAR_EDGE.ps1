@@ -54,11 +54,22 @@ if ($IsAdmin) {
   Write-Host 'Execute o instalador como Administrador se o Windows bloquear o TCP/4211 do Edge.' -ForegroundColor Yellow
 }
 
-Write-Host '[5/5] Validando instalacao...' -ForegroundColor Yellow
+Write-Host '[5/6] Registrando protocolo steelcontrol:// para abrir o Edge...' -ForegroundColor Yellow
+$ProtocolKey = 'HKCU:\Software\Classes\steelcontrol'
+$ProtocolCommand = Join-Path $EdgeDir 'ABRIR_STEELCONTROL_EDGE.ps1'
+New-Item -Path $ProtocolKey -Force | Out-Null
+Set-Item -Path $ProtocolKey -Value 'URL:SteelControl Edge Protocol'
+New-ItemProperty -Path $ProtocolKey -Name 'URL Protocol' -Value '' -PropertyType String -Force | Out-Null
+New-Item -Path (Join-Path $ProtocolKey 'shell\open\command') -Force | Out-Null
+$Command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + $ProtocolCommand + '" "%1"'
+Set-Item -Path (Join-Path $ProtocolKey 'shell\open\command') -Value $Command
+
+Write-Host '[6/6] Validando instalacao...' -ForegroundColor Yellow
 & $Py -c "import requests, serial, tkinter, pymodbus, paho.mqtt.client, asyncua; print('Dependencias Edge 2.1 OK')"
 
 Write-Host ''
 Write-Host 'SteelControl Edge 2.1 instalado com sucesso.' -ForegroundColor Green
+Write-Host 'Protocolo steelcontrol:// registrado para este usuario.' -ForegroundColor Green
 Write-Host "Atalho: $ShortcutPath" -ForegroundColor Gray
 Write-Host ''
 Write-Host 'Abrindo SteelControl Edge...' -ForegroundColor Cyan
