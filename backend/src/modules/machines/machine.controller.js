@@ -600,28 +600,45 @@ export async function excluir(req, res, next) {
     }
 
     const id = Number(req.params.id);
-    const atual = await prisma.maquina.findFirst({
-      where: whereEmpresa(req, id)
+    if (!Number.isInteger(id) || id <= 0 || id > 2147483647) {
+      return res.status(400).json({ mensagem: "Identificador de máquina inválido." });
+    }
+    const atual = await prisma.$transaction(async tx => {
+      // Mesmo lock da configuração Edge: excluir não pode deixar uma conexão
+      // nova ocupando a COM de uma máquina que acabou de ser desativada.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${id})`;
+      const maquina = await tx.maquina.findFirst({ where: whereEmpresa(req, id) });
+      if (!maquina) return null;
+      await tx.machineConnection.updateMany({
+        where: { maquinaId: id, empresaId: req.auth.empresaId },
+        data: { ativa: false, comandos: false, segredo: null, estado: "STOPPED", versao: { increment: 1 } }
+      });
+      await tx.comandoMaquina.updateMany({
+        where: { maquinaId: id, status: { in: ["PENDENTE", "ENTREGUE"] } },
+        data: { status: "CANCELADO", concluidoEm: new Date() }
+      });
+      await tx.maquina.update({
+        where: { id },
+        data: {
+          ativo: false,
+          excluidaEm: new Date(),
+          excluidaPorId: req.auth.usuarioId,
+          status: "Desativada",
+          deviceKeyHash: null,
+          deviceKeyHint: null,
+          logs: {
+            create: {
+              mensagem: "Máquina desativada por administrador. Histórico preservado e conexão encerrada."
+            }
+          }
+        }
+      });
+      return maquina;
     });
 
     if (!atual) {
       return res.status(404).json({ mensagem: "Máquina não encontrada." });
     }
-
-    await prisma.maquina.update({
-      where: { id },
-      data: {
-        ativo: false,
-        excluidaEm: new Date(),
-        excluidaPorId: req.auth.usuarioId,
-        status: "Desativada",
-        logs: {
-          create: {
-            mensagem: "Máquina desativada por administrador. Histórico preservado."
-          }
-        }
-      }
-    });
 
     await registrarAuditoria({
       req,

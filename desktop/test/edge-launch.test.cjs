@@ -17,7 +17,7 @@ async function fixture(args=[]){
  class Worker extends EventEmitter{start(){}request(){return Promise.resolve({codigo:'temporary-pairing-code'});}stop(){return Promise.resolve();}}
  class Tray{setToolTip(){}setContextMenu(){}on(){}}
  const electron={app,BrowserWindow:Window,Menu:{buildFromTemplate:x=>x,setApplicationMenu(){}},Tray,ipcMain:{handle:(key,fn)=>handlers.set(key,fn)},dialog:{showErrorBox(){assert.fail('Falha inesperada');},showMessageBox(){}},session:{fromPartition:()=>({setPermissionRequestHandler(){},setPermissionCheckHandler(){}})}};
- const runtimeRequire=name=>name==='electron'?electron:name==='./worker-client.cjs'?{WorkerClient:Worker}:name==='./security.cjs'?require('../security.cjs'):name==='node:fs'?{readFileSync(){throw Error('first start');}}:require(name);
+ const runtimeRequire=name=>name==='electron'?electron:name==='./worker-client.cjs'?{WorkerClient:Worker}:name==='./security.cjs'?require('../security.cjs'):name==='./python-runtime.cjs'?require('../python-runtime.cjs'):name==='node:fs'?{readFileSync(){throw Error('first start');}}:require(name);
  vm.runInNewContext(source,{require:runtimeRequire,__dirname:path.resolve(__dirname,'..'),process:{argv:['app.exe',...args],platform:'win32',execPath:'/app.exe',resourcesPath:'/resources',env:{}},URL,Promise,console});
  await new Promise(resolve=>setImmediate(resolve));return {app,windows,handlers};
 }

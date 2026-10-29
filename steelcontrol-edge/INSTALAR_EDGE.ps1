@@ -30,6 +30,7 @@ $Pip = Join-Path $Venv 'Scripts\pip.exe'
 Write-Host '[2/4] Instalando dependencias...' -ForegroundColor Yellow
 & $Py -m pip install --upgrade pip
 & $Pip install -r $Req
+if ($LASTEXITCODE -ne 0) { throw 'Falha ao instalar as dependencias Python do Edge.' }
 
 Write-Host '[3/4] Criando atalho na Area de Trabalho...' -ForegroundColor Yellow
 $WshShell = New-Object -ComObject WScript.Shell
@@ -42,17 +43,12 @@ $Icon = Join-Path $EdgeDir 'assets\steel-icon.png'
 $Shortcut.Description = 'SteelControl Edge - Provisionamento de equipamentos industriais'
 $Shortcut.Save()
 
-Write-Host '[4/5] Configurando descoberta local...'
-$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if ($IsAdmin) {
-  try {
-    Get-NetFirewallRule -DisplayName 'SteelControl Edge Provisionamento' -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
-    New-NetFirewallRule -DisplayName 'SteelControl Edge Provisionamento' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 4211 | Out-Null
-    Write-Host 'Firewall TCP/4211 liberado para provisionamento Edge.' -ForegroundColor Green
-  } catch { Write-Host 'Nao foi possivel criar a regra de firewall automaticamente.' -ForegroundColor Yellow }
-} else {
-  Write-Host 'Execute o instalador como Administrador se o Windows bloquear o TCP/4211 do Edge.' -ForegroundColor Yellow
-}
+Write-Host '[4/6] Preparando Desktop com Edge integrado ao Railway...' -ForegroundColor Yellow
+$Npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
+if (-not $Npm) { throw 'Node.js/npm nao encontrado. Instale Node.js 22 LTS e tente novamente.' }
+& $Npm.Source --prefix (Join-Path $Root 'desktop') ci
+if ($LASTEXITCODE -ne 0) { throw 'Falha ao instalar o Desktop. Confira a internet e tente novamente.' }
+# O Edge integrado sincroniza por HTTPS de saida; nao precisa abrir TCP/4211.
 
 Write-Host '[5/6] Registrando protocolo steelcontrol:// para este usuario...' -ForegroundColor Yellow
 $Handler = Join-Path $EdgeDir 'steelcontrol-protocol-handler.ps1'

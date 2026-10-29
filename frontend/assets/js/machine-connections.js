@@ -71,8 +71,13 @@
         }
         say(current?`${states[current.estado]||'Estado indisponível'} · ${current.computador}`:hosts.length?'Selecione o computador e a comunicação da máquina.':'Vincule o computador conectado à máquina para continuar.');
       }else say(hosts.length?'Computadores vinculados: '+hosts.map(h=>`${h.nome} (${h.online?'online':'offline'})`).join(', '):'Vincule este computador para disponibilizar suas portas ao site e ao mobile.');
-      if(!window.steelControlComputer){dialog.querySelector('[data-pair]').hidden=true;}
-      if(!hosts.length)say('Abra o SteelControl Edge no computador conectado à máquina e entre nesta empresa. O Edge disponibilizará suas portas automaticamente.');
+      if(!window.steelControlComputer){
+        dialog.querySelector('[data-pair]').hidden=true;
+        dialog.querySelector('[data-manual]').hidden=false;
+      }
+      if(!hosts.length)say(window.steelControlComputer
+        ? 'Clique em Vincular este computador para disponibilizar as portas USB à sua empresa. Depois selecione a COM do equipamento e salve a conexão.'
+        : 'Abra o Edge integrado ao Desktop no PC conectado à máquina. Entre na mesma empresa e clique em Vincular este computador. As portas USB aparecerão aqui; a descoberta na rede local não alcança o Railway.');
     }
     async function operation(fn){if(busy)return;busy=true;dialog.querySelectorAll('button').forEach(b=>b.disabled=true);try{await fn();}catch(e){say(e.message,true);}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);}}
     async function bindEdge(){

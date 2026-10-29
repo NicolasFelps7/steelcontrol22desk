@@ -1,3 +1,19 @@
+# Edge integrado ao Railway — atualização de 29/10/2026
+
+O atalho `INICIAR_STEELCONTROL_EDGE.bat` abre o Desktop com o worker de nuvem.
+Ele usa `.venv-edge` e compartilha as portas USB por HTTPS com o Railway.
+A interface antiga `python edge_app.py` é um fluxo legado para a rede local;
+ela não publica suas portas no Railway. Prefira o atalho ou `npm --prefix desktop start`.
+
+No primeiro uso, execute `INSTALAR_EDGE.ps1`. Depois entre na empresa no Edge,
+clique em **Vincular este computador**, selecione a máquina e a COM e salve.
+Use cadastro de equipamento real e driver Dobot Magician, baud 115200.
+O estado conectado exige a primeira telemetria; conectar não libera movimento.
+
+---
+
+## Documentação do fluxo legado local
+
 # SteelControl Edge 2.0
 
 Gateway multi-máquina do SteelControl. O cliente configura equipamentos sem abrir código, editar `.env` ou usar VS Code.

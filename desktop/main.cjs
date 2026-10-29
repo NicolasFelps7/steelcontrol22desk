@@ -3,6 +3,7 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, dialog, session } = require('el
 const path = require('node:path');
 const fs = require('node:fs');
 const { WorkerClient } = require('./worker-client.cjs');
+const { developmentPython } = require('./python-runtime.cjs');
 const { SERVER_URL, trustedRemote, parseEdgeLink, trustedRemoteFrame } = require('./security.cjs');
 app.setName('SteelControl');
 let mainWindow, edgeWindow, tray, worker;
@@ -133,7 +134,7 @@ async function start() {
     Boolean(wc) && trustedRemote(wc.getURL()) && trustedRemote(origin) && details.isMainFrame === true &&
     (permission === 'clipboard-sanitized-write' || (permission === 'media' && details.mediaType === 'video')));
   const command = app.isPackaged ? path.join(process.resourcesPath, 'edge', 'SteelControlEdge.exe') :
-    (process.env.STEELCONTROL_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'));
+    developmentPython(path.join(__dirname, '..'));
   const args = app.isPackaged ? [] : ['-u', path.join(__dirname, '..', 'steelcontrol-edge', 'desktop_worker.py')];
   worker = new WorkerClient(command, args, {
     cwd: app.isPackaged ? path.dirname(command) : path.join(__dirname, '..', 'steelcontrol-edge'),

@@ -35,6 +35,7 @@
     "node": ">=20 <23"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.13",
     "prisma": "6.12.0"
   },
   "overrides": {

@@ -172,7 +172,8 @@ model Maquina {
   comandos    ComandoMaquina[]
   diagnosticos DiagnosticEvent[]
 
-  @@unique([empresaId, codigo])
+  // Unicidade apenas para ativo=true: índice parcial na migration 20261029190000.
+  @@index([empresaId, codigo])
   @@index([empresaId])
   @@index([status])
   @@index([ativo])

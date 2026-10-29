@@ -2057,8 +2057,9 @@ function criarCardMaquina(
 
   article.querySelector(".machine-connect-btn")?.addEventListener("click", event => {
     event.preventDefault(); event.stopPropagation();
-    // Fluxo legado: configurar o Edge pela Device Key copiada, sem vínculo de computador.
-    renovarChaveMaquina(maquina);
+    window.abrirSteelControlEdge(maquina).catch(erro => {
+      window.alert(erro.message || "Não foi possível abrir o SteelControl Edge.");
+    });
   });
 
   const botaoChave =
