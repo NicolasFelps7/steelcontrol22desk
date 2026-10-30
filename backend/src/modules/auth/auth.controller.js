@@ -1,8 +1,11 @@
+import { requiresPrivilegedMfa } from "../../lib/mfaPolicy.js";
+import { takeSharedJson } from "../../lib/redisStore.js";
+import { revogarSessoesUsuario } from "../../lib/sessionEvents.js";
 import { garantirSufixoEmpresa } from "../../lib/employeeLogin.js";
 import { publicarEventoEmpresa } from "../../lib/realtime.js";
 import { organizationAccessError } from "../../lib/organizationPolicy.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { signSessionToken } from "../../lib/sessionToken.js";
 import { randomUUID, randomInt } from "node:crypto";
 
 import {
@@ -71,7 +74,7 @@ const ADMIN_MFA_CHALLENGES = new Map();
 async function salvarAdminMfa(id, desafio) {
   ADMIN_MFA_CHALLENGES.set(id, desafio);
   const salvo = await setSharedJson(`admin-mfa:${id}`, desafio, Math.max(1000, desafio.expiraEm - Date.now()));
-  if (env.level9 && !salvo) {
+  if ((env.level9 || String(process.env.REDIS_URL || "").trim()) && !salvo) {
     ADMIN_MFA_CHALLENGES.delete(id);
     const erro = new Error("MFA indisponível porque o armazenamento seguro não respondeu.");
     erro.statusCode = 503;
@@ -79,9 +82,13 @@ async function salvarAdminMfa(id, desafio) {
   }
 }
 
-async function obterAdminMfa(id) {
-  const compartilhado = await getSharedJson(`admin-mfa:${id}`);
-  return env.level9 ? compartilhado : compartilhado || ADMIN_MFA_CHALLENGES.get(id) || null;
+async function consumirAdminMfa(id) {
+  const local = ADMIN_MFA_CHALLENGES.get(id) || null;
+  ADMIN_MFA_CHALLENGES.delete(id);
+  if (!String(process.env.REDIS_URL || "").trim() && !env.level9) return local;
+  const shared = await takeSharedJson(`admin-mfa:${id}`);
+  if (!shared.available) throw Object.assign(new Error("MFA temporariamente indisponível."), { statusCode: 503 });
+  return shared.value;
 }
 
 async function removerAdminMfa(id) {
@@ -108,7 +115,7 @@ function limparFace2FAExpirados() {
 async function salvarFace2FA(id, desafio) {
   FACE_2FA_CHALLENGES.set(id, desafio);
   const salvo = await setSharedJson(`face-2fa:${id}`, desafio, Math.max(1000, desafio.expiraEm - Date.now()));
-  if (env.level9 && !salvo) {
+  if ((env.level9 || String(process.env.REDIS_URL || "").trim()) && !salvo) {
     FACE_2FA_CHALLENGES.delete(id);
     const erro = new Error("Segundo fator facial indisponível porque o armazenamento seguro não respondeu.");
     erro.statusCode = 503;
@@ -160,17 +167,13 @@ function cargoParaTela(cargo) {
 
 function criarToken(usuario, mfaVerified = false) {
 
-  return jwt.sign(
+  return signSessionToken(
     {
       usuarioId: usuario.id,
       empresaId: usuario.empresaId,
       cargo: usuario.cargo,
       tokenVersion: Number(usuario.tokenVersion || 0),
       mfaVerified
-    },
-    env.jwtSecret,
-    {
-      expiresIn: env.jwtExpiresIn
     }
   );
 }
@@ -186,9 +189,20 @@ function criarSessao(req, res, usuario, mfaVerified = false) {
     : { authMode: "secure-cookie" };
 }
 
-export function logout(req, res) {
-  clearSessionCookie(res);
-  return res.json({ mensagem: "Sessão encerrada com segurança." });
+export async function logout(req, res, next) {
+  try {
+    // Revoga também bearer copiado/mobile e cancela movimentos ainda na fila.
+    await prisma.$transaction([
+      prisma.usuario.update({ where: { id: req.auth.usuarioId }, data: { tokenVersion: { increment: 1 } } }),
+      prisma.comandoMaquina.updateMany({ where: {
+        solicitanteId: req.auth.usuarioId, status: { in: ["PENDENTE", "ENTREGUE"] },
+        comando: { notIn: ["DOBOT_STOP", "PARAR_SEGURANCA", "IHM_STOP", "PRINTER3D_CANCEL"] }
+      }, data: { status: "CANCELADO", concluidoEm: new Date() } })
+    ]);
+    clearSessionCookie(res);
+    revogarSessoesUsuario(req.auth.usuarioId, "Sessões encerradas pelo usuário.");
+    return res.json({ mensagem: "Sessões encerradas com segurança em todos os dispositivos." });
+  } catch (error) { next(error); }
 }
 
 export function sessionStatus(req, res) {
@@ -636,8 +650,8 @@ export async function requestCompanyRegistrationCode(
       !empresaNome ||
       !empresaCnpjInformado ||
       !adminNome ||
-      !email ||
-      !senha
+      typeof email !== "string" || !email.trim() || email.length > 254 ||
+      typeof senha !== "string" || !senha || senha.length > 1024
     ) {
       return res
         .status(400)
@@ -1582,6 +1596,7 @@ export async function completeCompanyRegistrationWithFace(
 
 
 function responderLogin(req, res, usuario, metodo) {
+  if (requiresPrivilegedMfa(usuario)) return iniciarMfa(req, res, usuario);
   req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
   const acesso = organizationAccessError(usuario);
   if (acesso) return res.status(403).json(acesso);
@@ -1647,8 +1662,8 @@ export async function login(
     } = req.body;
 
     if (
-      !email ||
-      !senha
+      typeof email !== "string" || !email.trim() || email.length > 254 ||
+      typeof senha !== "string" || !senha || senha.length > 1024
     ) {
 
       return res
@@ -1719,7 +1734,7 @@ export async function verifyAdminMfa(req, res, next) {
     limparAdminMfaExpirados();
     const challengeId = String(req.body?.challengeId || "").trim();
     const codigo = String(req.body?.codigo || "").replace(/\D/g, "").slice(0, 6);
-    const desafio = await obterAdminMfa(challengeId);
+    const desafio = await consumirAdminMfa(challengeId);
 
     if (!desafio || desafio.expiraEm <= Date.now() || codigo.length !== 6) {
       return res.status(401).json({

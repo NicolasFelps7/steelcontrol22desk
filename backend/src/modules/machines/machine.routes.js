@@ -1,4 +1,5 @@
 import { requireControlCredential } from "../../middlewares/controlAuthorization.js";
+import { criarRateLimit } from "../../middlewares/security.js";
 import { Router } from "express";
 import { authRequired } from "../../middlewares/auth.js";
 import {
@@ -28,6 +29,15 @@ import {
 export const machineRoutes = Router();
 
 machineRoutes.use(authRequired);
+const limiteComandos = criarRateLimit({ janelaMs: 1000, limite: 20, prefixo: "command" });
+// STOP continua disponível quando a cota de movimentos é excedida.
+machineRoutes.use((req, res, next) => {
+  if (req.method === "POST" && /\/(comandos|controle)$/.test(req.path) &&
+      !["DOBOT_STOP", "IHM_STOP", "PRINTER3D_CANCEL"].includes(req.body?.comando)) {
+    return limiteComandos(req, res, next);
+  }
+  next();
+});
 
 machineRoutes.get("/", listar);
 machineRoutes.get("/sync", sincronizar);

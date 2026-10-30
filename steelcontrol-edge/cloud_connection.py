@@ -7,6 +7,7 @@ import socket
 import threading
 from datetime import datetime, timezone
 import requests
+from transport_security import validate_server_url
 from edge_profiles import MachineProfile, EdgeStore, config_dir, save_store
 from secret_store import protect_text, unprotect_text
 
@@ -16,7 +17,7 @@ SERVER = 'https://web-production-6682df.up.railway.app'
 class CloudConnection:
     def __init__(self, worker, server=SERVER):
         self.worker = worker
-        self.server = server.rstrip('/')
+        self.server = validate_server_url(server)
         self.stop_event = threading.Event()
         self.lock = threading.RLock()
         self.path = config_dir() / 'computer-link.json'
@@ -25,6 +26,7 @@ class CloudConnection:
         self.claimed = False
         self.error = None
         self.session = requests.Session()
+        self.session.trust_env = False
         if self.path.exists():
             try:
                 saved = json.loads(self.path.read_text(encoding='utf8'))
@@ -36,6 +38,12 @@ class CloudConnection:
             for p in self.worker.store.profiles:
                 if p.id.startswith('cloud-'):
                     self.records[p.id[6:]] = {'profile': p, 'version': int(p.params.get('_connectionVersion') or 0)}
+
+    @staticmethod
+    def _check_response(response):
+        if 300 <= response.status_code < 400:
+            raise requests.RequestException('Redirecionamento recusado para proteger o vínculo do computador.')
+        response.raise_for_status()
 
     def _persist(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -54,8 +62,8 @@ class CloudConnection:
                 if expires <= datetime.now(timezone.utc):
                     self.state = {}
             if not self.state:
-                r = self.session.post(self.server + '/conexoes/computador/registrar', json={'nome': socket.gethostname()}, timeout=10)
-                r.raise_for_status()
+                r = self.session.post(self.server + '/conexoes/computador/registrar', json={'nome': socket.gethostname()}, timeout=10, allow_redirects=False)
+                self._check_response(r)
                 self.state = r.json()
                 self._persist()
             return {'id': self.state.get('id'), 'codigo': None if self.claimed else self.state.get('codigo'),
@@ -91,7 +99,7 @@ class CloudConnection:
                        for ident, rec in self.records.items()]
         response = self.session.post(self.server + '/conexoes/computador/sincronizar',
                                      headers={'X-Connection-Token': state['token']},
-                                     json={'portas': ports, 'estados': reports}, timeout=10)
+                                     json={'portas': ports, 'estados': reports}, timeout=10, allow_redirects=False)
         if response.status_code in (401, 403):
             # Revogação para imediatamente os perfis desta autorização.
             for rec in self.records.values():

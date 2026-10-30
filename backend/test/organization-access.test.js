@@ -9,6 +9,7 @@ Object.assign(process.env, {
   JWT_SECRET: "s".repeat(64), BREVO_API_KEY: "test-no-real-provider",
   BREVO_FROM_EMAIL: "sender@example.com", REDIS_URL: "", ADMIN_MFA_REQUIRED: "false"
 });
+const { signSessionToken } = await import("../src/lib/sessionToken.js");
 const { prisma } = await import("../src/lib/prisma.js");
 const { authRequired } = await import("../src/middlewares/auth.js");
 const { deviceRequired } = await import("../src/middlewares/deviceAuth.js");
@@ -42,7 +43,7 @@ async function call(fn, req = {}) {
   return { res, next };
 }
 function token(payload = {}) {
-  return jwt.sign({ usuarioId: 7, tokenVersion: 0, mfaVerified: true, ...payload }, process.env.JWT_SECRET);
+  return signSessionToken({ usuarioId: 7, tokenVersion: 0, mfaVerified: true, ...payload });
 }
 
 test("CNPJ, e-mail e cargo administrativo não autorizam empresa pendente", () => {
@@ -234,4 +235,20 @@ test("API facial recusa retorno ainda virado antes de comparar a identidade", as
   const image={buffer:Buffer.from([0xff,0xd8,0xff,0])};
   const {res}=await call(auth.loginFaceImage,{files:{imagem:[image],liveness:[image]}});
   assert.equal(res.statusCode,401); assert.equal(res.body.codigo,"FACE_FINAL_POSITION_INVALID");
+});
+
+test("MFA privilegiado é exigido novamente e um código não abre duas sessões concorrentes", async () => {
+  const { env } = await import("../src/config/env.js");
+  patch(env, "adminMfaRequired", true);
+  const code = await mockMailAndFace();
+  const account = user({ senhaHash: await bcrypt.hash("senha-teste-123", 4) });
+  patch(prisma.usuario, "findUnique", async () => account);
+  patch(prisma.usuario, "findFirst", async () => account);
+  patch(prisma.usuario, "update", async () => account);
+  const challenge = (await call(auth.login, { body: { email: account.email, senha: "senha-teste-123" } })).res;
+  assert.equal(challenge.statusCode, 202); assert.equal(challenge.body.token, undefined);
+  const attempts = await Promise.all([1, 2].map(() => call(auth.verifyAdminMfa, {
+    body: { challengeId: challenge.body.challengeId, codigo: code() }
+  })));
+  assert.deepEqual(attempts.map(item => item.res.statusCode).sort(), [200, 401]);
 });

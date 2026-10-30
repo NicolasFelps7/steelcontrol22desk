@@ -44,16 +44,21 @@ export function expiraEmComandoDobot(comando, agora = Date.now()) {
   return new Date(Number(agora) + ttl).toISOString();
 }
 
+const numeric = value => typeof value === "number" ? value : NaN;
+
 export function validarPayloadDobot(comando, payload = {}) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw Object.assign(new Error("Payload Dobot inválido."), { statusCode: 400 });
+  }
   if (comando === "DOBOT_ROTATE") {
-    const delta = Number(payload?.delta);
+    const delta = numeric(payload?.delta);
     if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 20) {
       const erro = new Error("Informe uma rotação entre -20° e 20° por comando.");
       erro.statusCode = 400;
       throw erro;
     }
 
-    const velocidade = Number(payload?.velocidade ?? 20);
+    const velocidade = numeric(payload?.velocidade ?? 20);
     if (
       !Number.isFinite(velocidade) ||
       velocidade < DOBOT_LIMITS.velocidade.min ||
@@ -72,7 +77,7 @@ export function validarPayloadDobot(comando, payload = {}) {
   const resultado = {};
 
   for (const campo of ["x", "y", "z", "r"]) {
-    const valor = Number(payload?.[campo]);
+    const valor = numeric(payload?.[campo]);
     const limite = DOBOT_LIMITS[campo];
     if (!Number.isFinite(valor)) {
       const erro = new Error(`Informe ${campo.toUpperCase()} para o movimento PTP.`);
@@ -102,7 +107,7 @@ export function validarPayloadDobot(comando, payload = {}) {
     throw erro;
   }
 
-  const velocidade = Number(payload?.velocidade ?? 30);
+  const velocidade = numeric(payload?.velocidade ?? 30);
   if (
     !Number.isFinite(velocidade) ||
     velocidade < DOBOT_LIMITS.velocidade.min ||

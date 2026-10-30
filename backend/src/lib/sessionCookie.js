@@ -54,7 +54,9 @@ export function clearSessionCookie(res) {
 
 export function sessionTokenFromCookie(req) {
   const cookies = parseCookies(req.headers.cookie);
-  return cookies[PROD_COOKIE] || cookies[DEV_COOKIE] || "";
+  return env.nodeEnv === "production"
+    ? cookies[PROD_COOKIE] || ""
+    : cookies[DEV_COOKIE] || "";
 }
 
 export function clientWantsBearer(req) {

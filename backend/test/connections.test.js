@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 Object.assign(process.env,{NODE_ENV:'development',SECURITY_PROFILE:'development',DATABASE_URL:'postgresql://test:test@127.0.0.1:5432/test',JWT_SECRET:'internal-tests-'.repeat(5),REDIS_URL:''});
+const { signSessionToken } = await import("../src/lib/sessionToken.js");
 const {prisma}=await import('../src/lib/prisma.js');
 const {connectionRoutes}=await import('../src/modules/connections/connection.routes.js');
 const {seal,unseal,digest,validateConnection}=await import('../src/modules/connections/connectionSecurity.js');
@@ -17,7 +18,7 @@ function auth(cargo='ADMINISTRADOR'){
  patch(prisma.diagnosticEvent,'create',async()=>({id:'diagnostic-test'}));
  patch(prisma.usuario,'findUnique',async()=>({id:7,empresaId:3,nome:'Teste',email:'unit@example.test',ativo:true,emailVerificadoEm:new Date(),cargo,tokenVersion:0,statusVinculo:'APROVADO',empresa:{status:'ATIVA'}}));
  patch(prisma.auditLog,'create',async()=>({id:1}));
- return {authorization:'Bearer '+jwt.sign({usuarioId:7,tokenVersion:0},process.env.JWT_SECRET)};
+ return {authorization:'Bearer '+signSessionToken({usuarioId:7,tokenVersion:0})};
 }
 async function call(path,{method='GET',body,headers={}}={}){const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json()};}
 test('credencial de provisionamento é cifrada e vinculada ao host/máquina/versão',()=>{

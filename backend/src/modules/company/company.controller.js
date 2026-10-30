@@ -392,7 +392,7 @@ export async function streamEmpresa(
     );
     res.setHeader(
       "Cache-Control",
-      "no-cache, no-transform"
+      "no-store, no-transform"
     );
     res.setHeader(
       "Connection",

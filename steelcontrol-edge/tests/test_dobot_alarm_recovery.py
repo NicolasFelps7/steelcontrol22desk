@@ -7,24 +7,9 @@ import unittest
 
 
 EDGE_ROOT = pathlib.Path(__file__).resolve().parents[1]
-adapters_package = types.ModuleType("adapters")
-adapters_package.__path__ = [str(EDGE_ROOT / "adapters")]
-sys.modules.setdefault("adapters", adapters_package)
+sys.path.insert(0, str(EDGE_ROOT))
+from adapters.dobot_adapter import AdapterError, DobotMagicianAdapter
 
-
-def load_adapter_module(name):
-    path = EDGE_ROOT / "adapters" / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(f"adapters.{name}", path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-load_adapter_module("base")
-dobot_module = load_adapter_module("dobot_adapter")
-AdapterError = dobot_module.AdapterError
-DobotMagicianAdapter = dobot_module.DobotMagicianAdapter
 
 
 class RecoveryProbe(DobotMagicianAdapter):
@@ -130,14 +115,14 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
         self.assertNotIn(242, driver.commands)
         self.assertEqual(driver.commands[:3], [241, 245, 21])
 
-    def test_motion_ready_recovers_transient_alarm_automatically(self):
+    def test_motion_ready_blocks_alarm_until_explicit_clear(self):
         driver = RecoveryProbe([[0], []])
 
-        driver._ensure_motion_ready()
-
-        self.assertTrue(driver.initialized)
-        self.assertFalse(driver.queue_stopped)
-        self.assertEqual(driver._blocking_alarms(), [])
+        with self.assertRaises(AdapterError):
+            driver._ensure_motion_ready()
+        self.assertFalse(driver.initialized)
+        self.assertTrue(driver.queue_stopped)
+        self.assertEqual(driver.commands, [])
 
     def test_persistent_startup_bit_is_acknowledged_only_after_clear(self):
         driver = RecoveryProbe([[0]])

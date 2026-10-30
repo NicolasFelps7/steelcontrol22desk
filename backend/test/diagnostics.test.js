@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 Object.assign(process.env,{NODE_ENV:'development',SECURITY_PROFILE:'development',DATABASE_URL:'postgresql://test:test@127.0.0.1:5432/test',JWT_SECRET:'diagnostic-tests-'.repeat(5),REDIS_URL:''});
+const { signSessionToken } = await import("../src/lib/sessionToken.js");
 const {prisma}=await import('../src/lib/prisma.js');
 const {diagnosticRoutes}=await import('../src/modules/connections/diagnostic.routes.js');
 const {diagnosticFilters,feedQuery,publicDiagnostic,diagnosticCsv}=await import('../src/modules/connections/diagnosticFeed.js');
@@ -15,7 +16,7 @@ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listeni
 after(async()=>{await new Promise(r=>server.close(r));await prisma.$disconnect();});
 function auth(cargo='ADMINISTRADOR'){
  patch(prisma.usuario,'findUnique',async()=>({id:7,empresaId:3,nome:'Responsável',ativo:true,emailVerificadoEm:new Date(),cargo,statusVinculo:'APROVADO',empresa:{status:'ATIVA'},tokenVersion:0}));
- patch(prisma.auditLog,'create',async()=>({id:1}));return {authorization:'Bearer '+jwt.sign({usuarioId:7},process.env.JWT_SECRET)};
+ patch(prisma.auditLog,'create',async()=>({id:1}));return {authorization:'Bearer '+signSessionToken({usuarioId:7,tokenVersion:0})};
 }
 async function call(path='',{headers={},body,method='GET'}={}){const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,data:await r.json()};}
 const event={codigo:'PACOTE_INVALIDO',maquinaId:4,eventoCliente:'12345678-1234-1234-1234-123456789abc'};

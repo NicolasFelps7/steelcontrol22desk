@@ -84,6 +84,10 @@ const limiteLogin =
       "Muitas tentativas de login. Aguarde alguns minutos."
   });
 
+const limiteConta = criarRateLimit({
+  janelaMs: 10 * 60 * 1000, limite: 30, prefixo: "login-conta", escopo: "conta"
+});
+
 const limiteEmail =
   criarRateLimit({
     janelaMs:
@@ -117,12 +121,14 @@ const limiteAnaliseFacial =
 authRoutes.post(
   "/login",
   limiteLogin,
+  limiteConta,
   login
 );
 
 authRoutes.post(
   "/admin-mfa/verify",
   limiteLogin,
+  limiteConta,
   verifyAdminMfa
 );
 
@@ -140,6 +146,7 @@ authRoutes.post(
 
 authRoutes.post(
   "/register-company",
+  limiteEmail,
   registerCompany
 );
 
@@ -244,6 +251,7 @@ authRoutes.post(
 authRoutes.post(
   "/face/ambiguous/verify-code",
   limiteLogin,
+  limiteConta,
   verifyFaceAmbiguousCode
 );
 

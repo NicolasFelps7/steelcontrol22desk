@@ -43,13 +43,21 @@ class SerialConfirmationTest(unittest.TestCase):
         from edge_profiles import MachineProfile
         from unittest.mock import Mock
         runtime=MachineRuntime(MachineProfile(id='retry',label='Teste',server_url='https://example.test',machine_id=7,device_key='test-key',driver='SERIAL_JSON',allow_commands=True),lambda *_:None,lambda *_:None)
-        client=Mock();client.config.return_value={};client.next_command.side_effect=[{'id':9,'comando':'IHM_START','tentativaEntrega':1},{'id':9,'comando':'IHM_START','tentativaEntrega':2}]
-        adapter=Mock();adapter.read_telemetry.return_value={'temperatura':25};confirmations=[]
+        from datetime import datetime, timezone, timedelta
+        import tempfile
+        import os
+        now=datetime.now(timezone.utc)
+        command={'id':9,'maquinaId':7,'comando':'IHM_START','tentativaEntrega':1,
+                 'criadoEm':now.isoformat(),'payload':{'expiresAt':(now+timedelta(seconds=10)).isoformat()}}
+        client=Mock();client.config.return_value={};client.next_command.side_effect=[command,{**command,'tentativaEntrega':2}]
+        client.authorize.return_value=command
+        adapter=Mock();adapter.params={};adapter.read_telemetry.return_value={'temperatura':25};confirmations=[]
         def confirm(cid,status):
             confirmations.append(status)
             if len(confirmations)==2:runtime.stop_event.set()
         client.confirm.side_effect=confirm
-        with patch('edge_runtime.SteelControlClient',return_value=client),patch('edge_runtime.create_adapter',return_value=adapter):runtime._run()
+        with tempfile.TemporaryDirectory() as home, patch.dict(os.environ,{'STEELCONTROL_EDGE_HOME':home}):
+            with patch('edge_runtime.SteelControlClient',return_value=client),patch('edge_runtime.create_adapter',return_value=adapter):runtime._run()
         adapter.execute_command.assert_called_once();self.assertEqual(confirmations,['CONCLUIDO','CONCLUIDO'])
 
 if __name__=='__main__':unittest.main()

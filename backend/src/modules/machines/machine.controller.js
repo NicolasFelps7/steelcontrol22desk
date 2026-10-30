@@ -688,39 +688,12 @@ export async function telemetria(req, res, next) {
   }
 }
 
-export async function receberTelemetriaReal(req, res, next) {
-  try {
-    if (!podeAcionarSimulacao(req.auth?.cargo)) {
-      return res.status(403).json({
-        mensagem: "Somente administradores e supervisores podem enviar telemetria de teste."
-      });
-    }
-
-    const id = Number(req.params.id);
-    const maquina = await prisma.maquina.findFirst({
-      where: whereEmpresa(req, id)
-    });
-
-    if (!maquina) {
-      return res.status(404).json({ mensagem: "Máquina não encontrada." });
-    }
-
-    if (maquina.modoSimulacao !== false) {
-      return res.status(409).json({
-        mensagem: "Coloque a máquina em 'Equipamento real' antes de enviar telemetria real."
-      });
-    }
-
-    await processarTelemetria({
-      maquina,
-      dados: req.body,
-      origem: req.body.origem || maquina.controlador || maquina.protocolo || "EQUIPAMENTO"
-    });
-
-    return buscar(req, res, next);
-  } catch (erro) {
-    next(erro);
-  }
+export async function receberTelemetriaReal(req, res) {
+  // Uma sessão humana nunca pode forjar sensores/intertravamentos reais.
+  return res.status(410).json({
+    codigo: "DEVICE_AUTH_REQUIRED",
+    mensagem: "Telemetria real exige a credencial do equipamento em /device/:id/telemetria. Use o simulador somente em máquinas de simulação."
+  });
 }
 
 export async function simular(req, res, next) {
@@ -1139,6 +1112,10 @@ export async function criarComandoDobot(req, res, next) {
       return res.status(400).json({ mensagem: "Comando Dobot não permitido." });
     }
 
+    if (comando === "DOBOT_HOME") return res.status(409).json({
+      codigo: "DOBOT_LOCAL_HOME_REQUIRED",
+      mensagem: "HOME remoto desativado: faça a calibração local supervisionada conforme o manual do Dobot."
+    });
     const cargo = String(req.auth?.cargo || "").toUpperCase();
     const somenteStop = comando === "DOBOT_STOP";
     const permitido = somenteStop
@@ -1148,6 +1125,9 @@ export async function criarComandoDobot(req, res, next) {
       return res.status(403).json({ mensagem: "Seu cargo não possui permissão para este comando do robô." });
     }
 
+    if (!somenteStop && maquina.paradaSeguranca) {
+      return res.status(409).json({ mensagem: "Parada de segurança ativa. Verifique o equipamento antes de liberar." });
+    }
     if (!somenteStop && !controleRemotoDobotHabilitado(maquina)) {
       return res.status(409).json({
         codigo: "DOBOT_REMOTE_CONTROL_DISABLED",
@@ -1572,9 +1552,8 @@ export async function criarComandoImpressora3D(req, res, next) {
       return res.status(409).json({ mensagem: "Controle remoto da impressora está desativado no cadastro. O monitoramento continua disponível." });
     }
 
-    const payload = req.body?.payload && typeof req.body.payload === "object" && !Array.isArray(req.body.payload)
-      ? JSON.parse(JSON.stringify(req.body.payload))
-      : {};
+    // Estes comandos não aceitam G-code, URLs ou parâmetros arbitrários.
+    const payload = { expiresAt: new Date(Date.now() + 10000).toISOString() };
     const criado = await prisma.comandoMaquina.create({ data: { maquinaId: id, solicitanteId:req.auth.usuarioId, comando, payload } });
     await prisma.log.create({ data: { maquinaId: id, mensagem: `Impressora 3D: ${comando} solicitado por ${req.auth.nome || req.auth.email}.` } });
     await registrarAuditoria({ req, acao: "COMANDO_IMPRESSORA_3D", entidade: "MAQUINA", entidadeId: id, detalhes: { comando } });
@@ -1749,7 +1728,7 @@ export async function liberarSeguranca(req, res, next) {
             maquinaId: id,
             comando: "LIBERAR_OPERACAO",
             solicitanteId:req.auth.usuarioId,
-            payload: { autorizadoPor: req.auth.nome }
+            payload: { autorizadoPor: req.auth.nome, expiresAt: new Date(Date.now() + 10000).toISOString() }
           }
         })
       );
@@ -1785,7 +1764,7 @@ export async function streamMaquina(req, res, next) {
     }
 
     res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Cache-Control", "no-store, no-transform");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders?.();

@@ -1,3 +1,14 @@
+export function redactSecrets(value, depth = 0) {
+  if (depth > 12) return "[LIMITE]";
+  if (Array.isArray(value)) return value.slice(0, 100).map(item => redactSecrets(item, depth + 1));
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+    key, /password|senha|secret|segredo|token|device.?key|credencial|authorization|cookie|embedding/i.test(key)
+      ? "[OCULTO]" : redactSecrets(item, depth + 1)
+  ]));
+  if (typeof value === "string") return value.replace(/scd_[A-Za-z0-9_-]+/g, "[OCULTO]").replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, "Bearer [OCULTO]").slice(0, 2000);
+  return value;
+}
+
 import { prisma } from "./prisma.js";
 
 export async function registrarAuditoria({
@@ -36,14 +47,11 @@ export async function registrarAuditoria({
           entidadeId === null
             ? null
             : Number(entidadeId),
-        detalhes: detalhes || undefined
+        detalhes: redactSecrets(detalhes) || undefined
       }
     });
   } catch (erro) {
     // Auditoria nunca derruba a operação principal.
-    console.error(
-      "[AUDITORIA] Falha ao registrar evento:",
-      erro?.message || erro
-    );
+    console.error("[AUDITORIA] Não foi possível gravar o evento.");
   }
 }

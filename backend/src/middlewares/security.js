@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { redisRateLimit } from "../lib/redisStore.js";
 import { markRateLimited, securityEvent } from "../lib/monitoring.js";
 
@@ -29,7 +30,7 @@ function limparBucketsExpirados(agora) {
   ultimaLimpeza = agora;
 }
 
-function chaveRequisicao(req, prefixo) {
+function chaveRequisicao(req, prefixo, escopo) {
   // Não confiamos diretamente em X-Forwarded-For, pois esse cabeçalho
   // pode ser falsificado quando a API está exposta sem proxy confiável.
   // Em produção atrás de reverse proxy, configure `trust proxy` no Express.
@@ -47,7 +48,9 @@ function chaveRequisicao(req, prefixo) {
       .trim()
       .toLowerCase();
 
-  return `${prefixo}:${ip}:${email}`;
+  return escopo === "conta" && email
+    ? `${prefixo}:conta:${createHash("sha256").update(email.slice(0, 254)).digest("hex")}`
+    : `${prefixo}:ip:${ip}`;
 }
 
 export function securityHeaders(req, res, next) {
@@ -123,6 +126,7 @@ export function csrfCookieGuard(req, res, next) {
   const fetchSite = String(req.get("sec-fetch-site") || "").toLowerCase();
 
   if (
+    (!origin && !["same-origin"].includes(fetchSite)) ||
     (origin && !allowedOrigins.has(origin)) ||
     (fetchSite && !["same-origin", "same-site", "none"].includes(fetchSite))
   ) {
@@ -140,7 +144,8 @@ export function criarRateLimit({
   limite = 60,
   prefixo = "geral",
   mensagem = "Muitas tentativas. Aguarde um pouco e tente novamente.",
-  segmento = null
+  segmento = null,
+  escopo = "ip"
 } = {}) {
   return function rateLimit(req, res, next) {
     const agora = Date.now();
@@ -150,7 +155,7 @@ export function criarRateLimit({
     const valorSegmento = typeof segmento === "function"
       ? String(segmento(req) || "geral").replace(/[^a-z0-9_-]/gi, "").slice(0, 32)
       : "";
-    const chave = chaveRequisicao(req, valorSegmento ? `${prefixo}:${valorSegmento}` : prefixo);
+    const chave = chaveRequisicao(req, valorSegmento ? `${prefixo}:${valorSegmento}` : prefixo, escopo);
 
     const localLimit = () => {
       const atual = buckets.get(chave);

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
+import { canonicalFileHash as hashCanonico } from "./canonical-file-hash.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const manifestPath = path.join(root, "CODE_FREEZE.sha256");
@@ -39,12 +39,6 @@ const ignored = new Set([
   ".venv-build"
 ]);
 
-const textExtensions = new Set([
-  ".js", ".mjs", ".cjs", ".json", ".prisma", ".sql", ".py",
-  ".html", ".css", ".md", ".txt", ".toml", ".yml", ".yaml",
-  ".ino", ".bat", ".ps1", ".env"
-]);
-
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
 
@@ -60,16 +54,6 @@ function walk(dir) {
   });
 }
 
-function hashCanonico(file) {
-  const buffer = fs.readFileSync(file);
-  const ext = path.extname(file).toLowerCase();
-
-  const payload = textExtensions.has(ext)
-    ? Buffer.from(buffer.toString("utf8").replace(/\r\n/g, "\n"), "utf8")
-    : buffer;
-
-  return crypto.createHash("sha256").update(payload).digest("hex");
-}
 
 const currentFiles = [
   ...scopedDirs.flatMap(rel => walk(path.join(root, rel))),

@@ -1,9 +1,9 @@
+import { commandAllowedNow, commandEnvelope } from "../../lib/commandSafety.js";
 import { prisma } from "../../lib/prisma.js";
 import { processarTelemetria } from "../../lib/telemetryService.js";
 import { publicarEventoMaquina, publicarEventoEmpresa, assinarEventosMaquina } from "../../lib/realtime.js";
 import { calcularEstadoConexao } from "../../lib/machinePolicy.js";
 import { dataLimiteReentrega, comandoJaFinalizado, normalizarStatusAck } from "../../lib/industrialPolicy.js";
-import { comandoPayloadExpirado } from "../../lib/hmiPolicy.js";
 
 const COMMAND_LEASE_MS = Math.max(
   5_000,
@@ -107,7 +107,8 @@ export async function configuracaoDevice(req, res) {
   });
 }
 
-async function reivindicarProximoComando(maquinaId) {
+async function reivindicarProximoComando(maquina) {
+    const maquinaId = maquina.id;
     const limiteReentrega = dataLimiteReentrega(Date.now(), COMMAND_LEASE_MS);
     let entregue = null;
 
@@ -137,7 +138,7 @@ async function reivindicarProximoComando(maquinaId) {
 
       // Comandos operacionais da IHM possuem TTL curto. Se o equipamento
       // ficou offline, eles não podem "acordar" e executar minutos depois.
-      if (comandoPayloadExpirado(comando.payload)) {
+      if (!commandAllowedNow(maquina, comando)) {
         await prisma.comandoMaquina.updateMany({
           where: { id: comando.id, maquinaId, status: { in: ["PENDENTE", "ENTREGUE"] } },
           data: { status: "CANCELADO", concluidoEm: new Date() }
@@ -180,7 +181,7 @@ async function reivindicarProximoComando(maquinaId) {
 export async function proximoComando(req, res, next) {
   try {
     const maquina = req.device.maquina;
-    let entregue = await reivindicarProximoComando(maquina.id);
+    let entregue = await reivindicarProximoComando(maquina);
 
     // Long-poll curto: o Edge fica aguardando o evento de fila e acorda no
     // mesmo instante em que desktop ou mobile cria o comando. Uma segunda
@@ -198,11 +199,11 @@ export async function proximoComando(req, res, next) {
       res.once("close", fechar);
 
       try {
-        entregue = await reivindicarProximoComando(maquina.id);
+        entregue = await reivindicarProximoComando(maquina);
         if (!entregue) {
           await acordou;
           if (!req.destroyed && !res.destroyed && !res.writableEnded) {
-            entregue = await reivindicarProximoComando(maquina.id);
+            entregue = await reivindicarProximoComando(maquina);
           }
         }
       } finally {
@@ -218,11 +219,7 @@ export async function proximoComando(req, res, next) {
     }
 
     res.json({
-      id: entregue.id,
-      comando: entregue.comando,
-      payload: entregue.payload,
-      criadoEm: entregue.criadoEm,
-      tentativaEntrega: entregue.tentativasEntrega,
+      ...commandEnvelope(entregue),
       confirmarEm: `/device/${maquina.id}/comandos/${entregue.id}/confirmar`
     });
   } catch (erro) {
@@ -267,21 +264,49 @@ export async function confirmarComando(req, res, next) {
       });
     }
 
-    await prisma.$transaction([
-      prisma.comandoMaquina.update({
-        where: { id: comandoId },
+    // Compare-and-swap dentro da transação: ACK de PENDENTE/CANCELADO não
+    // pode ressuscitar um comando nem vencer uma revogação concorrente.
+    const accepted = await prisma.$transaction(async tx => {
+      const changed = await tx.comandoMaquina.updateMany({
+        where: { id: comandoId, maquinaId: maquina.id, status: "ENTREGUE" },
         data: { status, concluidoEm: new Date() }
-      }),
-      prisma.log.create({
-        data: {
-          maquinaId: maquina.id,
-          mensagem: `Equipamento confirmou comando ${comando.comando}: ${status}.`
-        }
-      })
-    ]);
+      });
+      if (changed.count !== 1) return false;
+      await tx.log.create({ data: {
+        maquinaId: maquina.id,
+        mensagem: `Equipamento confirmou comando ${comando.comando}: ${status}.`
+      }});
+      return true;
+    });
+    if (!accepted) return res.status(409).json({ mensagem: "Comando não está mais entregue para execução." });
 
     res.json({ ok: true, status, idempotente: false });
   } catch (erro) {
     next(erro);
   }
+}
+
+// O Edge consulta imediatamente antes da escrita física. Isso reduz a janela
+// de revogação; não substitui intertravamentos ou parada local independente.
+export async function autorizarExecucao(req, res, next) {
+  try {
+    const id = Number(req.params.comandoId);
+    if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ mensagem: "Comando inválido." });
+    const maquina = req.device.maquina;
+    const command = await prisma.comandoMaquina.findFirst({ where: { id, maquinaId: maquina.id } });
+    if (!command) return res.status(404).json({ mensagem: "Comando não encontrado." });
+    if (command.status !== "ENTREGUE" || !commandAllowedNow(maquina, command)) {
+      return res.status(409).json({ mensagem: "Execução revogada, vencida ou bloqueada." });
+    }
+    // O solicitante ainda precisa pertencer à empresa e ter permissão atual.
+    if (command.solicitanteId) {
+      const user = await prisma.usuario.findFirst({ where: {
+        id: command.solicitanteId, empresaId: maquina.empresaId, ativo: true
+      }, select: { cargo: true } });
+      const roles = ["ADMINISTRADOR", "SUPERVISOR", "TECNICO"];
+      if (['DOBOT_STOP', 'PARAR_SEGURANCA', 'IHM_STOP', 'IHM_ACK'].includes(command.comando)) roles.push("OPERADOR");
+      if (!user || !roles.includes(user.cargo)) return res.status(403).json({ mensagem: "Autorização do solicitante revogada." });
+    }
+    return res.json(commandEnvelope(command));
+  } catch (error) { next(error); }
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
-import threading,time,traceback
+import threading,time,hashlib
+from command_guard import CommandJournal, validate_command, fingerprint, STOP_COMMANDS
 from datetime import datetime,timezone
 from typing import Callable
 from adapters import create_adapter,infer_driver,AdapterError
@@ -15,8 +16,24 @@ COMMAND_POLL_SECONDS = 0.01
 class MachineRuntime:
     def __init__(self, profile:MachineProfile, log:Callable[[str,str],None], status:Callable[[str,str,dict],None]):
         self.profile=profile; self.log_cb=log; self.status_cb=status; self.stop_event=threading.Event(); self.thread=None; self.adapter=None
-        self.command_results={}
-    def log(self,msg): self.log_cb(self.profile.id,msg)
+        self.command_results={}; self.control_latched=False; self.journal=None
+    def log(self,msg):
+        text=str(msg)
+        if self.profile.device_key:text=text.replace(self.profile.device_key,'[CREDENCIAL OCULTA]')
+        self.log_cb(self.profile.id,text)
+    def _halt_adapter(self):
+        if self.adapter and callable(getattr(self.adapter,'safety_stop',None)):
+            try:self.adapter.safety_stop()
+            except Exception:self.log('Não foi possível confirmar a parada de software. Verifique a parada física local.')
+    def _motion_guard(self,client,command):
+        checked=[0.0]
+        def check():
+            if self.stop_event.is_set():raise AdapterError('Execução interrompida localmente.')
+            if time.monotonic()-checked[0]>=0.5:
+                current=client.authorize(command['id'])
+                if fingerprint(current)!=fingerprint(command):raise AdapterError('Comando alterado ou revogado durante a execução.')
+                checked[0]=time.monotonic()
+        return check
     def status(self,state,**extra): self.status_cb(self.profile.id,state,extra)
     def start(self):
         if self.thread and self.thread.is_alive():return
@@ -24,7 +41,7 @@ class MachineRuntime:
     def stop(self,wait=True):
         self.stop_event.set()
         try:
-            if self.adapter:self.adapter.close()
+            if self.adapter and not callable(getattr(self.adapter,"safety_stop",None)):self.adapter.close()
         except Exception:pass
         # Não deixa um worker antigo conservar a COM enquanto o substituto
         # começa. Nunca tenta dar join na própria thread.
@@ -55,8 +72,10 @@ class MachineRuntime:
     def _run(self):
         backoff=1
         self.status('CONNECTING')
+        scope=hashlib.sha256(f'{self.profile.server_url.rstrip(chr(47)).lower()}|{self.profile.machine_id}'.encode()).hexdigest()
         while not self.stop_event.is_set():
             try:
+                if self.journal is None:self.journal=CommandJournal()
                 c=SteelControlClient(self.profile.server_url,self.profile.machine_id,self.profile.device_key)
                 cfg=c.config()
                 if self.stop_event.is_set():break
@@ -83,29 +102,40 @@ class MachineRuntime:
                     if self.stop_event.is_set():break
                     command_executed=False
                     if cmd:
-                        cid=cmd.get('id'); name=str(cmd.get('comando') or ''); payload=cmd.get('payload') or {}
-                        # STOP sempre pode ser aceito quando o driver o implementa; demais comandos exigem liberação explícita.
-                        emergency=name in {'DOBOT_STOP','PARAR_SEGURANCA','IHM_STOP'}
-                        if cid in self.command_results:
-                            c.confirm(cid,self.command_results[cid])
-                        elif int(cmd.get('tentativaEntrega') or 0)>1 and not emergency:
-                            self.command_results[cid]='FALHOU';c.confirm(cid,'FALHOU');self.log('Comando reentregue recusado para evitar repetição física.')
-                        elif self._expired(payload) and not emergency:
-                            self.command_results[cid]='FALHOU';self.log(f"Comando expirado recusado pelo Edge: {name}"); c.confirm(cid,'FALHOU')
-                        elif not commands_allowed and not emergency:
-                            self.command_results[cid]='FALHOU';self.log(f"Comando BLOQUEADO por política local: {name}"); c.confirm(cid,'FALHOU')
+                        cid=cmd.get('id') if isinstance(cmd,dict) else None
+                        # O servidor é autenticado por TLS, mas o envelope também é
+                        # validado localmente antes de qualquer acesso ao driver.
+                        name,payload=validate_command(cmd,self.profile.machine_id,driver)
+                        emergency=name in STOP_COMMANDS
+                        if (not commands_allowed or self.control_latched) and not emergency:
+                            self.log('Comando bloqueado. Após falha, inspecione a máquina e reconecte explicitamente.')
+                            c.confirm(cid,'FALHOU')
                         else:
-                            try:
-                                if driver in {'SERIAL_JSON','USB_SERIAL'}:self.adapter.execute_command(name,payload,command_id=cid)
-                                else:self.adapter.execute_command(name,payload)
-                            except Exception as e:
-                                self.command_results[cid]='FALHOU';self.log(f"Comando falhou: {name} | {e}")
+                            current=c.authorize(cid)
+                            if fingerprint(current)!=fingerprint(cmd):
+                                raise AdapterError('Conteúdo do comando mudou entre entrega e autorização.')
+                            # Validade pode ter vencido enquanto aguardávamos a rede.
+                            validate_command(current,self.profile.machine_id,driver)
+                            previous=self.journal.begin(scope,current)
+                            if previous is not None:
+                                c.confirm(cid,previous)
+                                self.log('Repetição recusada pelo registro persistente.')
                             else:
-                                self.command_results[cid]='CONCLUIDO';command_executed=True;self.log(f"Comando concluído: {name}")
-                            # Guarda o resultado antes da chamada HTTP. Uma perda de ACK
-                            # de rede nunca deve repetir um movimento já executado.
-                            c.confirm(cid,self.command_results[cid])
-                        while len(self.command_results)>1000:self.command_results.pop(next(iter(self.command_results)))
+                                try:
+                                    self.adapter.params['_motionGuard']=self._motion_guard(c,current)
+                                    if driver in {'SERIAL_JSON','USB_SERIAL'}:self.adapter.execute_command(name,payload,command_id=cid)
+                                    else:self.adapter.execute_command(name,payload)
+                                except Exception:
+                                    result='FALHOU'; self.control_latched=True
+                                    self.status('ERROR',error='Controle bloqueado até inspeção e reconexão explícita.')
+                                    self._halt_adapter()
+                                    self.log('Falha na execução. Controle bloqueado até inspeção e reconexão explícita.')
+                                else:
+                                    result='CONCLUIDO';command_executed=True;self.log(f'Comando concluído: {name}')
+                                finally:
+                                    self.adapter.params.pop('_motionGuard',None)
+                                self.journal.finish(scope,cid,result)
+                                c.confirm(cid,result)
                     # A leitura periódica continua respeitando o intervalo configurado,
                     # A espera no servidor acorda assim que um comando entra na fila.
                     # Após executar, publicamos o novo estado imediatamente.
@@ -117,22 +147,26 @@ class MachineRuntime:
                                 data = normalize_printer3d_telemetry(data, protocol=cfg.get('protocolo') or driver)
                             data.setdefault('origem',driver); c.telemetry(data)
                             if not confirmed:
-                                self.status('ONLINE',driver=driver,controller=cfg.get('controlador'),protocol=cfg.get('protocolo'))
+                                self.status('ERROR' if self.control_latched else 'ONLINE',driver=driver,controller=cfg.get('controlador'),protocol=cfg.get('protocolo'))
                                 confirmed=True
                         next_telemetry=now+interval
                     elapsed=time.time()-cycle
                     self.stop_event.wait(max(0.01,COMMAND_POLL_SECONDS-elapsed))
             except Exception as e:
-                self.status('ERROR',error=str(e)); self.log(f"Falha: {e}")
+                self.control_latched=True
+                self._halt_adapter()
+                self.status('ERROR',error='Falha de comunicação ou validação; controle bloqueado até reconectar.'); self.log(f"Falha: {e}")
                 try:
                     if self.adapter:self.adapter.close()
                 except Exception:pass
                 self.adapter=None
                 if self.stop_event.wait(backoff):break
                 backoff=min(backoff*2,30)
+        self._halt_adapter()
         try:
             if self.adapter:self.adapter.close()
         except Exception:pass
+        if self.journal:self.journal.close();self.journal=None
         self.status('STOPPED')
 
 class EdgeRuntimeManager:

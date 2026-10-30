@@ -18,7 +18,7 @@ def validate_ptp(payload):
         try:value=float(payload[key])
         except (KeyError,TypeError,ValueError):raise AdapterError(f"Coordenada {key.upper()} inválida.")
         low,high=DOBOT_LIMITS[key]
-        if value<low or value>high:raise AdapterError(f"{key.upper()} fora do envelope seguro ({low:g} a {high:g}).")
+        if isinstance(payload[key],bool) or not math.isfinite(value) or value<low or value>high:raise AdapterError(f"{key.upper()} fora do envelope seguro ({low:g} a {high:g}).")
         values[key]=value
     radius=math.hypot(values["x"],values["y"])
     if radius<RADIAL_LIMITS[0] or radius>RADIAL_LIMITS[1]:
@@ -26,17 +26,17 @@ def validate_ptp(payload):
     try:speed=float(payload.get("velocidade",30))
     except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
     low,high=DOBOT_LIMITS["velocidade"]
-    if speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
+    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
     values["velocidade"]=speed
     return values
 def validate_rotation(payload):
     try:delta=float(payload["delta"])
     except (KeyError,TypeError,ValueError):raise AdapterError("Passo de rotação inválido.")
-    if delta==0 or abs(delta)>ROTATION_STEP_LIMIT:raise AdapterError(f"Rotação por comando deve ficar entre {-ROTATION_STEP_LIMIT:g}° e {ROTATION_STEP_LIMIT:g}° e não pode ser zero.")
+    if isinstance(payload.get("delta"),bool) or not math.isfinite(delta) or delta==0 or abs(delta)>ROTATION_STEP_LIMIT:raise AdapterError(f"Rotação por comando deve ficar entre {-ROTATION_STEP_LIMIT:g}° e {ROTATION_STEP_LIMIT:g}° e não pode ser zero.")
     try:speed=float(payload.get("velocidade",20))
     except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
     low,high=DOBOT_LIMITS["velocidade"]
-    if speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
+    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
     return {"delta":delta,"velocidade":speed}
 def checksum(payload:bytes)->int:return (-sum(payload))&0xFF
 def packet(command_id:int,rw:int=0,queued:bool=False,params:bytes=b"")->bytes:
@@ -61,11 +61,10 @@ class DobotMagicianAdapter(BaseAdapter):
         for port in self._candidates():
             try:
                 self.ser=serial.Serial(port,int(self.params.get("baud") or 115200),timeout=.7,write_timeout=.7); self.port=port; self._get_pose()
-                alarms=self._alarms()
-                if alarms:
-                    try:self._recover_alarms()
-                    except AdapterError:pass
-                else:self._initialize_controller()
+                # Conectar nunca retoma uma fila antiga ou limpa alarmes.
+                self._exchange(242,1,False)
+                self._exchange(245,1,False)
+                self.queue_stopped=True
                 self.connected=True; return
             except Exception as e:
                 errors.append(f"{port}: {e}")
@@ -123,7 +122,8 @@ class DobotMagicianAdapter(BaseAdapter):
         self._exchange(80,1,True,struct.pack('<8f',*[200.0]*8))
         self._exchange(81,1,True,struct.pack('<4f',200.0,200.0,200.0,200.0))
         self._exchange(82,1,True,struct.pack('<2f',10.0,200.0))
-        speed=max(1.0,min(100.0,float(self.params.get('speed') or 40.0)))
+        speed=float(self.params.get('speed') or 40.0)
+        if not math.isfinite(speed) or not 1<=speed<=60:raise AdapterError('Velocidade de inicialização inválida.')
         response=self._exchange(83,1,True,struct.pack('<2f',speed,speed))
         self._exchange(240,1,False)
         self._wait_queue_index(self._queue_index(response),3.0)
@@ -139,22 +139,15 @@ class DobotMagicianAdapter(BaseAdapter):
         self.queue_stopped=False
         return response
     def _set_speed(self,value):
-        speed=max(1.0,min(100.0,float(value or 40.0)))
+        speed=float(value)
+        if not math.isfinite(speed) or not 1<=speed<=60:raise AdapterError('Velocidade inválida.')
         # Parâmetro imediato: evita depender do estado residual da fila interna
         # do braço. A fila segura do SteelControl continua no backend/Edge.
         self._exchange(83,1,False,struct.pack('<2f',speed,speed))
     def _ensure_motion_ready(self):
         alarms=self._blocking_alarms()
         if not alarms:return
-        # Alarmes transitórios deixados por STOP/boot são recuperados pelo
-        # próprio Edge. Um alarme real nunca é ignorado: o movimento só segue
-        # depois de ClearAllAlarmsState ser confirmado e a fila reinicializada.
-        try:self._recover_alarms()
-        except AdapterError as error:
-            raise AdapterError(f"Dobot possui alarme(s) ativo(s): {self._describe_alarms(alarms)}. A recuperação automática não foi confirmada: {error}") from error
-        remaining=self._blocking_alarms()
-        if remaining:
-            raise AdapterError(f"Dobot continua com alarme(s) ativo(s): {self._describe_alarms(remaining)}. Reposicione o braço com segurança antes de tentar novamente.")
+        raise AdapterError(f"Dobot possui alarme(s) ativo(s): {self._describe_alarms(alarms)}. Inspecione o equipamento e solicite a limpeza explicitamente.")
     def _blocking_alarms(self,alarms=None):
         alarms=self._alarms() if alarms is None else list(alarms)
         # Alguns firmwares do Magician/Lite mantêm o bit 0 visível mesmo após
@@ -200,15 +193,25 @@ class DobotMagicianAdapter(BaseAdapter):
         if len(state)>=2 and (bool(state[0])!=bool(enabled) or bool(state[1])!=bool(on)):
             raise AdapterError('O Dobot processou a fila, mas o efetuador não confirmou o estado solicitado.')
     def _recover_rejected_motion(self,alarms):
-        try:
-            self._recover_alarms()
-            return " O Edge limpou o estado de falha; mova no sentido oposto ou escolha outro alvo."
-        except AdapterError:
-            return " Pressione PARAR e Limpar alarmes; se persistir, reposicione o braço com segurança e reinicie-o."
+        self._exchange(242,1,False)
+        self._exchange(245,1,False)
+        self.queue_stopped=True
+        return " Movimento interrompido. Inspecione o equipamento antes de limpar os alarmes explicitamente."
+    def safety_stop(self):
+        # Parada de software, best effort: não substitui circuito de emergência.
+        self._exchange(242,1,False)
+        self._exchange(245,1,False)
+        self.queue_stopped=True
+        self.startup_reset_acknowledged=False
+    def _check_motion_guard(self):
+        guard=self.params.get("_motionGuard")
+        if guard:guard()
     def _get_pose(self):
         p=self._exchange(10,0,False)[2:]
         if len(p)<32:raise AdapterError("Resposta GetPose incompleta.")
-        vals=struct.unpack('<8f',p[:32]);return dict(zip(["x","y","z","r","j1","j2","j3","j4"],vals))
+        vals=struct.unpack('<8f',p[:32])
+        if not all(math.isfinite(value) for value in vals):raise AdapterError("Pose do Dobot contém valor não finito.")
+        return dict(zip(["x","y","z","r","j1","j2","j3","j4"],vals))
     def _alarms(self):
         p=self._exchange(20,0,False)[2:18];out=[]
         for bi,v in enumerate(p):
@@ -220,7 +223,7 @@ class DobotMagicianAdapter(BaseAdapter):
         return {"producao":self.production,"ciclos":self.cycles,"qualidadeSinal":100,"latenciaMs":5,"origem":"DOBOT_REAL","dadosExtras":{"dobot":{"mode":"REAL","connected":True,"port":self.port,"baudRate":int(self.params.get("baud") or 115200),"pose":{k:round(pose[k],4) for k in ["x","y","z","r"]},"joints":{k:round(pose[k],4) for k in ["j1","j2","j3","j4"]},"alarms":alarms,"rawAlarms":raw_alarms,"startupResetAcknowledged":self.startup_reset_acknowledged,"queue":"READY","endEffector":{"suction":self.suction,"gripper":self.gripper}}}}
     def execute_command(self,command,payload=None):
         payload=payload or {}
-        if command in {"DOBOT_STOP","PARAR_SEGURANCA"}:self._exchange(242,1,False);self.queue_stopped=True;self.startup_reset_acknowledged=False;return
+        if command in {"DOBOT_STOP","PARAR_SEGURANCA"}:self.safety_stop();return
         if command=="LIBERAR_OPERACAO":return
         if command=="DOBOT_CLEAR_ALARMS":
             self._recover_alarms();return
@@ -238,6 +241,7 @@ class DobotMagicianAdapter(BaseAdapter):
             self._exchange(84,1,False,bytes([1])+struct.pack('<4f',x,y,z,r))
             deadline=time.monotonic()+12.0; moved=False; last=before
             while time.monotonic()<deadline:
+                self._check_motion_guard()
                 time.sleep(.06)
                 last=self._get_pose()
                 alarms=self._blocking_alarms()
@@ -262,6 +266,7 @@ class DobotMagicianAdapter(BaseAdapter):
             self._exchange(84,1,False,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
             deadline=time.monotonic()+8.0;last=before
             while time.monotonic()<deadline:
+                self._check_motion_guard()
                 time.sleep(.06);last=self._get_pose();alarms=self._blocking_alarms()
                 if alarms:
                     recovery=self._recover_rejected_motion(alarms)

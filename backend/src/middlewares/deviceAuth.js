@@ -6,7 +6,7 @@ export async function deviceRequired(req, res, next) {
     const maquinaId = Number(req.params.id);
     const chave = String(req.headers["x-device-key"] || "").trim();
 
-    if (!Number.isInteger(maquinaId) || !chave) {
+    if (!Number.isInteger(maquinaId) || maquinaId <= 0 || maquinaId > 2147483647 || !chave || chave.length > 512) {
       return res.status(401).json({
         mensagem: "Credencial do equipamento ausente ou inválida."
       });

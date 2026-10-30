@@ -3,6 +3,7 @@ import json, os, uuid
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
+from transport_security import validate_server_url
 from secret_store import protect_text, unprotect_text
 
 DRIVER_NAMES={
@@ -36,7 +37,7 @@ class MachineProfile:
         self.label=(self.label or f'Máquina {self.machine_id}').strip(); return self
     def validate(self):
         self.normalized()
-        if not self.server_url.startswith(('http://','https://')):raise ValueError('Servidor deve começar com http:// ou https://')
+        self.server_url=validate_server_url(self.server_url)
         if self.machine_id<=0:raise ValueError('ID da máquina inválido.')
         if len(self.device_key)<16:raise ValueError('Device Key inválida/incompleta.')
         if self.driver not in DRIVER_NAMES:raise ValueError(f'Driver inválido: {self.driver}')

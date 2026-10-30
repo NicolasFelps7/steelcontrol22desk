@@ -63,6 +63,15 @@ app.locals.corsOrigins = env.corsOrigins;
 // SEGURANÇA / LIMITES
 // =========================================================
 
+app.disable("x-powered-by");
+// Credenciais, telemetria e respostas autenticadas nunca vão para cache compartilhado.
+app.use((req, res, next) => {
+  if (/^\/(auth|empresa|maquinas|device|descoberta|conexoes|diagnostico|auditoria)(\/|$)/.test(req.path)) {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Pragma", "no-cache");
+  }
+  next();
+});
 app.use(accessAudit);
 
 app.use(
@@ -153,7 +162,8 @@ app.use(
           "Content-Type",
           "Authorization",
           "X-SteelControl-Client",
-          "X-Device-Key"
+          "X-Device-Key",
+          "X-SteelControl-Command-Protocol"
         ],
         credentials: true,
         maxAge: 86400
@@ -444,18 +454,11 @@ app.use(
     res,
     next
   ) => {
-    console.error(
-      "================================"
-    );
-    console.error(
-      "ERRO NA API:"
-    );
-    console.error(
-      erro
-    );
-    console.error(
-      "================================"
-    );
+    // Nunca imprimir o objeto Prisma/HTTP: ele pode conter SQL, parâmetros e chaves.
+    console.error("ERRO NA API", {
+      tipo: /^[A-Za-z][A-Za-z0-9_]{0,60}$/.test(String(erro?.name)) ? erro.name : "Error",
+      codigo: /^[A-Z0-9_]{1,48}$/.test(String(erro?.code)) ? erro.code : "INTERNAL"
+    });
 
     if (
       erro?.code ===

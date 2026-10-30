@@ -79,6 +79,19 @@ export async function setSharedJson(key, value, ttlMs) {
   }
 }
 
+// GETDEL é atômico: um desafio de login só pode ser consumido por uma réplica.
+export async function takeSharedJson(key) {
+  const redis = await getClient();
+  if (!redis) return { available: false, value: null };
+  try {
+    const raw = await redis.getDel(`steelcontrol:shared:${key}`);
+    return { available: true, value: raw ? JSON.parse(raw) : null };
+  } catch (error) {
+    lastError = error;
+    return { available: false, value: null };
+  }
+}
+
 export async function getSharedJson(key) {
   const redis = await getClient();
   if (!redis) return null;

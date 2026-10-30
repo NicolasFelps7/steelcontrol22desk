@@ -1,7 +1,8 @@
-import jwt from "jsonwebtoken";
+import { requiresPrivilegedMfa } from "../lib/mfaPolicy.js";
+import { guardSessionStream } from "../lib/streamAuthorization.js";
+import { verifySessionToken } from "../lib/sessionToken.js";
 import { organizationAccessError } from "../lib/organizationPolicy.js";
 
-import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 import { sessionTokenFromCookie } from "../lib/sessionCookie.js";
 import { csrfCookieGuard } from "./security.js";
@@ -37,10 +38,7 @@ export async function authRequired(
 
   try {
     const payload =
-      jwt.verify(
-        token,
-        env.jwtSecret
-      );
+      verifySessionToken(token);
 
     const usuarioId =
       Number(payload.usuarioId);
@@ -101,6 +99,9 @@ export async function authRequired(
         });
     }
 
+    if (requiresPrivilegedMfa(usuario) && payload.mfaVerified !== true) {
+      return res.status(401).json({ codigo: "ADMIN_MFA_REQUIRED", mensagem: "Confirme o segundo fator para acessar sua conta privilegiada." });
+    }
     req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
     const acesso = organizationAccessError(usuario);
     if (acesso) return res.status(403).json(acesso);
@@ -109,6 +110,8 @@ export async function authRequired(
     });
 
     req.auth = {
+      tokenVersion: Number(usuario.tokenVersion || 0),
+      expiresAt: payload.exp * 1000,
       usuarioId:
         usuario.id,
       empresaId:
@@ -124,6 +127,7 @@ export async function authRequired(
 
     req.authTransport = bearerToken ? "bearer" : "cookie";
 
+    guardSessionStream(req, res);
     return csrfCookieGuard(req, res, next);
 
   } catch (erro) {
