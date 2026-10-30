@@ -157,12 +157,12 @@ test("stream aberto perde acesso após expiração, revogação e mudança de em
   assert.equal(await streamSessionValid(auth),true);assert.equal(await streamSessionValid({...auth,expiresAt:1}),false);
 });
 
-test("produção pode exigir MFA de quem administra e movimenta máquinas",async()=>{
-  const {env}=await import("../src/config/env.js");const {requiresPrivilegedMfa}=await import("../src/lib/mfaPolicy.js");
-  patch(env,"adminMfaRequired",true);
-  for(const cargo of ["ADMINISTRADOR","SUPERVISOR","TECNICO"]) assert.equal(requiresPrivilegedMfa({cargo}),true);
-  assert.equal(requiresPrivilegedMfa({cargo:"VISITANTE"}),false);
+test("sessão de conta confirmada não exige MFA recorrente, mantendo autorização pelo banco",async()=>{
+  const {env}=await import("../src/config/env.js");patch(env,"adminMfaRequired",true);
+  const {authRequired}=await import("../src/middlewares/auth.js");
   patch(prisma.usuario,"findUnique",async()=>({id:2,empresaId:3,ativo:true,cargo:"TECNICO",tokenVersion:0,emailVerificadoEm:new Date(),statusVinculo:"APROVADO",empresa:{status:"ATIVA"}}));
-  const token=signSessionToken({usuarioId:2,tokenVersion:0,mfaVerified:false});
-  const r=await fetch(base+"/maquinas",{headers:{authorization:`Bearer ${token}`}});assert.equal(r.status,401);assert.equal((await r.json()).codigo,"ADMIN_MFA_REQUIRED");
+  const token=signSessionToken({usuarioId:2,tokenVersion:0,mfaVerified:false});let passed=false;
+  const req={headers:{authorization:`Bearer ${token}`},get:()=>""};
+  await authRequired(req,response(),error=>{if(error)throw error;passed=true;});
+  assert.equal(passed,true);assert.equal(req.auth.empresaId,3);assert.equal(req.auth.cargo,"TECNICO");
 });

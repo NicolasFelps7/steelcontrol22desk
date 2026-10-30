@@ -221,7 +221,8 @@ const booleano = (nome, padrao = false) => {
 };
 
 const enforceHttps = booleano("ENFORCE_HTTPS", nodeEnv === "production");
-const adminMfaRequired = booleano("ADMIN_MFA_REQUIRED", nodeEnv === "production");
+// Compatibilidade de configuração: confirmação por e-mail ocorre no cadastro, não a cada login.
+const adminMfaRequired = false;
 const sessionCookieMaxAgeMs = Math.max(
   5 * 60 * 1000,
   Number(process.env.SESSION_COOKIE_MAX_AGE_MS || 30 * 60 * 1000) ||
@@ -241,9 +242,6 @@ const corsOrigins = String(process.env.CORS_ORIGINS ?? corsPadrao)
 if (level9) {
   if (!enforceHttps) {
     throw new Error("SECURITY_PROFILE=level9 exige ENFORCE_HTTPS=true.");
-  }
-  if (!adminMfaRequired) {
-    throw new Error("SECURITY_PROFILE=level9 exige ADMIN_MFA_REQUIRED=true.");
   }
   if (sessionCookieMaxAgeMs > 30 * 60 * 1000) {
     throw new Error("SECURITY_PROFILE=level9 limita a sessão desktop a 30 minutos.");

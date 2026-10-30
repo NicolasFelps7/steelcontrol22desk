@@ -1,4 +1,3 @@
-import { requiresPrivilegedMfa } from "../lib/mfaPolicy.js";
 import { guardSessionStream } from "../lib/streamAuthorization.js";
 import { verifySessionToken } from "../lib/sessionToken.js";
 import { organizationAccessError } from "../lib/organizationPolicy.js";
@@ -99,9 +98,6 @@ export async function authRequired(
         });
     }
 
-    if (requiresPrivilegedMfa(usuario) && payload.mfaVerified !== true) {
-      return res.status(401).json({ codigo: "ADMIN_MFA_REQUIRED", mensagem: "Confirme o segundo fator para acessar sua conta privilegiada." });
-    }
     req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
     const acesso = organizationAccessError(usuario);
     if (acesso) return res.status(403).json(acesso);

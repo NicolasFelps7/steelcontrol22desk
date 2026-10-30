@@ -166,7 +166,7 @@ for (const existing of [false, true, "pending"]) {
     assert.ok(JSON.stringify(res.headers).includes("eyJ"));
   });
 }
-test("e-mail não confirmado exige código uma vez e rejeita replay", async () => {
+test("conclusão inicial do cadastro confirma o e-mail uma vez e rejeita reuso", async () => {
   const code = await mockMailAndFace();
   patch(prisma.usuario, "findUnique", async () => user({ emailVerificadoEm: null, senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
   patch(prisma.usuario, "findFirst", async () => user());
@@ -179,8 +179,10 @@ test("e-mail não confirmado exige código uma vez e rejeita replay", async () =
   const replay = (await call(auth.verifyAdminMfa, { body: { challengeId: challenge.body.challengeId, codigo: code() } })).res;
   assert.equal(replay.statusCode, 401);
 });
+
 test("facial inequívoca de e-mail confirmado dispensa código recorrente", async () => {
-  await mockMailAndFace();
+  const {env}=await import("../src/config/env.js");patch(env,"adminMfaRequired",true);
+  globalThis.fetch=async()=>assert.fail("Não deve enviar código facial");
   const embedding = Array.from({ length: 512 }, (_, i) => i === 0 ? 1 : 0);
   patch(prisma.faceEmbedding, "findMany", async () => [{ id: 1, usuarioId: 7, embedding, usuario: user() }]);
   const { res } = await call(auth.loginFace, { body: { embedding } });
@@ -189,27 +191,19 @@ test("facial inequívoca de e-mail confirmado dispensa código recorrente", asyn
   assert.equal(jwt.verify(res.body.token, process.env.JWT_SECRET).mfaVerified, false);
 });
 
-test("MFA não emite mais token de assinatura empresarial para estado legado pendente", async () => {
-  const code = await mockMailAndFace();
-  const pending = user({ statusVinculo: "ADMIN_PENDENTE", emailVerificadoEm: null, empresa: { status: "PENDENTE" }, senhaHash: await bcrypt.hash("senha-teste-123", 4) });
-  let confirmed = false;
-  patch(prisma.usuario, "findUnique", async () => pending);
-  patch(prisma.usuario, "findFirst", async () => pending);
-  patch(prisma.usuario, "update", async () => { confirmed = true; return pending; });
-  const challenge = (await call(auth.login, { body: { email: pending.email, senha: "senha-teste-123" } })).res.body;
-  const { res } = await call(auth.verifyAdminMfa, { body: { challengeId: challenge.challengeId, codigo: code() } });
-  assert.equal(confirmed, true); assert.equal(res.statusCode, 403);
-  assert.equal(res.body.codigo, "COMPANY_VALIDATION_PENDING");
-  assert.equal(res.body.validacaoToken, undefined);
-  assert.equal(res.body.token, undefined); assert.equal(res.headers["Set-Cookie"], undefined);
+test("empresa pendente continua bloqueada sem iniciar código de login", async () => {
+  patch(prisma.usuario,"findUnique",async()=>user({statusVinculo:"ADMIN_PENDENTE",empresa:{status:"PENDENTE"},senhaHash:await bcrypt.hash("senha-teste-123",4)}));
+  globalThis.fetch=async()=>assert.fail("Não deve enviar e-mail");
+  const {res}=await call(auth.login,{body:{email:"pessoa@gmail.com",senha:"senha-teste-123"}});
+  assert.equal(res.statusCode,403);assert.equal(res.body.codigo,"COMPANY_VALIDATION_PENDING");assert.equal(res.body.token,undefined);
 });
-test("alterar conta após emissão do desafio invalida MFA", async () => {
-  const code = await mockMailAndFace();
-  patch(prisma.usuario, "findUnique", async () => user({ emailVerificadoEm: null, senhaHash: await bcrypt.hash("senha-teste-123", 4) }));
-  patch(prisma.usuario, "findFirst", async () => user({ tokenVersion: 1 }));
-  const challenge = (await call(auth.login, { body: { email: "pessoa@gmail.com", senha: "senha-teste-123" } })).res.body;
-  const { res } = await call(auth.verifyAdminMfa, { body: { challengeId: challenge.challengeId, codigo: code() } });
-  assert.equal(res.statusCode, 401); assert.equal(res.body.token, undefined);
+
+test("códigos de login facial ambíguo estão desativados e não emitem sessão", async () => {
+  globalThis.fetch=async()=>assert.fail("Não deve enviar e-mail");
+  for(const handler of [auth.requestFaceAmbiguousCode,auth.verifyFaceAmbiguousCode]) {
+    const {res}=await call(handler,{body:{challengeId:"old-challenge",codigo:"123456",email:"pessoa@gmail.com"}});
+    assert.equal(res.statusCode,410);assert.equal(res.body.codigo,"LOGIN_CODE_DISABLED");assert.equal(res.body.token,undefined);
+  }
 });
 
 test("rotas de assinatura empresarial não estão publicadas", async () => {
@@ -237,18 +231,28 @@ test("API facial recusa retorno ainda virado antes de comparar a identidade", as
   assert.equal(res.statusCode,401); assert.equal(res.body.codigo,"FACE_FINAL_POSITION_INVALID");
 });
 
-test("MFA privilegiado é exigido novamente e um código não abre duas sessões concorrentes", async () => {
-  const { env } = await import("../src/config/env.js");
-  patch(env, "adminMfaRequired", true);
-  const code = await mockMailAndFace();
-  const account = user({ senhaHash: await bcrypt.hash("senha-teste-123", 4) });
-  patch(prisma.usuario, "findUnique", async () => account);
-  patch(prisma.usuario, "findFirst", async () => account);
-  patch(prisma.usuario, "update", async () => account);
-  const challenge = (await call(auth.login, { body: { email: account.email, senha: "senha-teste-123" } })).res;
-  assert.equal(challenge.statusCode, 202); assert.equal(challenge.body.token, undefined);
-  const attempts = await Promise.all([1, 2].map(() => call(auth.verifyAdminMfa, {
-    body: { challengeId: challenge.body.challengeId, codigo: code() }
-  })));
-  assert.deepEqual(attempts.map(item => item.res.statusCode).sort(), [200, 401]);
+test("contas confirmadas entram repetidamente sem códigos mesmo com configuração antiga ativa", async () => {
+  const {env}=await import("../src/config/env.js");patch(env,"adminMfaRequired",true);
+  globalThis.fetch=async()=>assert.fail("Não deve enviar e-mail de login");
+  for(const cargo of ["ADMINISTRADOR","SUPERVISOR","TECNICO"]) {
+    const account=user({cargo,senhaHash:await bcrypt.hash("senha-teste-123",4)});
+    patch(prisma.usuario,"findUnique",async()=>account);
+    for(let i=0;i<2;i++) {
+      const {res}=await call(auth.login,{body:{email:account.email,senha:"senha-teste-123"}});
+      assert.equal(res.statusCode,200);assert.equal(res.body.mfaRequired,undefined);assert.ok(res.body.token);
+      assert.equal(jwt.verify(res.body.token,process.env.JWT_SECRET).mfaVerified,false);
+    }
+  }
+});
+
+test("face ambígua exige senha e nunca dispara confirmação por e-mail", async()=>{
+  const embedding=Array.from({length:512},(_,i)=>i===0?1:0);
+  patch(prisma.faceEmbedding,"findMany",async()=>[
+    {id:1,usuarioId:7,embedding,usuario:user()},
+    {id:2,usuarioId:8,embedding,usuario:user({id:8,email:"outra@gmail.com"})}
+  ]);
+  globalThis.fetch=async()=>assert.fail("Não deve enviar código facial");
+  const {res}=await call(auth.loginFace,{body:{embedding}});
+  assert.equal(res.statusCode,401);assert.equal(res.body.codigo,"FACE_AMBIGUOUS");assert.equal(res.body.segundoFator,false);
+  assert.equal(res.body.challengeId,undefined);assert.equal(res.body.token,undefined);
 });

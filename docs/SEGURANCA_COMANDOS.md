@@ -1,5 +1,7 @@
 # Revisão de segurança do SteelControl — 30/10/2026
 
+Atualização de política: o responsável solicitou confirmação por código apenas no cadastro. As referências abaixo ao MFA recorrente foram substituídas por `LOGIN_CADASTRO.md`; o login passa a usar senha ou reconhecimento facial inequívoco após cadastro confirmado.
+
 Esta entrega reforça o código existente; não é certificação, pentest completo ou garantia de segurança de 100%. A análise abrange API Node/Express, sessão web/bearer, fila de comandos e execução Python no Edge. As regras da API também protegem os pedidos do mobile. O app Flutter não foi recompilado nesta revisão.
 
 ## Alterações verificáveis

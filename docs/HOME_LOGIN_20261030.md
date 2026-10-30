@@ -1,5 +1,7 @@
 # Login industrial e localização da home — 30/10/2026
 
+Atualização: o ativo atual foi substituído pela imagem de linha automotiva enviada pelo usuário, com camada preta CSS. O prompt descrito abaixo registra a imagem anterior. A política atual de confirmação no cadastro está em LOGIN_CADASTRO.md.
+
 - Login: imagem industrial estática local, com máquinas de fabricação de aço, iluminação âmbar e contraste para a mensagem. Órbitas, esfera e indicadores decorativos ONLINE/telemetria foram removidos do HTML. Fluxo de autenticação preservado.
 - Home: a ação principal agora é Acessar a plataforma, com destino ao login. A referência ao GitHub foi substituída por Explorar equipamentos, com destino à seção de máquinas. Não há formulário ou endereço de contato fictício.
 - Localização: catálogo próprio com 186 chaves nos seis idiomas PT, EN, ES, FR, DE e IT. Abrange navegação, títulos, conteúdo, abas, legendas, FAQ, rodapé, metadados e atributos de acessibilidade. A preferência usa idiomaSistema, compartilhada com o login. A legenda acompanha a aba ativa ao mudar idioma. Capturas de tela são imagens ilustrativas do sistema e conservam os pixels originais; legendas e descrições alternativas são traduzidas.

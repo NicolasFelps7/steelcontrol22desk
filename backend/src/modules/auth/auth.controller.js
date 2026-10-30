@@ -1,4 +1,3 @@
-import { requiresPrivilegedMfa } from "../../lib/mfaPolicy.js";
 import { takeSharedJson } from "../../lib/redisStore.js";
 import { revogarSessoesUsuario } from "../../lib/sessionEvents.js";
 import { garantirSufixoEmpresa } from "../../lib/employeeLogin.js";
@@ -27,7 +26,6 @@ import { deleteShared, getSharedJson, setSharedJson } from "../../lib/redisStore
 
 import {
   enviarCodigoCadastroEmpresa,
-  enviarCodigoSegundoFatorFacial,
   enviarCodigoMfaAdministrador
 } from "../../lib/mailer.js";
 
@@ -61,12 +59,6 @@ const MAX_FACE_SAMPLES = 1;
 // Um registro FaceEmbedding por perfil, contendo ate 3 templates.
 const FACE_TEMPLATE_LIMIT = 3;
 
-// Segundo fator efemero para casos de identidade ambigua.
-// Nenhum e-mail/candidato e exposto ao cliente antes da confirmacao.
-const FACE_2FA_TTL_MS = 5 * 60 * 1000;
-const FACE_2FA_MAX_ATTEMPTS = 5;
-const FACE_2FA_MAX_SENDS = 3;
-const FACE_2FA_CHALLENGES = new Map();
 const ADMIN_MFA_TTL_MS = 5 * 60 * 1000;
 const ADMIN_MFA_MAX_ATTEMPTS = 5;
 const ADMIN_MFA_CHALLENGES = new Map();
@@ -103,36 +95,6 @@ function limparAdminMfaExpirados() {
   }
 }
 
-function limparFace2FAExpirados() {
-  const agora = Date.now();
-  for (const [id, desafio] of FACE_2FA_CHALLENGES.entries()) {
-    if (!desafio || desafio.expiraEm <= agora) {
-      FACE_2FA_CHALLENGES.delete(id);
-    }
-  }
-}
-
-async function salvarFace2FA(id, desafio) {
-  FACE_2FA_CHALLENGES.set(id, desafio);
-  const salvo = await setSharedJson(`face-2fa:${id}`, desafio, Math.max(1000, desafio.expiraEm - Date.now()));
-  if ((env.level9 || String(process.env.REDIS_URL || "").trim()) && !salvo) {
-    FACE_2FA_CHALLENGES.delete(id);
-    const erro = new Error("Segundo fator facial indisponível porque o armazenamento seguro não respondeu.");
-    erro.statusCode = 503;
-    throw erro;
-  }
-}
-
-async function obterFace2FA(id) {
-  const compartilhado = await getSharedJson(`face-2fa:${id}`);
-  return env.level9 ? compartilhado : compartilhado || FACE_2FA_CHALLENGES.get(id) || null;
-}
-
-async function removerFace2FA(id) {
-  FACE_2FA_CHALLENGES.delete(id);
-  await deleteShared(`face-2fa:${id}`);
-}
-
 function mascararEmailFace2FA(email) {
   const valor = String(email || "").trim();
   const [local, dominio] = valor.split("@");
@@ -141,6 +103,7 @@ function mascararEmailFace2FA(email) {
   const fim = local.length > 2 ? local.slice(-1) : "";
   return `${inicio}${"*".repeat(Math.max(2, local.length - 2))}${fim}@${dominio}`;
 }
+
 
 
 // =========================================================
@@ -1596,10 +1559,13 @@ export async function completeCompanyRegistrationWithFace(
 
 
 function responderLogin(req, res, usuario, metodo) {
-  if (requiresPrivilegedMfa(usuario)) return iniciarMfa(req, res, usuario);
   req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
   const acesso = organizationAccessError(usuario);
   if (acesso) return res.status(403).json(acesso);
+  if (!usuario.emailVerificadoEm) return res.status(401).json({
+    codigo: "EMAIL_CONFIRMATION_REQUIRED",
+    mensagem: "Conclua a confirmação do e-mail no cadastro antes de entrar."
+  });
   return res.json({
     mensagem: `Bem-vindo, ${usuario.nome}!`,
     ...criarSessao(req, res, usuario, false),
@@ -1610,8 +1576,11 @@ function responderLogin(req, res, usuario, metodo) {
   });
 }
 
-async function iniciarMfa(req, res, usuario) {
+async function iniciarConfirmacaoCadastro(req, res, usuario) {
   req.auditIdentity = { empresaId: usuario.empresaId, usuarioId: usuario.id };
+      if (usuario.emailVerificadoEm) return responderLogin(req, res, usuario, "senha");
+      const acesso = organizationAccessError(usuario);
+      if (acesso) return res.status(403).json(acesso);
       limparAdminMfaExpirados();
       const challengeId = randomUUID();
       const codigo = String(randomInt(100000, 1000000));
@@ -1640,7 +1609,7 @@ async function iniciarMfa(req, res, usuario) {
 
       return res.status(202).json({
         codigo: "ADMIN_MFA_REQUIRED",
-        mensagem: "Digite o código enviado ao e-mail da sua conta.",
+        mensagem: "Conclua seu cadastro com o código enviado ao seu e-mail.",
         mfaRequired: true,
         challengeId,
         email: mascararEmailFace2FA(usuario.email),
@@ -1720,7 +1689,7 @@ export async function login(
         });
     }
 
-    if (!usuario.emailVerificadoEm) return await iniciarMfa(req, res, usuario);
+    if (!usuario.emailVerificadoEm) return iniciarConfirmacaoCadastro(req, res, usuario);
     return responderLogin(req, res, usuario, "senha");
 
   } catch (erro) {
@@ -1729,6 +1698,14 @@ export async function login(
   }
 }
 
+function codigoLoginDesativado(res) {
+  return res.status(410).json({
+    codigo: "LOGIN_CODE_DISABLED",
+    mensagem: "O código por e-mail é usado no cadastro. Para entrar, use sua senha ou reconhecimento facial."
+  });
+}
+
+// Compatibilidade com clientes antigos: não inicia nem aceita desafios de login.
 export async function verifyAdminMfa(req, res, next) {
   try {
     limparAdminMfaExpirados();
@@ -1798,6 +1775,8 @@ export async function verifyAdminMfa(req, res, next) {
 // =========================================================
 // CRIAR EMPRESA
 // =========================================================
+
+
 
 export async function registerCompany(
   req,
@@ -2561,43 +2540,12 @@ export async function loginFace(
       classificacao.status ===
       "ambiguo"
     ) {
-      limparFace2FAExpirados();
-
-      const candidatos = [
-        classificacao.melhor?.usuarioId,
-        classificacao.segundo?.usuarioId
-      ].filter(Number.isInteger);
-
-      const challengeId = randomUUID();
-
-      await salvarFace2FA(challengeId, {
-        candidatos: [...new Set(candidatos)],
-        criadoEm: Date.now(),
-        expiraEm: Date.now() + FACE_2FA_TTL_MS,
-        tentativas: 0,
-        envios: 0,
-        usuarioId: null,
-        emailNormalizado: null,
-        codigoHash: null,
-        codigoExpiraEm: null
+      // Sem identidade inequívoca, não escolhe um usuário e não envia e-mail.
+      return res.status(401).json({
+        codigo: "FACE_AMBIGUOUS", segundoFator: false,
+        mensagem: "Não foi possível identificar uma única pessoa. Entre com seu e-mail e senha.",
+        orientacao: "Use o acesso por senha para confirmar sua identidade."
       });
-
-      return res
-        .status(401)
-        .json({
-          codigo:
-            "FACE_AMBIGUOUS",
-
-          mensagem:
-            "Duas identidades ficaram muito próximas. Confirme sua identidade com um segundo fator.",
-
-          orientacao:
-            "Informe o e-mail da sua conta para receber um código de confirmação.",
-
-          segundoFator: true,
-          challengeId,
-          expiraEmSegundos: Math.floor(FACE_2FA_TTL_MS / 1000)
-        });
     }
 
     const melhor =
@@ -2606,7 +2554,7 @@ export async function loginFace(
     const usuario =
       melhor.usuario;
 
-    if (!usuario.emailVerificadoEm) return await iniciarMfa(req, res, usuario);
+    if (!usuario.emailVerificadoEm) return iniciarConfirmacaoCadastro(req, res, usuario);
     return responderLogin(req, res, usuario, "facial");
 
   } catch (erro) {
@@ -2624,183 +2572,8 @@ export async function loginFace(
 // SEGUNDO FATOR PARA IDENTIDADE FACIAL AMBIGUA
 // =========================================================
 
-export async function requestFaceAmbiguousCode(req, res, next) {
-  try {
-    limparFace2FAExpirados();
-
-    const challengeId = String(req.body?.challengeId || "").trim();
-    const email = String(req.body?.email || "").trim().toLowerCase();
-    const desafio = await obterFace2FA(challengeId);
-
-    if (!challengeId || !email || !desafio || desafio.expiraEm <= Date.now()) {
-      await removerFace2FA(challengeId);
-      return res.status(400).json({
-        codigo: "FACE_2FA_EXPIRED",
-        mensagem: "A confirmação adicional expirou. Refaça o reconhecimento facial."
-      });
-    }
-
-    if (desafio.envios >= FACE_2FA_MAX_SENDS) {
-      return res.status(429).json({
-        codigo: "FACE_2FA_SEND_LIMIT",
-        mensagem: "Limite de códigos atingido. Refaça o reconhecimento facial em alguns minutos."
-      });
-    }
-
-    const usuario = await prisma.usuario.findFirst({
-      where: {
-        id: { in: desafio.candidatos },
-        email: {
-          equals: email,
-          mode: "insensitive"
-        },
-        ativo: true
-      },
-      include: { empresa: true }
-    });
-
-    // Resposta deliberadamente genérica: não informa quais candidatos
-    // foram encontrados pela biometria.
-    if (!usuario) {
-      desafio.tentativas += 1;
-      if (desafio.tentativas >= FACE_2FA_MAX_ATTEMPTS) {
-        await removerFace2FA(challengeId);
-      } else {
-        await salvarFace2FA(challengeId, desafio);
-      }
-      return res.status(400).json({
-        codigo: "FACE_2FA_EMAIL_MISMATCH",
-        mensagem: "Não foi possível confirmar este e-mail para o reconhecimento realizado."
-      });
-    }
-
-    const codigo = String(randomInt(100000, 1000000));
-    const codigoHash = await bcrypt.hash(codigo, 10);
-
-    await enviarCodigoSegundoFatorFacial({
-      destino: usuario.email,
-      codigo,
-      nome: usuario.nome
-    });
-
-    desafio.usuarioId = usuario.id;
-    desafio.emailNormalizado = email;
-    desafio.codigoHash = codigoHash;
-    desafio.codigoExpiraEm = Date.now() + FACE_2FA_TTL_MS;
-    desafio.envios += 1;
-    desafio.tentativas = 0;
-    await salvarFace2FA(challengeId, desafio);
-
-    return res.json({
-      codigo: "FACE_2FA_CODE_SENT",
-      mensagem: "Código de confirmação enviado.",
-      email: mascararEmailFace2FA(usuario.email),
-      expiraEmSegundos: Math.floor(FACE_2FA_TTL_MS / 1000)
-    });
-  } catch (erro) {
-    next(erro);
-  }
-}
-
-export async function verifyFaceAmbiguousCode(req, res, next) {
-  try {
-    limparFace2FAExpirados();
-
-    const challengeId = String(req.body?.challengeId || "").trim();
-    const email = String(req.body?.email || "").trim().toLowerCase();
-    const codigo = String(req.body?.codigo || "").replace(/\D/g, "").slice(0, 6);
-    const desafio = await obterFace2FA(challengeId);
-
-    if (
-      !desafio ||
-      desafio.expiraEm <= Date.now() ||
-      !desafio.codigoHash ||
-      !desafio.codigoExpiraEm ||
-      desafio.codigoExpiraEm <= Date.now()
-    ) {
-      await removerFace2FA(challengeId);
-      return res.status(400).json({
-        codigo: "FACE_2FA_EXPIRED",
-        mensagem: "O código expirou. Refaça o reconhecimento facial."
-      });
-    }
-
-    if (
-      email !== desafio.emailNormalizado ||
-      !/^\d{6}$/.test(codigo)
-    ) {
-      return res.status(400).json({
-        codigo: "FACE_2FA_INVALID",
-        mensagem: "Código ou e-mail inválido."
-      });
-    }
-
-    desafio.tentativas += 1;
-
-    if (desafio.tentativas > FACE_2FA_MAX_ATTEMPTS) {
-      await removerFace2FA(challengeId);
-      return res.status(429).json({
-        codigo: "FACE_2FA_ATTEMPTS_EXCEEDED",
-        mensagem: "Muitas tentativas incorretas. Refaça o reconhecimento facial."
-      });
-    }
-
-    const valido = await bcrypt.compare(codigo, desafio.codigoHash);
-
-    if (!valido) {
-      await salvarFace2FA(challengeId, desafio);
-      return res.status(401).json({
-        codigo: "FACE_2FA_INVALID",
-        mensagem: "Código de confirmação incorreto.",
-        tentativasRestantes: Math.max(0, FACE_2FA_MAX_ATTEMPTS - desafio.tentativas)
-      });
-    }
-
-    const usuario = await prisma.usuario.findFirst({
-      where: {
-        id: desafio.usuarioId,
-        email: {
-          equals: email,
-          mode: "insensitive"
-        },
-        ativo: true
-      },
-      include: { empresa: true }
-    });
-
-    if (!usuario || !desafio.candidatos.includes(usuario.id)) {
-      await removerFace2FA(challengeId);
-      return res.status(401).json({
-        codigo: "FACE_2FA_IDENTITY_INVALID",
-        mensagem: "Não foi possível confirmar a identidade."
-      });
-    }
-
-    await removerFace2FA(challengeId);
-    await prisma.usuario.update({ where: { id: usuario.id }, data: { emailVerificadoEm: new Date() } });
-    const acesso = organizationAccessError(usuario);
-    if (acesso) return res.status(403).json(acesso);
-
-    return res.json({
-      mensagem: `Identidade confirmada. Bem-vindo, ${usuario.nome}!`,
-      ...criarSessao(req, res, usuario, true),
-      usuario: {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        loginInterno: usuario.loginInterno || null,
-        cargo: cargoParaTela(usuario.cargo)
-      },
-      empresa: empresaParaResposta(usuario.empresa),
-      reconhecimento: {
-        segundoFator: true,
-        metodo: "email_codigo"
-      }
-    });
-  } catch (erro) {
-    next(erro);
-  }
-}
+export async function requestFaceAmbiguousCode(req, res) { return codigoLoginDesativado(res); }
+export async function verifyFaceAmbiguousCode(req, res) { return codigoLoginDesativado(res); }
 
 export async function faceStatus(
   req,

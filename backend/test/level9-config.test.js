@@ -79,3 +79,8 @@ test("perfil level9 recusa CORS sem HTTPS", () => {
   assert.match(result.stderr, /CORS.*HTTPS/i);
 });
 
+
+
+test("perfil de produção aceita confirmação apenas no cadastro sem MFA de login",()=>{
+  const result=carregarConfig({...baseEnv,ADMIN_MFA_REQUIRED:"false"});assert.equal(result.status,0,result.stderr);
+});

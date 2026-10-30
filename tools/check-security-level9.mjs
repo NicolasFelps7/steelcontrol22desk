@@ -43,7 +43,6 @@ const chave32 = valor => /^[a-f0-9]{64}$/i.test(valor || "") || (() => {
 if (env.NODE_ENV !== "production") falhar("NODE_ENV deve ser production.");
 if (env.SECURITY_PROFILE !== "level9") falhar("SECURITY_PROFILE deve ser level9.");
 if (!sim(env.ENFORCE_HTTPS)) falhar("ENFORCE_HTTPS deve estar ativo.");
-if (!sim(env.ADMIN_MFA_REQUIRED)) falhar("ADMIN_MFA_REQUIRED deve estar ativo.");
 if ((env.JWT_SECRET || "").length < 64 || placeholder(env.JWT_SECRET)) falhar("JWT_SECRET precisa ser aleatório e ter 64+ caracteres.");
 if (!chave32(env.SENSITIVE_DATA_KEY) || placeholder(env.SENSITIVE_DATA_KEY)) falhar("SENSITIVE_DATA_KEY inválida.");
 if ((env.FACE_API_KEY || "").length < 32 || placeholder(env.FACE_API_KEY)) falhar("FACE_API_KEY inválida.");
