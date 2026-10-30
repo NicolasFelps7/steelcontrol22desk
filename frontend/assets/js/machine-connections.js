@@ -22,9 +22,22 @@
     const form=dialog.querySelector('form'), fields=form.elements, msg=dialog.querySelector('[data-message]');let hosts=[],timer,busy=false,current=null,catalog=[],closed=false;
     const capabilityBox=document.createElement('div');capabilityBox.className='connection-capabilities';dialog.querySelector('[data-fields]').prepend(capabilityBox);
     const adapters=document.createElement('details');adapters.className='connection-catalog';adapters.innerHTML='<summary>Protocolos e requisitos de integração</summary><div></div>';dialog.querySelector('.connection-footer').before(adapters);
+    const manual=document.createElement('details');manual.className='connection-catalog';manual.hidden=true;
+    manual.innerHTML='<summary>Integração manual de dispositivo</summary><p class="connection-note">Para firmware ESP32, CLP ou gateway que envia dados diretamente à API. O Edge integrado gerencia a credencial automaticamente.</p><button type="button" class="connection-action secondary">Gerar chave para dispositivo</button>';
+    manual.querySelector('button').onclick=()=>operation(async()=>{if(machine)await renovarChaveMaquina(machine);});
+    dialog.querySelector('.connection-footer').before(manual);
     const adapterNote=document.createElement('p');adapterNote.className='connection-note';fields.driver.closest('label').append(adapterNote);
     const say=(text,error=false)=>{msg.textContent=text;msg.classList.toggle('connection-error',error);};
-    const close=()=>{closed=true;clearInterval(timer);dialog.close();dialog.remove();};
+    const removed=event=>{
+      const data=event.detail||{};
+      const id=Number(data.id||data.dados?.maquinaId||0);
+      if(machine && id===Number(machine.id) && (event.type==='steelcontrol:machine-removed'||['maquina.desativada','maquina.excluida'].includes(data.tipo))){
+        close();window.SteelUI?.toast?.({tipo:'info',titulo:'Equipamento removido',mensagem:'A configuração foi fechada porque este equipamento foi removido da empresa.'});
+      }
+    };
+    const close=()=>{closed=true;clearInterval(timer);window.removeEventListener('steelcontrol:empresa-evento',removed);window.removeEventListener('steelcontrol:machine-removed',removed);dialog.close();dialog.remove();};
+    window.addEventListener('steelcontrol:empresa-evento',removed);
+    window.addEventListener('steelcontrol:machine-removed',removed);
     dialog.querySelector('[data-close]').onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
     const ports=()=>{
       const host=hosts.find(h=>h.id===fields.hostId.value),value=fields.serialPort.value;
@@ -43,7 +56,7 @@
     fields.hostId.onchange=()=>{ports();protocolFields();};fields.driver.onchange=protocolFields;
     async function load(initial=false){
       if(closed)return;
-      const data=await request('/computadores');hosts=data.computadores.filter(h=>h.tipo!=='NAVEGADOR');
+      const data=await request('/computadores');if(closed)return;hosts=data.computadores.filter(h=>h.tipo!=='NAVEGADOR');
       const previous=fields.hostId.value;
       fields.hostId.innerHTML=hosts.length?hosts.map(h=>`<option value="${escape(h.id)}">${escape(h.nome)}${h.online?'':' — offline'}</option>`).join(''):'<option value="">Nenhum computador vinculado</option>';
       if(hosts.some(h=>h.id===previous))fields.hostId.value=previous;
@@ -58,7 +71,7 @@
         });row.append(label,revoke);computers.append(row);
       }
       if(machine){
-        const result=await request('/maquinas/'+machine.id);current=result.conexao;
+        const result=await request('/maquinas/'+machine.id);if(closed)return;current=result.conexao;manual.hidden=machine.modoSimulacao===true||current?.ativa===true;
         capabilityBox.replaceChildren();
         const caps=result.capacidades;
         if(caps)for(const text of ['Cadastro: disponível para esta categoria','Monitoramento: '+(caps.situacao==='SIMULACAO'?'simulação':caps.monitoramento.confirmado?'comunicação confirmada':'aguardando comunicação real'),'Controle: '+(caps.controle.habilitado?'habilitado conforme permissões':'bloqueado')]){const p=document.createElement('p');p.textContent=text;capabilityBox.append(p);}
@@ -133,25 +146,43 @@
     const switchAccount=document.createElement('button');switchAccount.type='button';switchAccount.textContent='Trocar conta';switchAccount.onclick=()=>{if(confirm('Trocar a conta desta janela? O vínculo atual do Edge permanece até ser revogado pela empresa.'))void sair(false);};shell.querySelector('.edge-workspace-actions').append(switchAccount);
     shell.querySelector('[data-bind]').onclick=()=>window.abrirConexaoMaquina(null);
     shell.querySelector('[data-diagnostics]').onclick=()=>window.abrirCentralDiagnostico?.();
-    async function refresh(){
-      status.textContent='Carregando os equipamentos da empresa…';
-      try{
-        const response=await fetchAutenticado(`${API_URL}/maquinas`,{cache:'no-store'});const machines=await response.json();if(!response.ok)throw new Error(machines.mensagem||'Entre na conta da empresa para continuar.');
-        const list=shell.querySelector('[data-edge-machines]');list.replaceChildren();
-        for(const machine of machines){
-          const card=document.createElement('article');card.className='edge-machine-card';
-          const name=document.createElement('h2');name.textContent=machine.nome;
-          const info=document.createElement('p');info.textContent=(machine.tipo||'Equipamento')+' · '+(machine.protocolo||'Protocolo a configurar');
-          const hint=document.createElement('p');hint.textContent=machine.modoSimulacao?'Simulação disponível no sistema.':'Cadastro existente · configure a comunicação física.';
-          const configure=document.createElement('button');configure.type='button';configure.textContent='Configurar conexão';configure.disabled=machine.modoSimulacao;configure.onclick=()=>window.abrirConexaoMaquina(machine);
-          card.append(name,info,hint,configure);list.append(card);
-        }
-        status.textContent=machines.length?'Escolha um equipamento para conectar. Nenhum movimento é iniciado ao configurar o Edge.':'Cadastre uma máquina no site ou no mobile. Ela aparecerá aqui na mesma empresa.';
-        return machines;
-      }catch(error){status.textContent=error.message;return [];}
-    }
-    shell.querySelector('[data-refresh-edge]').onclick=refresh;
-    const machines=await refresh();const raw=params.get('maquinaId');
+    const list=shell.querySelector('[data-edge-machines]');
+    const cards=new Map();
+    const sync=window.SteelControlMachineSync.create({
+      read:async signal=>{
+        const response=await fetchAutenticado(`${API_URL}/maquinas`,{cache:'no-store',signal});
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.mensagem||'Não foi possível atualizar os equipamentos.');
+        return data;
+      },
+      onRemove:id=>window.dispatchEvent(new CustomEvent('steelcontrol:machine-removed',{detail:{id}})),
+      onError:error=>{status.textContent=error.name==='AbortError'?'A atualização demorou. Tentando novamente automaticamente…':error.message;},
+      render:(machines,change)=>{
+        const ids=new Set(machines.map(m=>Number(m.id)));
+        for(const [id,card] of cards)if(!ids.has(id)){card.remove();cards.delete(id);}
+        machines.forEach((machine,index)=>{
+          const id=Number(machine.id);
+          let card=cards.get(id);
+          if(!card){
+            card=document.createElement('article');card.className='edge-machine-card';card.dataset.machineId=String(id);
+            card.append(document.createElement('h2'),document.createElement('p'),document.createElement('p'),document.createElement('button'));
+            cards.set(id,card);
+          }
+          card.children[0].textContent=machine.nome;
+          card.children[1].textContent=(machine.tipo||'Equipamento')+' · '+(drivers[machine.protocolo]||{'USB_SERIAL':'USB / Serial'}[machine.protocolo]||machine.protocolo||'Protocolo a configurar');
+          card.children[2].textContent=machine.modoSimulacao?'Simulação disponível no sistema.':'Equipamento real · configure a comunicação neste computador.';
+          const configure=card.children[3];configure.type='button';configure.textContent='Configurar conexão';configure.disabled=machine.modoSimulacao;configure.onclick=()=>window.abrirConexaoMaquina(machine);
+          if(list.children[index]!==card)list.insertBefore(card,list.children[index]||null);
+        });
+        status.textContent=(change.reason==='removed'?'Equipamento removido. ':'')+(machines.length?`${machines.length} equipamento(s) · atualização automática ativa.`:'Nenhum equipamento cadastrado. Novos cadastros aparecerão aqui automaticamente.');
+      }
+    });
+    shell.querySelector('.edge-app-tag').textContent='Atualização automática';
+    status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    status.textContent='Carregando os equipamentos da empresa…';
+    window.addEventListener('beforeunload',()=>sync.stop(),{once:true});
+    shell.querySelector('[data-refresh-edge]').onclick=()=>sync.refresh();
+    const machines=await sync.refresh();const raw=params.get('maquinaId');
     if(raw&&/^[1-9]\d{0,9}$/.test(raw)){
       const machine=machines.find(m=>m.id===Number(raw));
       if(machine&&!machine.modoSimulacao)await window.abrirConexaoMaquina(machine);

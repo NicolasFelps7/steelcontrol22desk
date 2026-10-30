@@ -52,6 +52,8 @@ let dispositivosDescobertos = [];
 let discoveryRefreshTimer = null;
 let discoveryDiagnostics = null;
 let carregarMaquinasPromise = null;
+let maquinasRecarregarAposResposta = false;
+const maquinasRemovidasRealtime = new Set();
 
 const MAQUINAS_CACHE_KEY = "steelcontrol.maquinas.cache.v2";
 const MAQUINAS_FETCH_TIMEOUT_MS = 8000;
@@ -527,19 +529,14 @@ function mostrarDeviceKey(chave, titulo = "Chave do equipamento", maquinaId = nu
       <h3>${escaparHtml(titulo)}</h3>
 
       <p>
-        Guarde esta chave para configurar o ESP32, CLP ou gateway.
-        O SteelControl salva somente o hash da credencial.
+        Chave para firmware ESP32, CLP ou gateway que envia dados diretamente à API.
+        Guarde-a na configuração do dispositivo. A conexão pelo Edge integrado gerencia sua credencial automaticamente.
       </p>
 
       ${maquinaId ? `<div class="device-key-machine-id">ID da máquina: <strong>${escaparHtml(maquinaId)}</strong></div>` : ""}
       <code class="device-key-code">${escaparHtml(chave)}</code>
 
       <div class="device-key-actions">
-        <button type="button" class="device-key-edge-copy" ${maquinaId ? "" : "disabled"}>
-          <i class="fa-solid fa-plug-circle-check"></i>
-          Copiar para SteelControl Edge
-        </button>
-
         <button type="button" class="device-key-copy">
           <i class="fa-regular fa-copy"></i>
           Copiar só a chave
@@ -553,26 +550,6 @@ function mostrarDeviceKey(chave, titulo = "Chave do equipamento", maquinaId = nu
   `;
 
   document.body.appendChild(overlay);
-
-  overlay
-    .querySelector(".device-key-edge-copy")
-    ?.addEventListener("click", async () => {
-      if (!maquinaId) return;
-      const pacote = JSON.stringify({
-        steelControlEdge: 1,
-        server: String(API_URL || window.STEELCONTROL_API_URL || window.location.origin).replace(/\/$/, ""),
-        machineId: Number(maquinaId),
-        deviceKey: chave
-      });
-      const ok = await copiarTextoSeguro(pacote);
-      window.SteelUI?.toast?.({
-        tipo: ok ? "success" : "error",
-        titulo: ok ? "Pacote do Edge copiado" : "Não foi possível copiar",
-        mensagem: ok
-          ? "No SteelControl Desktop, abra Máquinas → Conectar máquina e cole o pacote de conexão."
-          : "Copie a Device Key e o ID da máquina manualmente."
-      });
-    });
 
   overlay
     .querySelector(".device-key-copy")
@@ -1179,9 +1156,7 @@ async function aprovarDispositivoDescoberto(encodedId) {
     if (!resposta.ok) throw new Error(dados.mensagem || "Não foi possível adicionar o equipamento.");
 
     discoveryMessage(dados.mensagem || "Equipamento adicionado.", "sucesso");
-    if (dados.deviceKey) {
-      mostrarDeviceKey(dados.deviceKey, "Chave do equipamento — configuração manual necessária", dados.maquinaId);
-    }
+    window.SteelControlMachineSync.notify('maquina.criada', Number(dados.maquinaId || dados.maquina?.id || 0));
     await Promise.all([carregarMaquinas(), carregarDispositivosDescobertos({ silencioso: true })]);
   } catch (erro) {
     discoveryMessage(erro?.message || "Falha no provisionamento.", "erro");
@@ -1245,7 +1220,7 @@ async function carregarMaquinas({ silencioso = false } = {}) {
       }
 
       const dados = await resposta.json();
-      maquinas = Array.isArray(dados) ? dados : [];
+      maquinas = (Array.isArray(dados) ? dados : []).filter(item => !maquinasRemovidasRealtime.has(Number(item.id)));
       salvarCacheMaquinas(maquinas);
       atualizarResumo();
       aplicarFiltros();
@@ -1279,6 +1254,10 @@ async function carregarMaquinas({ silencioso = false } = {}) {
     await carregarMaquinasPromise;
   } finally {
     carregarMaquinasPromise = null;
+    if (maquinasRecarregarAposResposta) {
+      maquinasRecarregarAposResposta = false;
+      void carregarMaquinas({ silencioso: true });
+    }
   }
 }
 
@@ -2380,6 +2359,7 @@ async function removerMaquina(
       );
     }
 
+    window.SteelControlMachineSync.notify('maquina.desativada', maquina.id);
     window.SteelUI?.toast({
       tipo: "success",
       titulo: "Equipamento desativado",
@@ -2976,11 +2956,13 @@ formMaquina
         mensagemMaquina.className =
           "mensagem-maquina sucesso";
 
-        if (dados.deviceKey && dados.maquina?.id) {
-          mostrarDeviceKey(dados.deviceKey, `Chave do equipamento — ${dados.maquina.nome || "SteelControl Edge"}`, dados.maquina.id);
-        }
 
         const maquinaAlteradaId = Number(dados.maquina?.id || maquinaEditandoId || 0);
+        window.SteelControlMachineSync.notify(editando ? 'maquina.atualizada' : 'maquina.criada', maquinaAlteradaId);
+        if (!editando) window.SteelUI?.toast?.({
+          tipo: "success", titulo: "Equipamento cadastrado",
+          mensagem: dados.maquina?.modoSimulacao ? "A simulação está pronta para usar." : "Use Configurar Edge no cartão para conectar o equipamento."
+        });
         if (editando && maquinaAlteradaId > 0) {
           const avisoAtualizacao = JSON.stringify({
             id: maquinaAlteradaId,
@@ -3248,9 +3230,16 @@ window.addEventListener(
   "steelcontrol:empresa-evento",
   event => {
     const tipo = String(event.detail?.tipo || "");
-    if (!tipo || tipo === "conectado") return;
-
-    if (!tipo.startsWith("maquina.")) return;
+    if (tipo !== "conectado" && !tipo.startsWith("maquina.")) return;
+    const id = Number(event.detail?.dados?.maquinaId || 0);
+    if (["maquina.desativada", "maquina.excluida"].includes(tipo) && id > 0) {
+      maquinasRemovidasRealtime.add(id);
+      maquinas = maquinas.filter(item => Number(item.id) !== id);
+      salvarCacheMaquinas(maquinas);
+      atualizarResumo();
+      aplicarFiltros();
+    }
+    if (carregarMaquinasPromise) maquinasRecarregarAposResposta = true;
 
     clearTimeout(steelMaquinasRealtimeTimer);
     steelMaquinasRealtimeTimer = setTimeout(() => {
