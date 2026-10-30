@@ -1,3 +1,4 @@
+import { lockMachine } from "../../lib/machineLock.js";
 import crypto from 'node:crypto';
 import { Router } from 'express';
 import { prisma } from '../../lib/prisma.js';
@@ -92,7 +93,7 @@ connectionRoutes.delete('/computadores/:hostId',admin,run(async(req,res)=>{
     if(!host)return;
     const links=await tx.machineConnection.findMany({where:{hostId:host.id,empresaId:req.auth.empresaId}});
     for(const link of links){
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${link.maquinaId})`;
+      await lockMachine(tx, link.maquinaId);
       const current=await tx.machineConnection.findFirst({where:{id:link.id,hostId:host.id,empresaId:req.auth.empresaId}});
       if(current){
         await tx.maquina.updateMany({where:{id:link.maquinaId,empresaId:req.auth.empresaId},data:{deviceKeyHash:null,deviceKeyHint:null}});
@@ -131,7 +132,7 @@ connectionRoutes.put('/maquinas/:id',admin,run(async(req,res)=>{
     await tx.$queryRaw`SELECT "id" FROM "ConnectionHost" WHERE "id" = ${hostId} FOR UPDATE`;
     const authorized=await tx.connectionHost.findFirst({where:{id:hostId,empresaId:req.auth.empresaId,revogadoEm:null}});
     if(!authorized)throw Object.assign(new Error('Computador revogado.'),{status:409});
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${id})`;
+    await lockMachine(tx, id);
     const machine=await tx.maquina.findFirst({where:{id,empresaId:req.auth.empresaId,ativo:true}});
     if(!machine)return false;
     if((cfg.driver==='MOCK'||cfg.driver==='AUTO'&&machine.protocolo==='MOCK')&&machine.modoSimulacao===false)throw Object.assign(new Error('Máquinas reais não podem usar o simulador. Selecione o protocolo do equipamento.'),{status:400});
@@ -156,7 +157,7 @@ connectionRoutes.put('/maquinas/:id',admin,run(async(req,res)=>{
 connectionRoutes.delete('/maquinas/:id',admin,run(async(req,res)=>{
   const id=Number(req.params.id);
   await prisma.$transaction(async tx=>{
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${id})`;
+    await lockMachine(tx, id);
     await tx.machineConnection.updateMany({where:{maquinaId:id,empresaId:req.auth.empresaId},data:{ativa:false,comandos:false,estado:'STOPPED',segredo:null,versao:{increment:1}}});
     await tx.maquina.updateMany({where:{id,empresaId:req.auth.empresaId},data:{deviceKeyHash:null,deviceKeyHint:null}});
   });

@@ -1,3 +1,4 @@
+import { lockMachine } from "../../lib/machineLock.js";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../../lib/prisma.js";
 import { registrarAuditoria } from "../../lib/audit.js";
@@ -606,7 +607,7 @@ export async function excluir(req, res, next) {
     const atual = await prisma.$transaction(async tx => {
       // Mesmo lock da configuração Edge: excluir não pode deixar uma conexão
       // nova ocupando a COM de uma máquina que acabou de ser desativada.
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(20261026, ${id})`;
+      await lockMachine(tx, id);
       const maquina = await tx.maquina.findFirst({ where: whereEmpresa(req, id) });
       if (!maquina) return null;
       await tx.machineConnection.updateMany({
