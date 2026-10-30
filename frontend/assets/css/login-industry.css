@@ -1,0 +1,27 @@
+/* Fundo industrial estático: sem WebGL, órbitas ou indicadores fictícios. */
+html .login-shell .image-area.industry-photo {
+  background: linear-gradient(180deg,rgba(4,8,10,.7) 0%,rgba(4,8,10,.22) 48%,rgba(4,8,10,.62) 100%), url('../img/login-industry.webp') center center / cover no-repeat !important;
+  isolation:isolate;
+}
+.login-shell .industry-photo::before,
+.login-shell .industry-photo::after { content:none !important; }
+.login-shell .industry-photo .industrial-message {
+  width:min(82%,620px) !important;
+  top:clamp(56px,9vh,110px) !important;
+  left:clamp(32px,4vw,76px) !important;
+  right:32px !important;
+}
+.login-shell .industry-photo .industrial-message h2 {
+  font-size:clamp(36px,3.8vw,64px) !important;
+  line-height:1.12 !important;
+  color:#fff !important;
+  text-shadow:0 3px 24px rgba(0,0,0,.35);
+}
+.login-shell .industry-photo .industrial-message > p { max-width:480px;color:rgba(255,255,255,.86) !important; }
+.login-shell .industry-photo .industrial-badge { background:rgba(9,16,20,.58);border-color:rgba(255,255,255,.24);backdrop-filter:blur(10px); }
+.login-shell .industry-photo .image-bottom { color:rgba(255,255,255,.8) !important; }
+@media(min-width:1001px) {
+ .login-shell .login-page { grid-template-columns:minmax(390px,.9fr) minmax(0,1.1fr); }
+ .login-shell .login-panel { min-width:0;width:100%; }
+ .login-shell .industry-photo { min-width:0; }
+}
