@@ -14,3 +14,28 @@ html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",A
 .op-panel dt,.op-panel dd,.op-panel dd small,.op-workflow li span,.op-workflow strong{color:var(--ui-text);text-transform:none}.op-panel dd{font-weight:600}.op-panel{border-color:var(--ui-line)}
 :root[data-theme="claro"] .cockpit-logo img{filter:brightness(.3)}
 @media(max-width:600px){.dashboard-preferences{justify-content:flex-start;flex-wrap:wrap}}
+
+/* Unified typography and surfaces across the scene and central controls. */
+.dashboard-page :is(h1,h2,h3,h4,h5,strong,b,button,a,label,small,span,p,dt,dd,input,select,textarea){font-family:"Segoe UI",Arial,sans-serif!important;letter-spacing:normal!important;text-shadow:none!important}
+.dashboard-page :is(button,a,label,small,span,p,dt){font-weight:400!important}
+.dashboard-page :is(h1,h2,h3,h4,h5,strong,b,dd){font-weight:600!important}
+.dashboard-page .tech-back,.dashboard-page .plant-back{font-size:14px!important;font-weight:500!important}
+.dashboard-page .cockpit-machine h1{font-size:28px!important}.dashboard-page .cockpit-header{gap:16px;padding:20px 28px}.dashboard-page .cockpit-account strong{font-size:14px}
+.dashboard-page #steelLanguageSwitcher{display:none!important}
+.dashboard-page :is(.op-panel,.plant-readouts,.cockpit-near,.cockpit-metric-strip>*,.cockpit-position-strip>*){background:var(--op-panel)!important;border-color:var(--ui-line)!important;color:var(--ui-text)!important}
+.dashboard-page :is(.plant-readouts,.cockpit-near,.cockpit-metric-strip,.cockpit-position-strip,.op-panel) :is(span,small,strong,dt,dd){color:var(--ui-text)!important}
+.dashboard-page .op-panel h2{font-size:15px!important;font-weight:600!important;background:#9c5b08!important;color:#fff!important;text-transform:none!important}
+.dashboard-page .op-metric dd{font-size:20px!important}.dashboard-page .cockpit-metric-strip strong{font-size:20px!important;overflow-wrap:anywhere}
+.dashboard-page :is(dialog,.workspace-modal-body,.workspace-modal-header,.workspace-tabs,.dobot-runtime,.dobot-panel,.dobot-diagnostics>article,.dobot-jog-console,.dobot-jog-block,.dobot-jog-settings,.dobot-operation-switch,.dobot-operation-switch button,.dobot-auto-header,.dobot-auto-config,.dobot-teach-grid>*,.workspace-state-grid>*){background:var(--ui-surface)!important;color:var(--ui-text)!important;border-color:var(--ui-line)!important}
+.dashboard-page .machine-workspace-modal :is(h2,h3,h4,p,label,strong,span,small){color:var(--ui-text)!important}
+.dashboard-page .machine-workspace-modal :is(input,select,button,textarea){background:var(--ui-card)!important;color:var(--ui-text)!important;border:1px solid var(--ui-line)!important}
+.dashboard-page .machine-workspace-modal button:disabled{opacity:.45!important;cursor:not-allowed!important}
+.dashboard-page .machine-workspace-modal :is(.danger,.stop){background:#fee2e2!important;color:#a31621!important;border-color:#e4a4ab!important}
+.dashboard-page .machine-workspace-modal :is(.active,[aria-selected=true]){border-color:#ae6b12!important;box-shadow:inset 3px 0 #ae6b12}
+.dashboard-page .dobot-hero{background:var(--ui-card)!important;color:var(--ui-text)!important;border:1px solid var(--ui-line)}
+.dashboard-page .plant-heading{background:var(--op-panel);color:var(--ui-text);padding:12px 16px;border-radius:8px;text-shadow:none}
+.dashboard-page .plant-heading *{color:var(--ui-text)!important}
+.dashboard-page .cockpit-header{grid-template-columns:54px minmax(180px,1fr) auto auto auto auto}
+.dashboard-page .machine-workspace-modal .tech-shortcuts{background:var(--ui-surface)!important}
+@media(max-width:1100px){.dashboard-page .cockpit-header{display:flex;flex-wrap:wrap}.dashboard-page .cockpit-machine{flex:1}.dashboard-page .cockpit-account{margin-left:auto}}
+@media(max-width:600px){.dashboard-page .cockpit-header{padding:16px}.dashboard-page .cockpit-machine h1{font-size:23px!important}.dashboard-page .cockpit-account{width:100%}}

@@ -1,3 +1,5 @@
+document.getElementById('dashboardSettingsOpen').onclick=()=>document.getElementById('dashboardSettings').showModal();
+document.getElementById('dashboardSettingsClose').onclick=()=>document.getElementById('dashboardSettings').close();
 document.getElementById('temaConfig').addEventListener('change',e=>trocarTema(e.target.value));
 document.getElementById('idiomaConfig').addEventListener('change',e=>trocarIdioma(e.target.value));
 const $=id=>document.getElementById(id), make=(tag,text,style)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(style)n.className=style;return n;};
