@@ -1,4 +1,5 @@
 import express from "express";
+import { operationRoutes } from "./modules/operations/operation.routes.js";
 import { accessAudit } from "./middlewares/accessAudit.js";
 import cors from "cors";
 import path from "node:path";
@@ -283,6 +284,7 @@ app.use(
   "/empresa",
   companyRoutes
 );
+app.use("/empresa/operacao", operationRoutes);
 
 app.use(
   "/maquinas",
@@ -332,7 +334,8 @@ const paginasFrontend = {
   "/app/home": "home.html",
   "/app/login": "login.html",
   "/app/maquinas": "maquinas.html",
-  "/app/dashboard": "index.html",
+  "/app/dashboard": "operacao.html",
+  "/app/operacao": "operacao.html",
   "/app/empresa": "empresa.html"
 };
 
@@ -346,7 +349,7 @@ for (
       res.sendFile(
         path.join(
           frontendDir,
-          arquivo
+          rota === "/app/dashboard" && req.query.view ? "index.html" : arquivo
         )
       )
   );

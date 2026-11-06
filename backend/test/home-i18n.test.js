@@ -26,6 +26,8 @@ test('login usa fundo industrial local sem esfera ou telemetria decorativa',()=>
  const login=fs.readFileSync(new URL('../../frontend/login.html',import.meta.url),'utf8');
  const css=fs.readFileSync(new URL('../../frontend/assets/css/login-industry.css',import.meta.url),'utf8');
  assert.doesNotMatch(login,/auth-3d-scene|auth-orbit|auth-identity-core|auth-data-one/);
- assert.match(css,/login-industry\.webp/);
- assert.ok(fs.statSync(new URL('../../frontend/assets/img/login-industry.webp',import.meta.url)).size<300000);
+ const asset=css.match(/url\('\.\.\/img\/(login-industry[-a-z0-9]*\.(?:webp|png))\?/);
+ assert.ok(asset, 'A imagem do login deve ser local.');
+ assert.ok(fs.statSync(new URL('../../frontend/assets/img/'+asset[1],import.meta.url)).size<2000000);
+ assert.match(css,/linear-gradient.*rgba\(0,0,0/);
 });

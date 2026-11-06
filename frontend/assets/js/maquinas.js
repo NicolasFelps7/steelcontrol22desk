@@ -3107,7 +3107,7 @@ function abrirDashboard(
 
 
   window.location.href =
-    destinoDashboard;
+    `/app/operacao?maquinaId=${encodeURIComponent(maquina.id)}`;
 
 }
 

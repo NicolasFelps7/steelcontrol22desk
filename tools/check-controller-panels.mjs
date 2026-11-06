@@ -44,8 +44,9 @@ if (html.includes('id="dobotMenuButton"')) {
   throw new Error("Dobot ainda aparece como item global do menu.");
 }
 
-if (!app.includes('"/app/dashboard": "index.html"')) {
-  throw new Error("Rota profissional /app/dashboard não está mapeada para index.html.");
+if (!app.includes('"/app/dashboard": "operacao.html"') ||
+    !app.includes('rota === "/app/dashboard" && req.query.view ? "index.html" : arquivo')) {
+  throw new Error("Visão industrial ou acesso aos painéis técnicos por view ausente.");
 }
 
 if (

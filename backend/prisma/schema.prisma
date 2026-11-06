@@ -63,6 +63,7 @@ model Empresa {
   conexoes MachineConnection[]
   autorizacoes CompanyAuthorization[]
   usuarios  Usuario[]
+  registrosOperacao IndustrialRecord[]
   maquinas  Maquina[]
   auditLogs AuditLog[]
 }
@@ -94,6 +95,7 @@ model Usuario {
 }
 
 model Maquina {
+  registrosOperacao IndustrialRecord[]
   conexao MachineConnection?
   id         Int @id @default(autoincrement())
   discoveryId String? @unique
@@ -370,4 +372,22 @@ model DiagnosticEvent {
   @@index([empresaId,criadoEm])
   @@index([maquinaId,criadoEm])
   @@unique([empresaId,eventoCliente])
+}
+
+model IndustrialRecord {
+  id String @id @default(uuid())
+  empresaId Int
+  maquinaId Int
+  eventoId String
+  ocorridoEm DateTime
+  observacao String @default("")
+  valores Json
+  ativo Boolean @default(true)
+  criadoPorId Int?
+  criadaEm DateTime @default(now())
+  empresa Empresa @relation(fields:[empresaId],references:[id],onDelete:Cascade)
+  maquina Maquina @relation(fields:[maquinaId],references:[id],onDelete:Cascade)
+  @@unique([empresaId,eventoId])
+  @@index([empresaId,ocorridoEm])
+  @@index([maquinaId,ocorridoEm])
 }
