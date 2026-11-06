@@ -1,27 +1,31 @@
-# SteelControl · Central industrial
+# SteelControl · Central industrial 3D
 
-Implementação web/API + Flutter 1.21.0+54, baseada no desktop `3dc6dad` e no mobile sem fotografia no login.
+Desktop baseado no commit ce8d85e; Flutter 1.22.0+55. Cena WebGL real, com geometria por família e sem fotografia de fábrica no dashboard. O login mobile continua sem fotografia; a imagem de login do desktop permanece.
 
-## Acesso e atualização
+## Atualizar
 
-1. Execute `ATUALIZAR_DASHBOARD_INDUSTRIAL.ps1` no Windows, informando a pasta clonada `steelcontrol22desk`. O script exige branch main e pasta sem alterações pendentes, faz pull sem reescrever histórico, aplica os arquivos, verifica referências/manifesto, cria commit e envia ao GitHub.
-2. Aguarde o deploy do Railway ficar Active. O Docker existente gera o Prisma Client e aplica a migration `20261106120000_industrial_operation_records` antes de iniciar. A migration adiciona somente a tabela de registros e seus índices/relações; não remove máquinas nem altera dados de autenticação.
-3. Abra `/app/dashboard` ou `/app/operacao`. Clique em um equipamento no cenário ou use o seletor. Os cartões de equipamentos abrem a nova visão. **Painel técnico** abre os controles e diagnósticos anteriores por controlador.
-4. No mobile, extraia o ZIP atualizado em uma pasta nova, abra a pasta que contém `pubspec.yaml`, execute `flutter pub get` e depois `flutter build apk --release`. Instale `build/app/outputs/flutter-apk/app-release.apk` no Galaxy Tab. O deploy do site não atualiza APKs já instalados.
+1. No Windows, execute ATUALIZAR_3D_STEELCONTROL.ps1 na cópia clonada de steelcontrol22desk. Exige branch main, árvore limpa e autor Git configurado. Faz pull --ff-only, aplica a alteração, confere manifesto e referências, cria commit e faz push sem reset/force push.
+2. Aguarde o Railway concluir o deploy e abra /app/dashboard com Ctrl+F5. Esta entrega não adiciona migration: a tabela de produção da entrega anterior permanece.
+3. No Flutter, extraia SteelControlMOBILE-atualizado.zip em pasta nova. Execute flutter pub get, depois scripts/verify-mobile.ps1. A nova dependência é webview_flutter 4.14.1, com visualizador local. Android mínimo 24; mantenha Android System WebView atualizado. O APK deve ser recompilado e instalado no tablet; Railway não atualiza o aplicativo instalado.
 
-Para backend local, depois de atualizar o código, execute na pasta `backend`: `npm ci`, `npx prisma generate`, `npx prisma migrate deploy`. Aplique migrations somente no banco correspondente ao ambiente configurado em `DATABASE_URL`. Não use reset ou migrate dev em produção.
+## Novo fluxo integrado
 
-## Painel
+A entrada do dashboard e os antigos endereços de painel abrem a Central industrial. A página antiga foi substituída por um encaminhamento; não há botão para retornar ao dashboard antigo. Os componentes de controle são reaproveitados dentro da nova área da máquina.
 
-- Fundo industrial em perspectiva, grafite/laranja, com resultados à direita, esteiras à esquerda, workflow inferior e indicadores de injetoras.
-- Filtros de 24 horas, 7 dias e 31 dias (janelas móveis), máquina e fonte dos indicadores.
-- Produtos fabricados, tempo por unidade, desperdício, ciclos observados, tempo produzindo/parado/em manutenção, unidades/hora e atingimento da meta.
-- Workflow de pedidos, fabricação, embalagem, notas fiscais e distribuição.
-- Atualização ao retornar ao app e consulta a cada 15 segundos em primeiro plano; eventos da empresa notificam alterações de cadastro/registros. O backend mantém cache de até 3 segundos. Suspensão, internet indisponível e múltiplas réplicas podem adiar a atualização.
-- Mesma API, catálogo de 59 mensagens em seis idiomas e mesmo cenário no web e no Flutter. Tablet em paisagem usa painéis sobrepostos; telas estreitas reorganizam os painéis em coluna.
-- Clique no cenário seleciona um equipamento e filtra os dados. Até oito atalhos aparecem no cenário; o seletor permite escolher os demais. A consulta geral limita a 100 equipamentos e sinaliza quando o escopo deve ser reduzido.
-- O cenário é uma ilustração 3D estática, com seleção interativa sobreposta. Não é uma planta medida da empresa, nem reproduz a posição física ou o movimento do braço. Os estados dos equipamentos e indicadores são dados separados, provenientes da API.
-- O login do mobile permanece sem fotografia. O cenário aparece somente no novo dashboard.
+- Arraste para orbitar, use roda/pinça para zoom e clique/toque para selecionar. Barra de ferramentas: aproximar, afastar, visão geral, foco e malha 3D. Inspecionar em 3D amplia a visualização sem os cartões sobrepostos.
+- O seletor de equipamentos e a seleção no cenário atualizam os indicadores. No desktop, Área da máquina reúne estado, controle, manutenção, alertas e conexão. No mobile a área integra controle, produção, manutenção, alertas e logs com acesso por cargo.
+- Dobot mantém JOG e ciclo supervisionado por pontos ensinados, sem iniciar movimento ao abrir a tela. IHM e impressora usam as rotas e autorizações existentes. A visualização não possui endpoint para mover hardware.
+- Cadastro: escolha Família física / modelo 3D e confira a prévia. Modelo do fabricante, controlador e protocolo permanecem separados. Máquinas antigas são classificadas pelo tipo e, na ausência de um tipo reconhecido, nome/modelo/controlador. Um tipo desconhecido usa representação genérica.
+
+## Modelos e fidelidade
+
+15 famílias: Dobot Magician, robô industrial, esteira, injetora, fresadora CNC, torno CNC, prensa, impressora 3D, embaladora, envasadora, célula de solda, compressor, forno, painel CLP e equipamento genérico. Cada família tem malhas próprias, materiais em grafite/aço e detalhes em laranja SteelControl. Os modelos são representativos, não arquivos CAD dimensionais nem plantas calibradas da empresa.
+
+Os equipamentos aparecem apenas quando cadastrados; nenhum parque demonstrativo é injetado. A planta organiza as máquinas visualmente, sem inferir posição física. Juntas do braço só atualizam com medições finitas de equipamento real online. A geometria não constitui solução de cinemática ou previsão de colisão validada.
+
+O motor e os modelos são arquivos locais, sem CDN, modelos externos ou downloads por equipamento. O contrato do visualizador recebe apenas identificação, tipo, estado e juntas; não recebe credenciais. Nomes usam textContent; navegação da WebView fica restrita ao arquivo local e CSP bloqueia conexões de rede da cena.
+
+Por desempenho, a cena exibe até 24 equipamentos no desktop ou 12 no tablet simultaneamente; uma seleção fora desse conjunto entra na cena e os demais continuam acessíveis pelo seletor da central (limite de 100 equipamentos da API). Renderização sob demanda, limite de resolução e pausa em segundo plano reduzem consumo. Sem WebGL, aparece mensagem de indisponibilidade; não é substituído por uma imagem.
 
 ## Fonte 1: telemetria
 
@@ -83,16 +87,12 @@ Administradores, supervisores e técnicos podem registrar totais reais de um tur
 
 As rotas `/empresa/operacao` passam pela autenticação existente, rechecagem de sessão/empresa e proteção de origem para cookies. O banco filtra por empresa e máquinas ativas. Escritas verificam cargo e propriedade do equipamento, rejeitam dados inválidos, possuem limite de tentativas e chave de idempotência por empresa. A consulta histórica usa SQL parametrizado, limite de consultas por usuário e prazo de 8 segundos no banco. Registros nunca enviam comandos ao robô.
 
-Os comandos e as proteções do Edge permanecem nos painéis técnicos existentes. O cenário não aciona equipamentos quando selecionado. A supervisão do processo não substitui os sistemas físicos de segurança.
+Os componentes de comando existentes foram incorporados à área da máquina na central; as verificações de permissão e as proteções do Edge continuam ativas. O cenário não aciona equipamentos quando selecionado. A supervisão do processo não substitui os sistemas físicos de segurança.
 
-## Validação e limites do ambiente
+## Validação da entrega
 
-Verificados: schema Prisma e geração do client, migration aditiva em PostgreSQL via PGlite, leitura de contadores explícitos/legados confirmados, janela e reinícios, isolamento entre empresas, cargos, idempotência, registros removidos, campos parciais, rotas HTTP reais (dashboard novo/painel técnico/API sem sessão), referências estáticas e manifesto.
+Verificados neste ambiente: testes do backend incluindo isolamento por empresa, cargos, comandos, idempotência, SQL PostgreSQL via PGlite e rotas HTTP; testes das 15 geometrias reais Three.js (vértices finitos, volumes, raycast/seleção, classificação, pose e torres de estado); whitelisting de telemetria para a cena; referências estáticas e manifesto de freeze.
 
-Os testes do backend e os testes específicos de operação foram executados no Node disponível neste ambiente; o projeto/Docker continua configurado para Node 22. Testes Flutter de responsividade foram adicionados, mas não executados: não há Flutter/engine completo aqui. A tentativa de prévia automatizada do navegador foi bloqueada pelo ambiente (Chromium sem acesso ao socket de perfil; navegador remoto sem acesso ao localhost). Não foi compilado APK nem realizado teste no Galaxy Tab ou com hardware nesta entrega. Execute `scripts/verify-mobile.ps1` no Windows e confira o painel no dispositivo antes da apresentação.
+O SDK Dart verificou a sintaxe/formatação dos arquivos alterados. Não há Flutter/engine completo disponível para flutter analyze, testes de widgets ou geração de APK. Aceleração gráfica e interação WebGL não foram testadas em navegador nem no Galaxy Tab neste ambiente; valide no dispositivo antes de usar a entrega em uma apresentação ou operação. Os testes de backend usam o Node disponível aqui; projeto/Docker continuam em Node 22.
 
-## Cenário visual
-
-Arquivo integrado: `frontend/assets/img/operation-floor.png` no desktop e `assets/images/operation-floor.png` no Flutter. Criado com a ferramenta integrada de geração de imagens, a partir da referência enviada; sem logotipo, textos ou números incorporados. Os cartões e valores são componentes do sistema.
-
-Prompt final do cenário: “Factory digital twin background only, elevated wide three-quarter industrial perspective, robotic arms along roller conveyors, packages, circular assembly stations, safety fences, cabinets and racks; SteelControl amber/orange housings, graphite chassis, brushed steel, muted dark interior; realistic professional CAD visualization; landscape 16:10, low-contrast background for UI overlay; no text, numbers, logos or floating panels.”
+Não foram enviados comandos a hardware. A visualização e os controles por software não substituem parada física, intertravamentos e supervisão local.

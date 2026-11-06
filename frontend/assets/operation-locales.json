@@ -35,7 +35,7 @@
     "source": "Fonte dos indicadores",
     "partial": "Dados parciais: confira as fontes disponíveis.",
     "limit": "Intervalo excede o limite de registros. Selecione uma máquina ou período menor.",
-    "schematic": "Representação da linha · toque em um equipamento",
+    "schematic": "Arraste para girar · pinça/roda para zoom · toque para selecionar",
     "empty": "Cadastre equipamentos para começar.",
     "online": "Online",
     "offline": "Offline",
@@ -58,7 +58,11 @@
     "seconds": "segundos",
     "fieldError": "Confira a data e os valores. Preencha pelo menos um indicador.",
     "coverage": "Fontes com produção",
-    "readOnly": "Supervisão · comandos no painel técnico"
+    "readOnly": "Supervisão e comandos autorizados na área da máquina",
+    "workspace": "Área da máquina",
+    "inspect3d": "Inspecionar em 3D",
+    "exit3d": "Voltar aos indicadores",
+    "gesture3d": "Arraste para girar · pinça/roda para zoom · toque para selecionar"
   },
   "en": {
     "operation": "Operations center",
@@ -96,7 +100,7 @@
     "source": "Indicator source",
     "partial": "Partial data: check available sources.",
     "limit": "Record limit exceeded. Select a machine or shorter period.",
-    "schematic": "Line representation · tap equipment",
+    "schematic": "Drag to orbit · pinch/wheel to zoom · tap to select",
     "empty": "Register equipment to get started.",
     "online": "Online",
     "offline": "Offline",
@@ -119,7 +123,11 @@
     "seconds": "seconds",
     "fieldError": "Check the date and values. Fill at least one indicator.",
     "coverage": "Sources reporting production",
-    "readOnly": "Supervision · commands in technical panel"
+    "readOnly": "Supervision and authorized commands in the machine workspace",
+    "workspace": "Machine workspace",
+    "inspect3d": "Inspect in 3D",
+    "exit3d": "Back to indicators",
+    "gesture3d": "Drag to orbit · pinch/wheel to zoom · tap to select"
   },
   "es": {
     "operation": "Central de operaciones",
@@ -157,7 +165,7 @@
     "source": "Fuente de indicadores",
     "partial": "Datos parciales: revise las fuentes disponibles.",
     "limit": "Límite de registros superado. Elija una máquina o un período menor.",
-    "schematic": "Representación de la línea · toque un equipo",
+    "schematic": "Arrastre para girar · pellizque/rueda para zoom · toque para seleccionar",
     "empty": "Registre equipos para comenzar.",
     "online": "En línea",
     "offline": "Sin conexión",
@@ -180,7 +188,11 @@
     "seconds": "segundos",
     "fieldError": "Revise la fecha y los valores. Complete al menos un indicador.",
     "coverage": "Fuentes con producción",
-    "readOnly": "Supervisión · comandos en el panel técnico"
+    "readOnly": "Supervisión y comandos autorizados en el área de la máquina",
+    "workspace": "Área de la máquina",
+    "inspect3d": "Inspeccionar en 3D",
+    "exit3d": "Volver a indicadores",
+    "gesture3d": "Arrastre para girar · pellizque/rueda para zoom · toque para seleccionar"
   },
   "fr": {
     "operation": "Centre des opérations",
@@ -218,7 +230,7 @@
     "source": "Source des indicateurs",
     "partial": "Données partielles : vérifiez les sources disponibles.",
     "limit": "Limite de relevés dépassée. Choisissez une machine ou une période plus courte.",
-    "schematic": "Représentation de ligne · touchez un équipement",
+    "schematic": "Glissez pour tourner · pincez/molette pour zoomer · touchez pour sélectionner",
     "empty": "Enregistrez des équipements pour commencer.",
     "online": "En ligne",
     "offline": "Hors ligne",
@@ -241,7 +253,11 @@
     "seconds": "secondes",
     "fieldError": "Vérifiez date et valeurs. Renseignez au moins un indicateur.",
     "coverage": "Sources avec production",
-    "readOnly": "Supervision · commandes dans le panneau technique"
+    "readOnly": "Supervision et commandes autorisées dans l’espace machine",
+    "workspace": "Espace machine",
+    "inspect3d": "Inspecter en 3D",
+    "exit3d": "Retour aux indicateurs",
+    "gesture3d": "Glissez pour tourner · pincez/molette pour zoomer · touchez pour sélectionner"
   },
   "de": {
     "operation": "Betriebszentrale",
@@ -279,7 +295,7 @@
     "source": "Datenquelle",
     "partial": "Teildaten: verfügbare Quellen prüfen.",
     "limit": "Datensatzgrenze überschritten. Maschine oder kürzeren Zeitraum wählen.",
-    "schematic": "Liniendarstellung · Anlage antippen",
+    "schematic": "Ziehen zum Drehen · Pinch/Mausrad zum Zoomen · Antippen zum Auswählen",
     "empty": "Registrieren Sie zunächst Anlagen.",
     "online": "Online",
     "offline": "Offline",
@@ -302,7 +318,11 @@
     "seconds": "Sekunden",
     "fieldError": "Datum und Werte prüfen. Mindestens eine Kennzahl ausfüllen.",
     "coverage": "Quellen mit Produktionsdaten",
-    "readOnly": "Überwachung · Befehle im technischen Panel"
+    "readOnly": "Überwachung und autorisierte Befehle im Maschinenbereich",
+    "workspace": "Maschinenbereich",
+    "inspect3d": "In 3D prüfen",
+    "exit3d": "Zurück zu Kennzahlen",
+    "gesture3d": "Ziehen zum Drehen · Pinch/Mausrad zum Zoomen · Antippen zum Auswählen"
   },
   "it": {
     "operation": "Centrale operativa",
@@ -340,7 +360,7 @@
     "source": "Fonte degli indicatori",
     "partial": "Dati parziali: verifica le fonti disponibili.",
     "limit": "Limite registri superato. Seleziona una macchina o un periodo più breve.",
-    "schematic": "Rappresentazione della linea · tocca una macchina",
+    "schematic": "Trascina per ruotare · pizzica/rotella per zoom · tocca per selezionare",
     "empty": "Registra le macchine per iniziare.",
     "online": "Online",
     "offline": "Offline",
@@ -363,6 +383,10 @@
     "seconds": "secondi",
     "fieldError": "Controlla data e valori. Compila almeno un indicatore.",
     "coverage": "Fonti con produzione",
-    "readOnly": "Supervisione · comandi nel pannello tecnico"
+    "readOnly": "Supervisione e comandi autorizzati nell’area macchina",
+    "workspace": "Area macchina",
+    "inspect3d": "Ispeziona in 3D",
+    "exit3d": "Torna agli indicatori",
+    "gesture3d": "Trascina per ruotare · pizzica/rotella per zoom · tocca per selezionare"
   }
 }

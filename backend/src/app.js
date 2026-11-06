@@ -330,6 +330,8 @@ app.get(
   }
 );
 
+app.get("/app/index.html", (req,res)=>res.redirect("/app/dashboard"));
+app.get("/index.html", (req,res)=>res.redirect("/app/dashboard"));
 const paginasFrontend = {
   "/app/home": "home.html",
   "/app/login": "login.html",
@@ -349,7 +351,7 @@ for (
       res.sendFile(
         path.join(
           frontendDir,
-          rota === "/app/dashboard" && req.query.view ? "index.html" : arquivo
+          arquivo
         )
       )
   );

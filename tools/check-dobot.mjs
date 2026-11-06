@@ -23,6 +23,8 @@ const controller = fs.readFileSync(path.join(root,"backend/src/modules/machines/
 if (!controller.includes("prepararAutomaticoDobot")) throw new Error("Controller não usa o contrato compartilhado do automático Dobot.");
 const runtime = fs.readFileSync(path.join(root,"frontend/assets/js/dobot-runtime.js"),"utf8");
 if (!runtime.includes("persistSharedAutomatic") || !runtime.includes("/dobot/automatico")) throw new Error("Desktop não sincroniza o automático com o servidor.");
-const html = fs.readFileSync(path.join(root,"frontend/index.html"),"utf8");
-if (!html.includes('id="dobotTela"')) throw new Error("Aba Dobot ausente no desktop.");
+const html = fs.readFileSync(path.join(root,"frontend/operacao.html"),"utf8");
+if (!html.includes('id="dobotControlTemplate"') || !html.includes('id="dobotControls"')) throw new Error("Componente Dobot integrado ausente.");
+const component = fs.readFileSync(path.join(root,'frontend/assets/js/dobot-control-component.js'),'utf8');
+for (const check of ['persistSharedAutomatic','/dobot/automatico','hasFreshRealConnection','stopJogHold','dispose()']) if (!component.includes(check)) throw new Error(`Componente Dobot incompleto: ${check}`);
 console.log("[DOBOT] CHECK PROFISSIONAL: OK");

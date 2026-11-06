@@ -4,7 +4,8 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
 const read = file => fs.readFileSync(path.join(root, file), "utf8");
 
-const html = read("frontend/index.html");
+const html = read("frontend/operacao.html");
+const workspace = read("frontend/assets/js/machine-workspace.js");
 const machines = read("frontend/assets/js/maquinas.js");
 const runtime = read("frontend/assets/js/controller-runtime.js");
 const dashboard = read("frontend/assets/js/dashboard.js");
@@ -22,15 +23,13 @@ const requiredControllers = [
   "OUTRO"
 ];
 
-if (!html.includes('id="controllerTela"')) {
-  throw new Error("Painel adaptativo ausente.");
+for (const id of ['op3DScene','opMachine','dobotControlTemplate']) {
+  if (!html.includes(`id="${id}"`)) throw new Error(`Central industrial incompleta: ${id}`);
 }
-
-for (const hmiId of ["hmiConsole", "hmiProcessDiagram", "hmiCommandState"]) {
-  if (!html.includes(`id="${hmiId}"`)) {
-    throw new Error(`IHM industrial incompleta: ${hmiId} ausente.`);
-  }
+for (const check of ['IHM_START','IHM_STOP','IHM_RESET','startPolicy','impressora3d/comandos','SteelDobotControl.mount','/manutencoes']) {
+  if (!workspace.includes(check)) throw new Error(`Área integrada incompleta: ${check}`);
 }
+if (!read('frontend/index.html').includes('url=/app/dashboard')) throw new Error('Entrada antiga deve encaminhar para a central.');
 
 if (!machineController.includes("criarComandoIhm") || !machineController.includes("IHM_START")) {
   throw new Error("Backend da IHM industrial ausente.");
@@ -45,8 +44,8 @@ if (html.includes('id="dobotMenuButton"')) {
 }
 
 if (!app.includes('"/app/dashboard": "operacao.html"') ||
-    !app.includes('rota === "/app/dashboard" && req.query.view ? "index.html" : arquivo')) {
-  throw new Error("Visão industrial ou acesso aos painéis técnicos por view ausente.");
+    !fs.existsSync(path.join(root,'frontend/assets/js/machine-workspace.js'))) {
+  throw new Error("Rota da central industrial ou área integrada ausente.");
 }
 
 if (
@@ -54,23 +53,6 @@ if (
   !machines.includes('/app/dashboard?view=dobot')
 ) {
   throw new Error("Roteamento profissional dos painéis por controlador ausente.");
-}
-
-for (const scope of [
-  "machineProductionTitle",
-  "machineMaintenanceTitle",
-  "machineLogsTitle"
-]) {
-  if (!html.includes(`id="${scope}"`) || !dashboard.includes(scope)) {
-    throw new Error(`Tela da máquina sem contexto dinâmico: ${scope}`);
-  }
-}
-
-if (
-  !dashboard.includes('painelSolicitado === "controller"') ||
-  !dashboard.includes('painelSolicitado === "dobot"')
-) {
-  throw new Error("O botão Início não preserva o painel específico do controlador.");
 }
 
 for (const controller of requiredControllers) {

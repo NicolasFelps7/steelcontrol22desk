@@ -1,14 +1,85 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11181d"><title>Operação industrial | SteelControl</title><link rel="stylesheet" href="assets/css/operation-center.css?v=20261106_1"></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11181d"><title>Operação industrial | SteelControl</title><link rel="stylesheet" href="assets/css/operation-center.css?v=20261106_3D_1"><link rel="stylesheet" href="assets/industrial3d/viewer.css?v=20261106_3D_1"><link rel="stylesheet" href="assets/vendor/steel-icons/steel-icons.css"><link rel="stylesheet" href="assets/css/dobot-runtime.css?v=20260901_DARK_COMPLETE"></head><body>
 <header class="op-nav"><a href="/app/maquinas" class="op-wordmark"><img src="assets/img/steel-icon-white.svg" alt=""><span>STEEL<span>CONTROL</span></span></a><span class="op-nav-caption" data-op="operation"></span><nav><a href="/app/maquinas" data-op="machines"></a><button id="opRefresh" data-op="retry"></button><select id="opLanguage" aria-label="Idioma"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option><option value="fr">FR</option><option value="de">DE</option><option value="it">IT</option></select><button id="opFullscreen" aria-label="Tela cheia">⛶</button></nav></header>
-<main><div class="op-toolbar"><div><span class="op-eyebrow" data-op="connected"></span><h1 data-op="operation"></h1></div><div class="op-filters"><label><span data-op="machines"></span><select id="opMachine"></select></label><label><span data-op="source"></span><select id="opSource"><option value="TELEMETRIA" data-op="live"></option><option value="REGISTROS" data-op="records"></option></select></label><button id="opTechnical" data-op="technical" hidden></button><button id="opRegister" class="op-action" data-op="register" hidden></button></div></div>
+<main><div class="op-toolbar"><div><span class="op-eyebrow" data-op="connected"></span><h1 data-op="operation"></h1></div><div class="op-filters"><label><span data-op="machines"></span><select id="opMachine"></select></label><label><span data-op="source"></span><select id="opSource"><option value="TELEMETRIA" data-op="live"></option><option value="REGISTROS" data-op="records"></option></select></label><button id="opTechnical" data-op="workspace" hidden></button><button id="opInspect" data-op="inspect3d"></button><button id="opRegister" class="op-action" data-op="register" hidden></button></div></div>
 <div id="opMessage" class="op-message" role="status" aria-live="polite"></div>
-<section class="op-board" aria-label="Visão industrial"><div class="op-scene" aria-hidden="true"></div><div class="op-heading"><strong>STEELCONTROL</strong><span data-op="connected"></span></div><div class="op-period"><div class="op-range" role="group" id="opRanges"><button data-days="1" class="selected" data-op="day" aria-pressed="true"></button><button data-days="7" data-op="week" aria-pressed="false"></button><button data-days="31" data-op="month" aria-pressed="false"></button></div><p><span data-op="last"></span>: <time id="opUpdated">—</time></p></div>
-<div id="opHotspots" class="op-hotspots"></div>
+<section class="op-board" aria-label="Visão industrial"><div class="op-scene" id="op3DScene" role="region" aria-label="Máquinas em 3D interativo"></div><div class="op-heading"><strong>STEELCONTROL</strong><span data-op="connected"></span></div><div class="op-period"><div class="op-range" role="group" id="opRanges"><button data-days="1" class="selected" data-op="day" aria-pressed="true"></button><button data-days="7" data-op="week" aria-pressed="false"></button><button data-days="31" data-op="month" aria-pressed="false"></button></div><p><span data-op="last"></span>: <time id="opUpdated">—</time></p></div>
+
 <article class="op-panel op-results"><h2 data-op="results"></h2><dl id="opResults"></dl></article>
 <article class="op-panel op-belt"><h2 data-op="belt"></h2><dl id="opBelt"></dl></article>
 <article class="op-panel op-workflow"><h2><span data-op="workflow"></span><small id="opRangeLabel"></small></h2><ol id="opWorkflow"></ol></article>
 <article class="op-panel op-injection"><h2 data-op="injection"></h2><dl id="opInjection"></dl></article>
 <div class="op-scene-caption" data-op="schematic"></div>
-</section><footer class="op-footer"><span id="opCoverage"></span><span data-op="readOnly"></span></footer><section id="opRecent" class="op-recent" hidden><h2 data-op="recent"></h2><div></div></section></main>
+</section><footer class="op-footer"><span id="opCoverage"></span><span data-op="readOnly"></span></footer><section id="opRecent" class="op-recent" hidden><h2 data-op="recent"></h2><div></div></section><template id="dobotControlTemplate"><section id="dobotControls" class="dobot-runtime">
+      <div class="dobot-hero">
+        <div><span class="dobot-eyebrow">PAINEL EXCLUSIVO DA MÁQUINA</span><h2 id="dobotMachineName">Dobot Magician</h2><p>Gateway Python • USB/Serial • Telemetria e comandos pela fila segura do SteelControl</p></div>
+        <div id="dobotStateBadge" class="dobot-state waiting"><span></span><strong>Aguardando gateway</strong></div>
+      </div>
+      <div class="dobot-diagnostics" id="dobotDiagnostics">
+        <article><i class="fa-solid fa-server"></i><span>Gateway</span><strong id="dobotGatewayState">--</strong></article>
+        <article><i class="fa-solid fa-usb"></i><span>Porta</span><strong id="dobotPort">--</strong></article>
+        <article><i class="fa-solid fa-stopwatch"></i><span>Latência</span><strong id="dobotLatency">--</strong></article>
+        <article><i class="fa-solid fa-triangle-exclamation"></i><span>Alarmes</span><strong id="dobotAlarmsCount">--</strong></article>
+      </div>
+      <div id="dobotIndustrialDynamic" class="industrial-dynamic-mount"></div>
+      <div class="dobot-main-grid">
+        <article class="dobot-panel"><div class="dobot-panel-head"><div><span>POSE CARTESIANA</span><h3>Posição do efetuador</h3></div><i class="fa-solid fa-location-crosshairs"></i></div><div class="dobot-coordinate-grid"><div><span>X</span><strong id="dobotX">--</strong><small>mm</small></div><div><span>Y</span><strong id="dobotY">--</strong><small>mm</small></div><div><span>Z</span><strong id="dobotZ">--</strong><small>mm</small></div><div><span>R</span><strong id="dobotR">--</strong><small>°</small></div></div></article>
+        <article class="dobot-panel"><div class="dobot-panel-head"><div><span>ARTICULAÇÕES</span><h3>Ângulos das juntas</h3></div><i class="fa-solid fa-arrows-spin"></i></div><div class="dobot-coordinate-grid joints"><div><span>J1</span><strong id="dobotJ1">--</strong><small>°</small></div><div><span>J2</span><strong id="dobotJ2">--</strong><small>°</small></div><div><span>J3</span><strong id="dobotJ3">--</strong><small>°</small></div><div><span>J4</span><strong id="dobotJ4">--</strong><small>°</small></div></div></article>
+      </div>
+      <div class="dobot-main-grid">
+        <article class="dobot-panel"><div class="dobot-panel-head"><div><span>INSTRUMENTAÇÃO</span><h3>Sensores da célula</h3></div><i class="fa-solid fa-wave-square"></i></div><div class="dobot-sensor-list"><div><span>Temperatura</span><strong id="dobotSensorTemp">Não instalado</strong></div><div><span>Vibração</span><strong id="dobotSensorVibration">Não instalado</strong></div><div><span>Corrente</span><strong id="dobotSensorCurrent">Não instalado</strong></div></div><p class="dobot-note"><i class="fa-solid fa-circle-info"></i> O SteelControl não inventa temperatura interna do Dobot. Esses dados entram quando sensores externos/ESP32 estiverem instalados.</p></article>
+        <article class="dobot-panel"><div class="dobot-panel-head"><div><span>EFETOR</span><h3>Ferramenta e estado</h3></div><i class="fa-solid fa-hand"></i></div><div class="dobot-effector-grid"><div><span>Ventosa</span><strong id="dobotSuction">--</strong></div><div><span>Garra</span><strong id="dobotGripper">--</strong></div><div><span>Fila</span><strong id="dobotQueue">--</strong></div><div><span>Modo</span><strong id="dobotMode">--</strong></div></div></article>
+      </div>
+      <article class="dobot-panel dobot-control-panel">
+        <div class="dobot-panel-head"><div><span>CONTROLE SUPERVISIONADO</span><h3>Operação do robô</h3><p>Escolha operação manual ou ciclo automático de pick-and-place.</p></div><div id="dobotMotionLock" class="motion-lock"><i class="fa-solid fa-lock"></i> Movimento protegido</div></div>
+
+        <div class="dobot-operation-switch" role="group" aria-label="Modo de operação do Dobot">
+          <button id="dobotManualMode" type="button" class="active"><i class="fa-solid fa-gamepad"></i><span>MANUAL</span><small>Controle jog industrial</small></button>
+          <button id="dobotAutomaticMode" type="button"><i class="fa-solid fa-arrows-rotate"></i><span>AUTOMÁTICO</span><small>Ciclo industrial pick-and-place</small></button>
+          <div id="dobotCycleInterlock" class="dobot-cycle-interlock"><i class="fa-solid fa-circle-check"></i> Manual liberado</div>
+        </div>
+
+        <div id="dobotManualControls" class="dobot-operation-pane">
+          <div class="dobot-control-actions"><button type="button" disabled title="Calibração local supervisionada conforme o manual"><i class="fa-solid fa-house"></i> HOME local</button><button type="button" class="danger" data-dobot-command="DOBOT_STOP"><i class="fa-solid fa-stop"></i> PARAR</button><button type="button" data-dobot-command="DOBOT_CLEAR_ALARMS"><i class="fa-solid fa-broom"></i> Limpar alarmes</button><button type="button" data-dobot-command="DOBOT_SUCTION_ON">Ventosa ON</button><button type="button" data-dobot-command="DOBOT_SUCTION_OFF">Ventosa OFF</button><button type="button" data-dobot-command="DOBOT_GRIPPER_OPEN">Abrir garra</button><button type="button" data-dobot-command="DOBOT_GRIPPER_CLOSE">Fechar garra</button></div>
+          <section class="dobot-jog-console" aria-label="Controle manual incremental do Dobot">
+            <div class="dobot-jog-head"><div><span>CONTROLE JOG</span><h4>Movimento cartesiano assistido</h4><p>Cada toque desloca o robô a partir da posição real atual.</p></div><output id="dobotJogTarget">Pronto para movimentar</output></div>
+            <div class="dobot-jog-layout">
+              <div class="dobot-jog-block"><strong>Plano X / Y</strong><div class="dobot-jog-pad"><i></i><button type="button" data-dobot-jog="y+" aria-label="Avançar no eixo Y"><i class="fa-solid fa-arrow-up"></i><span>Y+</span></button><i></i><button type="button" data-dobot-jog="x-" aria-label="Mover no eixo X negativo"><i class="fa-solid fa-arrow-left"></i><span>X−</span></button><button type="button" class="stop" data-dobot-command="DOBOT_STOP" aria-label="Solicitar parada por software"><i class="fa-solid fa-stop"></i><span>STOP</span></button><button type="button" data-dobot-jog="x+" aria-label="Mover no eixo X positivo"><i class="fa-solid fa-arrow-right"></i><span>X+</span></button><i></i><button type="button" data-dobot-jog="y-" aria-label="Recuar no eixo Y"><i class="fa-solid fa-arrow-down"></i><span>Y−</span></button><i></i></div></div>
+              <div class="dobot-jog-block"><strong>Altura / Rotação</strong><div class="dobot-jog-axis"><button type="button" data-dobot-jog="z+"><i class="fa-solid fa-arrow-up-long"></i><span>SUBIR</span><small>Z+</small></button><button type="button" data-dobot-jog="z-"><i class="fa-solid fa-arrow-down-long"></i><span>DESCER</span><small>Z−</small></button><button type="button" data-dobot-jog="r-"><i class="fa-solid fa-rotate-left"></i><span>GIRAR</span><small>R−</small></button><button type="button" data-dobot-jog="r+"><i class="fa-solid fa-rotate-right"></i><span>GIRAR</span><small>R+</small></button></div></div>
+              <div class="dobot-jog-settings"><label>Passo do movimento<select id="dobotJogStep"><option value="1">1 mm / 1°</option><option value="5" selected>5 mm / 5°</option><option value="10">10 mm / 10°</option><option value="20">20 mm / 20°</option></select></label><label>Velocidade <span id="dobotJogSpeedValue">20%</span><input id="dobotJogSpeed" type="range" min="1" max="40" value="20"></label><div class="dobot-jog-hint"><i class="fa-solid fa-shield-halved"></i><span>Movimentos curtos, limites validados e confirmação da posição real.</span></div></div>
+            </div>
+          </section>
+          <p class="dobot-safety-copy"><i class="fa-solid fa-shield-halved"></i> Modo manual: use movimentos curtos e mantenha a área do robô livre. PARAR solicita uma parada por software e depende da comunicação. Mantenha a parada de emergência física acessível.</p>
+        </div>
+
+        <div id="dobotAutomaticControls" class="dobot-operation-pane" hidden>
+          <div class="dobot-auto-header">
+            <div><span>AUTOMAÇÃO INDUSTRIAL</span><h4>Pick-and-place com 5 pontos ensinados</h4><p>Posicione o Dobot manualmente e capture P0 a P4. O ciclo usa as posições reais da célula.</p></div>
+            <div class="dobot-auto-status"><small>Estado</small><strong id="dobotAutoStatus">Pronto para ensinar</strong></div>
+          </div>
+
+          <div class="dobot-teach-grid">
+            <article data-dobot-point="P0"><div><strong>P0</strong><span>Espera</span></div><code data-dobot-point-value="P0">Não ensinado</code><button type="button" data-dobot-capture="P0"><i class="fa-solid fa-crosshairs"></i> Capturar atual</button></article>
+            <article data-dobot-point="P1"><div><strong>P1</strong><span>Acima da peça</span></div><code data-dobot-point-value="P1">Não ensinado</code><button type="button" data-dobot-capture="P1"><i class="fa-solid fa-crosshairs"></i> Capturar atual</button></article>
+            <article data-dobot-point="P2"><div><strong>P2</strong><span>Coleta</span></div><code data-dobot-point-value="P2">Não ensinado</code><button type="button" data-dobot-capture="P2"><i class="fa-solid fa-crosshairs"></i> Capturar atual</button></article>
+            <article data-dobot-point="P3"><div><strong>P3</strong><span>Acima do destino</span></div><code data-dobot-point-value="P3">Não ensinado</code><button type="button" data-dobot-capture="P3"><i class="fa-solid fa-crosshairs"></i> Capturar atual</button></article>
+            <article data-dobot-point="P4"><div><strong>P4</strong><span>Entrega</span></div><code data-dobot-point-value="P4">Não ensinado</code><button type="button" data-dobot-capture="P4"><i class="fa-solid fa-crosshairs"></i> Capturar atual</button></article>
+          </div>
+
+          <div class="dobot-auto-config">
+            <label>Repetições<input id="dobotAutoCycles" type="number" min="1" max="20" value="1"></label>
+            <label>Velocidade automática (%)<input id="dobotAutoSpeed" type="number" min="1" max="40" value="15"></label>
+            <div class="dobot-auto-progress-wrap"><div><span id="dobotAutoStep">Aguardando início</span><strong id="dobotAutoCounter">0 / 1</strong></div><div class="dobot-auto-progress"><span id="dobotAutoProgress" style="width:0%"></span></div></div>
+          </div>
+
+          <div class="dobot-auto-actions">
+            <button id="dobotAutoStart" type="button" class="start"><i class="fa-solid fa-play"></i> INICIAR CICLO</button>
+            <button id="dobotAutoPause" type="button" disabled><i class="fa-solid fa-pause"></i> PAUSAR</button>
+            <button id="dobotAutoStop" type="button" class="danger" disabled><i class="fa-solid fa-stop"></i> PARAR</button>
+            <button id="dobotAutoReset" type="button"><i class="fa-solid fa-rotate-left"></i> REDEFINIR PONTOS</button>
+          </div>
+          <p class="dobot-safety-copy"><i class="fa-solid fa-triangle-exclamation"></i> O modo automático bloqueia os comandos manuais enquanto o ciclo está ativo. PAUSAR atua entre etapas; PARAR solicita DOBOT_STOP pela conexão; não substitui a parada de emergência física. Use somente após ensinar pontos sem colisão.</p>
+        </div>
+      </article>
+    </section></template></main>
 <dialog id="opDialog"><form id="opForm"><div class="op-dialog-head"><div><span class="op-eyebrow">STEELCONTROL</span><h2 data-op="register"></h2></div><button type="button" id="opClose" aria-label="Fechar">×</button></div><p data-op="registerCaption"></p><div class="op-form-grid"><label><span data-op="machines"></span><select id="opRecordMachine" required></select></label><label><span data-op="date"></span><input type="datetime-local" id="opRecordDate" required></label></div><div id="opValueFields" class="op-form-grid"></div><label><span data-op="note"></span><input id="opRecordNote" maxlength="240"></label><p id="opFormError" role="alert"></p><div class="op-dialog-actions"><button type="button" id="opCancel" data-op="cancel"></button><button type="submit" id="opSave" class="op-action" data-op="save"></button></div></form></dialog>
-<script src="assets/js/config.js?v=20261013_THEME_I18N_FINAL_3"></script><script type="module" src="assets/js/operation-center.js?v=20261106_1"></script></body></html>
+<script src="assets/js/config.js?v=20261013_THEME_I18N_FINAL_3"></script><script src="assets/industrial3d/three.min.js"></script><script src="assets/industrial3d/machine-models.js?v=1"></script><script src="assets/industrial3d/machine-viewer.js?v=1"></script><script src="assets/js/dobot-control-component.js?v=1"></script><script src="assets/js/machine-workspace.js?v=1"></script><script type="module" src="assets/js/operation-center.js?v=20261106_3D_1"></script></body></html>

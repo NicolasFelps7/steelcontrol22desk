@@ -57,10 +57,16 @@ test('rotas reais: dashboard industrial, painel técnico e API sem sessão',asyn
  const originalAudit=prisma.auditLog.create;prisma.auditLog.create=async()=>({});
  const {app}=await import('../src/app.js');const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
  try{const base=`http://127.0.0.1:${server.address().port}`;
- const dashboard=await fetch(base+'/app/dashboard');assert.equal(dashboard.status,200);assert.match(await dashboard.text(),/id="opHotspots"/);
- const technical=await fetch(base+'/app/dashboard?view=controller');assert.equal(technical.status,200);assert.match(await technical.text(),/id="inicio"/);
+ const dashboard=await fetch(base+'/app/dashboard');assert.equal(dashboard.status,200);assert.match(await dashboard.text(),/id="op3DScene"/);
+ const technical=await fetch(base+'/app/dashboard?view=controller');assert.equal(technical.status,200);assert.match(await technical.text(),/id="op3DScene"/);
  const api=await fetch(base+'/empresa/operacao');assert.equal(api.status,401);
  }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));prisma.auditLog.create=originalAudit;}
 });
 
 test('consulta demorada informa indisponibilidade sem sugerir migration incorreta',async()=>{const f=fixture();f.db.$transaction=async()=>{throw {code:'P2028'};};const r=await invoke(f.controller.report);assert.equal(r.statusCode,503);assert.equal(r.data.codigo,'OPERATION_QUERY_TIMEOUT');});
+
+test('cena expõe somente juntas finitas; credenciais e telemetria arbitrária não vazam',async()=>{
+ const f=fixture();f.db.maquina.findMany=async()=>[{id:11,nome:'Dobot',tipo:'Braço',modoSimulacao:false,telemetria:[{origem:'EQUIPAMENTO',dadosExtras:{deviceKey:'segredo',dobot:{joints:{j1:30,j2:Infinity,j3:999,j4:'12',token:'segredo'}}}}]}];
+ const r=await invoke(f.controller.report);assert.deepEqual(r.data.maquinas[0].joints,{j1:30});assert(!JSON.stringify(r.data).includes('segredo'));assert.equal(r.data.podeParar,true);
+ const other=fixture();other.db.maquina.findMany=async()=>[{id:11,modoSimulacao:true,telemetria:[{origem:'EQUIPAMENTO',dadosExtras:{dobot:{joints:{j1:90}}}}]}];assert.equal((await invoke(other.controller.report)).data.maquinas[0].joints,null);
+});

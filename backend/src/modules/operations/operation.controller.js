@@ -12,9 +12,9 @@ export function createOperationController(db,{state=calcularEstadoConexao,publis
     try {
       const days=Number(req.query.dias??1), id=req.query.maquinaId==null?null:Number(req.query.maquinaId), source=req.query.origem??'TELEMETRIA';
       if (![1,7,31].includes(days) || (id!==null&&(!Number.isSafeInteger(id)||id<1)) || !['TELEMETRIA','REGISTROS'].includes(source)) return res.status(400).json({mensagem:'Filtro inválido.'});
-      let all=await db.maquina.findMany({where:{empresaId:req.auth.empresaId,ativo:true},orderBy:{id:'asc'},take:101,select:{id:true,nome:true,tipo:true,controlador:true,modoSimulacao:true,status:true,statusConexao:true,ultimaTelemetriaEm:true,ultimoHeartbeatEm:true,intervaloLeitura:true}});
+      let all=await db.maquina.findMany({where:{empresaId:req.auth.empresaId,ativo:true},orderBy:{id:'asc'},take:101,select:{id:true,nome:true,tipo:true,controlador:true,modoSimulacao:true,status:true,statusConexao:true,ultimaTelemetriaEm:true,ultimoHeartbeatEm:true,intervaloLeitura:true,telemetria:{orderBy:{criadoEm:'desc'},take:1,select:{dadosExtras:true,origem:true}}}});
       if (id!==null&&!all.some(m=>m.id===id)) {
-        const selected=await db.maquina.findFirst({where:{id,empresaId:req.auth.empresaId,ativo:true},select:{id:true,nome:true,tipo:true,controlador:true,modoSimulacao:true,status:true,statusConexao:true,ultimaTelemetriaEm:true,ultimoHeartbeatEm:true,intervaloLeitura:true}});
+        const selected=await db.maquina.findFirst({where:{id,empresaId:req.auth.empresaId,ativo:true},select:{id:true,nome:true,tipo:true,controlador:true,modoSimulacao:true,status:true,statusConexao:true,ultimaTelemetriaEm:true,ultimoHeartbeatEm:true,intervaloLeitura:true,telemetria:{orderBy:{criadoEm:'desc'},take:1,select:{dadosExtras:true,origem:true}}}});
         if(!selected)return res.status(404).json({mensagem:'Máquina indisponível.'});
         all=[...all.slice(0,99),selected];
       }
@@ -35,7 +35,7 @@ export function createOperationController(db,{state=calcularEstadoConexao,publis
       }
       const result=buildReport({machines,readings:readings.slice(0,12000),baselines:baselines.filter(Boolean),records,source,start,end,truncated,deltas});
       res.setHeader('Cache-Control','no-store');
-      const data={...result,podeRegistrar:writableRoles.has(req.auth.cargo),maquinaId:id,maquinas:all.slice(0,100).map(m=>({id:m.id,nome:m.nome,tipo:m.tipo,controlador:m.controlador,simulacao:m.modoSimulacao,online:!m.modoSimulacao&&state(m).codigo==='CONECTADA',ultimaTelemetriaEm:m.ultimaTelemetriaEm}))};
+      const data={...result,podeRegistrar:writableRoles.has(req.auth.cargo),podeParar:['ADMINISTRADOR','SUPERVISOR','TECNICO','OPERADOR'].includes(req.auth.cargo),maquinaId:id,maquinas:all.slice(0,100).map(m=>({id:m.id,nome:m.nome,tipo:m.tipo,controlador:m.controlador,simulacao:m.modoSimulacao,online:!m.modoSimulacao&&state(m).codigo==='CONECTADA',ultimaTelemetriaEm:m.ultimaTelemetriaEm,joints:!m.modoSimulacao&&m.telemetria?.[0]?.origem!=='SIMULADOR'?Object.fromEntries(['j1','j2','j3','j4'].filter(k=>Number.isFinite(m.telemetria?.[0]?.dadosExtras?.dobot?.joints?.[k])&&Math.abs(m.telemetria[0].dadosExtras.dobot.joints[k])<=360).map(k=>[k,m.telemetria[0].dadosExtras.dobot.joints[k]])):null}))};
       if(cache.size>=80)cache.delete(cache.keys().next().value);cache.set(cacheKey,{at:Date.now(),data});
       res.json(data);
     } catch(error){if(error.code==='P2028'||error.meta?.code==='57014')return res.status(503).json({codigo:'OPERATION_QUERY_TIMEOUT',mensagem:'Consulta demorou demais. Selecione uma máquina ou período menor.'});next(error);}
