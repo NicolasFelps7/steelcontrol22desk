@@ -1,8 +1,8 @@
 # Aceitação com a empresa
 
-Revisão 06.11-R4. O painel usa dados técnicos e mantém controle e histórico por equipamento. A empresa deve conferir a versão instalada e os mapeamentos dos dispositivos antes de liberar uso operacional.
+Revisão 06.11-R6. O painel usa dados técnicos e mantém controle e histórico por equipamento. A empresa deve conferir a versão instalada e os mapeamentos dos dispositivos antes de liberar uso operacional.
 
-Concluído em testes de software: autenticação/permissões existentes, isolamento da auditoria por empresa/máquina, atualização de juntas, rejeição de leitura atrasada, funcionamento dos acessos de manutenção/logs/auditoria e tratamento de falha na publicação durante movimento.
+Concluído em testes de software: autenticação/permissões existentes, isolamento da auditoria geral por empresa, atualização de juntas, rejeição de leitura atrasada, funcionamento dos acessos de manutenção/logs/auditoria e tratamento de falha na publicação durante movimento.
 
 Pendente no equipamento instalado:
 

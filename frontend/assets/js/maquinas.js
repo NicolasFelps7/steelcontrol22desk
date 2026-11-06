@@ -1951,7 +1951,6 @@ function criarCardMaquina(
 
 
     <div class="machine-card-actions">
-      <button type="button" class="machine-audit-btn" title="Auditoria desta máquina">◷ Auditoria</button>
 
       <button
         type="button"
@@ -2017,8 +2016,6 @@ function criarCardMaquina(
       }
     );
 
-
-  article.querySelector('.machine-audit-btn')?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();window.SteelMachineAudit?.open(maquina.id);});
 
   const botaoEditar =
     article.querySelector(

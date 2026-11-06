@@ -73,5 +73,14 @@ test('perfis técnicos não usam contadores de produção; sensores ausentes nã
  const profiles=JSON.parse(read('assets/machine-profiles.json'));
  for(const p of Object.values(profiles))for(const section of p.sections)for(const metric of section.metrics)assert(!/indicadores|fabricad|producao|rejectCount/.test(metric.path));
  assert(profiles.dobot.sections[0].metrics.every(m=>m.path.includes('.joints.')));
- const page=read('operacao.html');assert.match(page,/id="opBack"[^>]+href="\/app\/maquinas"/);for(const tab of ['audit','logs','maintenance'])assert(page.includes(`data-tab="${tab}"`));
+ const page=read('operacao.html');assert.match(page,/id="opBack"[^>]+href="\/app\/maquinas"/);assert(page.includes('id="globalAuditOpen"'));assert(!page.includes('data-tab="audit"'));for(const tab of ['logs','maintenance'])assert(page.includes(`data-tab="${tab}"`));
+});
+
+vm.runInContext(read('assets/industrial3d/factory-context.js'),context);
+test('contexto de fábrica usa infraestrutura 3D sem inventar ativos ou telemetria',()=>{
+ for(const layout of [{columns:1,rows:1,count:1},{columns:3,rows:2,count:6}]){
+  const context3d=context.SteelFactoryContext.build(layout);assert.equal(context3d.group.userData.visualOnly,true);let meshes=0,instanced=0;
+  context3d.group.traverse(node=>{assert(!node.userData.machineId);assert(!node.userData.joints);if(node.isInstancedMesh){instanced++;for(const n of node.instanceMatrix.array)assert(Number.isFinite(n));}if(node.isMesh){meshes++;assert(!node.material.map);for(const n of node.geometry.attributes.position.array)assert(Number.isFinite(n));}});
+  assert(meshes>60&&meshes<250);assert.equal(instanced,2);context3d.dispose();assert.equal(context3d.group.children.length,0);
+ }
 });

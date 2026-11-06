@@ -16,3 +16,11 @@ test('auditoria por máquina exige cargo, propriedade e filtra eventos no banco'
  assert.equal(queries,0);const res=await run({maquinaId:11,limit:'10.8'});assert.equal(res.code,200);assert.equal(res.body[0].detalhes.deviceKey,'[OCULTO]');assert.equal(queries,1);
  }finally{prisma.maquina.findFirst=original.find;prisma.auditLog.findMany=original.audit;}
 });
+
+test('auditoria geral inclui os eventos da empresa sem exigir ou fixar máquina',async()=>{
+ try{
+ prisma.maquina.findFirst=async()=>{throw Error('Auditoria geral não deve depender de máquina selecionada.');};
+ prisma.auditLog.findMany=async args=>{assert.deepEqual(args.where,{empresaId:7});return [{id:1,entidade:'USUARIO',acao:'ATUALIZAR',detalhes:{usuarioId:3}},{id:2,entidade:'MAQUINA',acao:'CRIAR',detalhes:{maquinaId:11}}];};
+ const res=await run({limit:300});assert.equal(res.code,200);assert.equal(res.body.length,2);assert.equal(res.body[0].entidade,'USUARIO');assert.equal(res.body[1].entidade,'MAQUINA');assert.equal((await run({},'VISITANTE')).code,403);
+ }finally{prisma.maquina.findFirst=original.find;prisma.auditLog.findMany=original.audit;}
+});
