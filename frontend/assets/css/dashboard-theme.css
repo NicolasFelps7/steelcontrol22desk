@@ -1,0 +1,16 @@
+
+:root {--ui-bg:#f4f6f9;--ui-surface:#fff;--ui-card:#f8fafc;--ui-text:#24364a;--ui-muted:#53677b;--ui-line:#d4dee8;--ui-accent:#925600;--op-text:var(--ui-text);--op-muted:var(--ui-muted);--op-panel:rgba(255,255,255,.94);--records-text:var(--ui-text);--records-muted:var(--ui-muted);--records-card:var(--ui-card);--records-border:var(--ui-line);--records-accent:var(--ui-accent)}
+:root[data-theme="escuro"] {--ui-bg:#101c27;--ui-surface:#192b3b;--ui-card:#213748;--ui-text:#eef5fb;--ui-muted:#b9cbdc;--ui-line:#496174;--ui-accent:#ffc176;--op-panel:rgba(25,43,59,.94)}
+html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",Arial,sans-serif;line-height:1.5}
+.cockpit-header,.cockpit-toolbar,.tech-shortcuts,.dashboard-preferences,.machine-audit-modal,.machine-workspace-modal,.workspace-modal-header,.workspace-modal-body {background:var(--ui-surface)!important;color:var(--ui-text)!important;border-color:var(--ui-line)!important}
+.dashboard-preferences {display:flex;justify-content:flex-end;gap:18px;padding:10px 16px;margin:0 0 12px;border-radius:10px}.dashboard-preferences label{display:flex;gap:8px;align-items:center;font-size:14px}
+.cockpit-header h1,.workspace-modal-header h2,.records-heading h3,.sc-records h4,.sc-records label {color:var(--ui-text)!important;font-family:"Segoe UI",Arial,sans-serif!important;font-weight:600!important;letter-spacing:0!important;text-shadow:none!important}
+.sc-records,.sc-records input,.sc-records select,.sc-records textarea,.sc-records button {font-family:"Segoe UI",Arial,sans-serif!important}
+.sc-records input,.sc-records select,.sc-records textarea,.sc-records button,.dashboard-preferences select,.tech-toolbar select,.tech-toolbar button,.tech-shortcuts button,.cockpit-header button,.tech-back {background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-line)!important}
+.sc-records input::placeholder,.sc-records textarea::placeholder{color:var(--ui-muted);opacity:1}
+.sc-records p,.sc-records small,.records-heading p,.records-count,.cockpit-machine p,.cockpit-account small{color:var(--ui-muted)!important}
+.records-table-wrap th,.records-table-wrap td,.records-log-list li,.records-intervention {background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-line)!important}
+.op-panel h2{font-size:15px;font-weight:600;letter-spacing:.2px;text-transform:none;color:#fff;background:#9c5b08}
+.op-panel dt,.op-panel dd,.op-panel dd small,.op-workflow li span,.op-workflow strong{color:var(--ui-text);text-transform:none}.op-panel dd{font-weight:600}.op-panel{border-color:var(--ui-line)}
+:root[data-theme="claro"] .cockpit-logo img{filter:brightness(.3)}
+@media(max-width:600px){.dashboard-preferences{justify-content:flex-start;flex-wrap:wrap}}

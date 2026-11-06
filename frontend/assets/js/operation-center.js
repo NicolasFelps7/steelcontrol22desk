@@ -1,5 +1,5 @@
-function cockpitTheme(){document.documentElement.setAttribute('data-theme','escuro');document.documentElement.style.colorScheme='dark';}
-cockpitTheme();window.addEventListener('pageshow',cockpitTheme);window.addEventListener('storage',event=>{if(event.key==='temaSistema')cockpitTheme();});
+document.getElementById('temaConfig').addEventListener('change',e=>trocarTema(e.target.value));
+document.getElementById('idiomaConfig').addEventListener('change',e=>trocarIdioma(e.target.value));
 const $=id=>document.getElementById(id), make=(tag,text,style)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(style)n.className=style;return n;};
 const profiles=await fetch('assets/machine-profiles.json?v=3',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Perfis indisponíveis.');return r.json();});
 let machines=[],selected=Number(new URLSearchParams(location.search).get('maquinaId'))||null,session=null,snapshot=null,sequence=0,stream=null,company=null,timer=null,refreshing=false,lastStamp=0,initial=true,closed=false;
