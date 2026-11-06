@@ -207,7 +207,9 @@ class DobotMagicianAdapter(BaseAdapter):
         guard=self.params.get("_motionGuard")
         if guard:guard()
     def _get_pose(self):
+        started=time.monotonic()
         p=self._exchange(10,0,False)[2:]
+        self.last_pose_latency_ms=round((time.monotonic()-started)*1000,2)
         if len(p)<32:raise AdapterError("Resposta GetPose incompleta.")
         vals=struct.unpack('<8f',p[:32])
         if not all(math.isfinite(value) for value in vals):raise AdapterError("Pose do Dobot contém valor não finito.")
@@ -218,9 +220,16 @@ class DobotMagicianAdapter(BaseAdapter):
             for bit in range(8):
                 if v&(1<<bit):out.append(bi*8+bit)
         return out
+    def _telemetry_from_pose(self,pose,raw_alarms,queue="READY"):
+        alarms=self._blocking_alarms(raw_alarms)
+        data={"producao":self.production,"ciclos":self.cycles,"origem":"DOBOT_REAL","dadosExtras":{"dobot":{"mode":"REAL","connected":True,"port":self.port,"baudRate":int(self.params.get("baud") or 115200),"pose":{k:round(pose[k],4) for k in ["x","y","z","r"]},"joints":{k:round(pose[k],4) for k in ["j1","j2","j3","j4"]},"alarms":alarms,"rawAlarms":raw_alarms,"startupResetAcknowledged":self.startup_reset_acknowledged,"queue":queue,"endEffector":{"suction":self.suction,"gripper":self.gripper}}}}
+        if hasattr(self,'last_pose_latency_ms'):data['latenciaMs']=self.last_pose_latency_ms
+        return data
+    def _publish_motion_pose(self,pose,alarms):
+        observer=self.params.get('_poseObserver')
+        if callable(observer):observer(self._telemetry_from_pose(pose,alarms,queue="MOVING"))
     def read_telemetry(self):
-        pose=self._get_pose();raw_alarms=self._alarms();alarms=self._blocking_alarms(raw_alarms)
-        return {"producao":self.production,"ciclos":self.cycles,"qualidadeSinal":100,"latenciaMs":5,"origem":"DOBOT_REAL","dadosExtras":{"dobot":{"mode":"REAL","connected":True,"port":self.port,"baudRate":int(self.params.get("baud") or 115200),"pose":{k:round(pose[k],4) for k in ["x","y","z","r"]},"joints":{k:round(pose[k],4) for k in ["j1","j2","j3","j4"]},"alarms":alarms,"rawAlarms":raw_alarms,"startupResetAcknowledged":self.startup_reset_acknowledged,"queue":"READY","endEffector":{"suction":self.suction,"gripper":self.gripper}}}}
+        return self._telemetry_from_pose(self._get_pose(),self._alarms())
     def execute_command(self,command,payload=None):
         payload=payload or {}
         if command in {"DOBOT_STOP","PARAR_SEGURANCA"}:self.safety_stop();return
@@ -248,6 +257,7 @@ class DobotMagicianAdapter(BaseAdapter):
                 if alarms:
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot rejeitou o alvo PTP X={x:.2f} Y={y:.2f} Z={z:.2f} R={r:.2f}: {self._describe_alarms(alarms)}.{recovery}")
+                self._publish_motion_pose(last,alarms)
                 moved=moved or any(abs(last[k]-before[k])>0.3 for k in ('x','y','z','r'))
                 if abs(last['x']-x)<=1.5 and abs(last['y']-y)<=1.5 and abs(last['z']-z)<=1.5 and abs(last['r']-r)<=2.0:
                     self.last_motion_target=None;self.cycles+=1;self.production+=1;return
@@ -271,6 +281,7 @@ class DobotMagicianAdapter(BaseAdapter):
                 if alarms:
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot recusou a rotação de J4: {self._describe_alarms(alarms)}.{recovery}")
+                self._publish_motion_pose(last,alarms)
                 if abs(last['j4']-target_j4)<=1.5:
                     self.cycles+=1;return
             if abs(last['j4']-before['j4'])<=0.3:

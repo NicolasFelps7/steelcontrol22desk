@@ -82,6 +82,8 @@ window.SteelDobotControl={mount(host,id){
 
   function setControlsAvailability(online) {
     connectionOnline = online;
+    if(dom.jogTarget&&!online)dom.jogTarget.textContent="Aguardando conexão real";
+    else if(dom.jogTarget?.textContent==="Aguardando conexão real")dom.jogTarget.textContent="Pronto para movimento supervisionado";
     host.querySelectorAll("[data-dobot-command], [data-dobot-jog], [data-dobot-capture]").forEach(button => {
       const manualLocked = automatic.running && !button.matches('[data-dobot-command="DOBOT_STOP"]');
       // O movimento em andamento continua protegido por jogBusy. Manter o
@@ -650,6 +652,7 @@ window.SteelDobotControl={mount(host,id){
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Sincronização do automático", mensagem: error.message });
       return;
     }
+    if(disposed)return;
     let started;
     try {
       started = await controlAutomatic("INICIAR");
@@ -657,6 +660,7 @@ window.SteelDobotControl={mount(host,id){
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Iniciar automático", mensagem: error.message });
       return;
     }
+    if(disposed){try{await controlAutomatic("PARAR",{execucaoId:started?.automatico?.execucaoId});}catch{}return;}
     automatic = {
       running: true,
       paused: false,
@@ -842,6 +846,6 @@ window.SteelDobotControl={mount(host,id){
   setControlMode("manual");
   load();
   const refreshTimer = setInterval(load, 2000);
-  return {dispose(){disposed=true;automatic.stopRequested=true;stopJogHold();clearInterval(refreshTimer);listeners.abort();if(automatic.running)stopAutomatic().catch(()=>{});}};
+  return {setMode(mode){setControlMode(automatic.running||mode==='automatic'?'automatic':'manual');},dispose(){disposed=true;automatic.stopRequested=true;stopJogHold();clearInterval(refreshTimer);listeners.abort();if(automatic.running)stopAutomatic().catch(()=>{});}};
 
 }};

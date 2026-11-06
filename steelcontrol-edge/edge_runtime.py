@@ -34,6 +34,16 @@ class MachineRuntime:
                 if fingerprint(current)!=fingerprint(command):raise AdapterError('Comando alterado ou revogado durante a execução.')
                 checked[0]=time.monotonic()
         return check
+    def _motion_observer(self,client):
+        sent=[None]
+        def observe(data):
+            if self.stop_event.is_set():raise AdapterError('Execução interrompida localmente.')
+            now=time.monotonic()
+            if sent[0] is not None and now-sent[0]<0.25:return
+            # Só publica a pose que o driver acabou de ler, sem outra thread na COM.
+            client.telemetry(data,timeout=2)
+            sent[0]=now
+        return observe
     def status(self,state,**extra): self.status_cb(self.profile.id,state,extra)
     def start(self):
         if self.thread and self.thread.is_alive():return
@@ -123,6 +133,7 @@ class MachineRuntime:
                             else:
                                 try:
                                     self.adapter.params['_motionGuard']=self._motion_guard(c,current)
+                                    if driver=='DOBOT_MAGICIAN':self.adapter.params['_poseObserver']=self._motion_observer(c)
                                     if driver in {'SERIAL_JSON','USB_SERIAL'}:self.adapter.execute_command(name,payload,command_id=cid)
                                     else:self.adapter.execute_command(name,payload)
                                 except Exception:
@@ -134,6 +145,7 @@ class MachineRuntime:
                                     result='CONCLUIDO';command_executed=True;self.log(f'Comando concluído: {name}')
                                 finally:
                                     self.adapter.params.pop('_motionGuard',None)
+                                    self.adapter.params.pop('_poseObserver',None)
                                 self.journal.finish(scope,cid,result)
                                 c.confirm(cid,result)
                     # A leitura periódica continua respeitando o intervalo configurado,

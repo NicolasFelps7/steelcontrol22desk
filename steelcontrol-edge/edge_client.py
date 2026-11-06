@@ -19,8 +19,8 @@ class SteelControlClient:
         r=self.session.get(self._url('/config'),timeout=self.timeout,allow_redirects=False); self._check(r); return r.json()
     def heartbeat(self):
         r=self.session.post(self._url('/heartbeat'),json={},timeout=self.timeout,allow_redirects=False); self._check(r); return r.json()
-    def telemetry(self,payload):
-        r=self.session.post(self._url('/telemetria'),json=payload,timeout=self.timeout,allow_redirects=False); self._check(r); return r.json()
+    def telemetry(self,payload,timeout=None):
+        r=self.session.post(self._url('/telemetria'),json=payload,timeout=min(self.timeout,timeout) if timeout else self.timeout,allow_redirects=False); self._check(r); return r.json()
     def next_command(self,wait_ms=180):
         wait_ms=max(0,min(250,int(wait_ms or 0)))
         r=self.session.get(self._url('/comandos/proximo'),params={'waitMs':wait_ms},timeout=self.timeout,allow_redirects=False)
