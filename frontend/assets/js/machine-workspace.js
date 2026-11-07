@@ -28,7 +28,7 @@ function renderControls(machine,diagnostic){const id=machine.id,isDobot=String(m
  else {const enabled=online&&allowed&&machine.integracaoMeta?.impressora3d?.remoteControlEnabled===true;for(const[label,command]of [['Pausar impressão','PRINTER3D_PAUSE'],['Retomar impressão','PRINTER3D_RESUME'],['Cancelar impressão','PRINTER3D_CANCEL'],['Luz ON','PRINTER3D_LIGHT_ON'],['Luz OFF','PRINTER3D_LIGHT_OFF']])button(label,command,enabled);}
 
  body.append(buttons);}
-function renderTabs(){tabs.replaceChildren(...Object.entries(labels).map(([key,label])=>{const b=make('button',label);b.type='button';b.classList.toggle('selected',currentTab===key);b.onclick=()=>showTab(selected,key);return b;}));}
+function renderTabs(){tabs.hidden=currentTab==='control';section.classList.toggle('control-only',currentTab==='control');tabs.replaceChildren(...Object.entries(labels).map(([key,label])=>{const b=make('button',label);b.type='button';b.classList.toggle('selected',currentTab===key);b.onclick=()=>showTab(selected,key);return b;}));}
 function showTab(id,tab){if(tab==='automatic'){tab='control';wantedMode='automatic';}else if(tab==='control')wantedMode='manual';if(!Object.hasOwn(labels,tab)||!id)return;if(id!==selected||tab!==currentTab)disposeControls();selected=id;currentTab=tab;if(!section.open){returnFocus=document.activeElement;section.showModal();}renderTabs();section.scrollTop=0;load();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden&&!busy&&currentTab!=='maintenance'&&!dobotMount)load();},7000);}
 window.SteelMachineWorkspace={mount(ctx){context=ctx;},select(id){if(id!==selected&&section.open)finish();selected=id;},showTab,show(id){showTab(id,currentTab);},close:finish};
 window.addEventListener('pagehide',finish);

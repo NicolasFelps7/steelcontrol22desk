@@ -73,7 +73,7 @@ test('perfis técnicos não usam contadores de produção; sensores ausentes nã
  const profiles=JSON.parse(read('assets/machine-profiles.json'));
  for(const p of Object.values(profiles))for(const section of p.sections)for(const metric of section.metrics)assert(!/indicadores|fabricad|producao|rejectCount/.test(metric.path));
  assert(profiles.dobot.sections[0].metrics.every(m=>m.path.includes('.joints.')));
- const page=read('operacao.html');assert.match(page,/id="opBack"[^>]+href="\/app\/maquinas"/);assert(page.includes('id="globalAuditOpen"'));assert(!page.includes('data-tab="audit"'));for(const tab of ['logs','maintenance'])assert(page.includes(`data-tab="${tab}"`));
+ const page=read('operacao.html');assert.match(page,/id="opBack"[^>]+href="\/app\/maquinas"/);assert(!page.includes('id="globalAuditOpen"'));assert(read('maquinas.html').includes('id="globalAuditOpen"'));assert(!page.includes('data-tab="audit"'));for(const tab of ['logs','maintenance'])assert(page.includes(`data-tab="${tab}"`));
 });
 
 vm.runInContext(read('assets/industrial3d/factory-context.js'),context);

@@ -433,6 +433,7 @@ function destinoSeguroDashboardEmpresa() {
 
   const destinosPermitidos =
     new Map([
+      ["/app/dashboard", "/app/dashboard"],
       ["/app/dashboard?view=controller", "/app/dashboard?view=controller"],
       ["/app/dashboard?view=dobot", "/app/dashboard?view=dobot"],
       ["index.html?view=controller", "/app/dashboard?view=controller"],

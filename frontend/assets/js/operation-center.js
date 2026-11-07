@@ -1,3 +1,4 @@
+document.getElementById('dashboardCompany').onclick=()=>{localStorage.setItem('empresaOrigem','dashboard');localStorage.setItem('empresaRetornoDashboard','/app/dashboard');};
 document.getElementById('dashboardSettingsOpen').onclick=()=>document.getElementById('dashboardSettings').showModal();
 document.getElementById('dashboardSettingsClose').onclick=()=>document.getElementById('dashboardSettings').close();
 document.getElementById('temaConfig').addEventListener('change',e=>trocarTema(e.target.value));
