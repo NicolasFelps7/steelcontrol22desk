@@ -46,3 +46,62 @@ html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",A
 .dashboard-page .machine-workspace-modal{margin:auto!important;max-height:88dvh!important}.dashboard-page .machine-workspace-modal.control-only{width:min(1120px,calc(100vw - 32px))!important}.control-only>nav{display:none!important}.control-only .dobot-hero,.control-only .dobot-diagnostics,.control-only .dobot-main-grid,.control-only #dobotIndustrialDynamic{display:none!important}
 .dashboard-page .control-only :is(h3,h4){font-size:18px!important;font-weight:500!important}.dashboard-page .control-only :is(button,label,strong){font-size:14px!important;font-weight:500!important}.dashboard-page .control-only :is(.dobot-eyebrow,.dobot-panel-head>div>span,.dobot-jog-head>div>span){display:none!important}
 .dashboard-page .cockpit-header{border-bottom:1px solid var(--ui-line);padding:18px 26px}.dashboard-page .tech-toolbar{padding:16px;border-radius:12px}.dashboard-page .tech-shortcuts{padding:10px;border-radius:12px;gap:8px}.dashboard-page .tech-shortcuts button{font-size:14px;border-radius:8px}.dashboard-page .op-panel{border-radius:10px;overflow:hidden;box-shadow:0 8px 24px #0002}.dashboard-page .op-panel h2{background:var(--ui-card)!important;color:var(--ui-text)!important;border-bottom:2px solid #be801d}.dashboard-page .op-metric dd{font-weight:500!important;font-size:18px!important}
+
+/* All work surfaces inherit the active company palette. */
+#machineWorkspaceModal > nav,
+#machineWorkspaceModal :is(.dobot-jog-pad, .dobot-jog-surface, .dobot-jog-group, .dobot-auto-progress-wrap, .records-maintenance-form),
+.sc-records .records-empty {
+  background: var(--ui-card) !important;
+  border-color: var(--ui-line) !important;
+  color: var(--ui-text) !important;
+}
+.sc-records .records-empty :is(span,h3) { color: var(--ui-muted) !important; }
+#machineWorkspaceModal .dobot-auto-progress { background: var(--ui-line); }
+#machineWorkspaceModal input[type="range"] { accent-color: #bc7914; }
+#machineWorkspaceModal .workspace-close {
+  display: grid; place-items: center; padding: 0; line-height: 1;
+}
+#machineWorkspaceModal a.op-action,
+.plant-board .plant-maintenance-link {
+  display: inline-flex; justify-content: center; align-items: center;
+  min-height: 38px; padding: 8px 14px; border-radius: 8px;
+  background: var(--ui-card); color: var(--ui-text);
+  border: 1px solid var(--ui-line); font-size: 14px;
+}
+.page-machines a.company-btn, .dashboard-page a.company-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 0 14px; border: 1px solid var(--ui-line);
+  border-radius: 10px; background: var(--ui-card); color: var(--ui-text);
+  font: 500 14px/1.25 "Segoe UI", sans-serif !important; text-decoration: none;
+}
+.dashboard-page .cockpit-account {
+  border: 1px solid var(--ui-line); background: var(--ui-card);
+  border-radius: 10px; padding: 6px 12px; margin: 0;
+}
+.dashboard-page .cockpit-header { border-top: 3px solid #c78221; }
+.dashboard-commandbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding: 12px 16px; background: var(--ui-surface); border-radius: 12px;
+  border: 1px solid var(--ui-line);
+}
+.dashboard-commandbar :is(.cockpit-toolbar,.tech-shortcuts) {
+  margin: 0; padding: 0; gap: 8px; align-items: end;
+}
+.dashboard-commandbar .cockpit-toolbar label { min-width: 160px; }
+.dashboard-commandbar .tech-shortcuts { flex: 1; }
+.dashboard-page .plant-board .op-panel h2 {
+  justify-content: flex-start; padding-inline: 18px;
+  background: var(--ui-surface) !important;
+  border-bottom: 1px solid var(--ui-line); font-size: 15px !important;
+}
+.dashboard-page .plant-board .op-panel h2::after {
+  inset: 14px auto 14px 0; width: 3px; background: #c78221;
+}
+.dashboard-page .op-metric { border-bottom-color: var(--ui-line); }
+.dashboard-page .plant-readouts { box-shadow: 0 3px 18px #0001; }
+.dashboard-page .plant-readouts .cockpit-strip-title { background: transparent; }
+.dashboard-page .plant-heading { border-left: 3px solid #c78221; }
+@media (max-width:760px) {
+  .dashboard-commandbar { padding: 12px; }
+  .dashboard-commandbar .tech-shortcuts { flex-basis: 100%; }
+}
