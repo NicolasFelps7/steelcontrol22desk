@@ -6,6 +6,7 @@
   const select = document.getElementById('steelLanguageSelect');
   const normalize = value => supported.includes(String(value || '').slice(0, 2)) ? String(value).slice(0, 2) : 'pt';
   const read = () => { try { return normalize(localStorage.getItem('idiomaSistema')); } catch { return 'pt'; } };
+  const menuLabel = open => copy[document.documentElement.lang.slice(0,2)]?.[open ? 't272' : 't013'];
   function apply(value) {
     const lang = normalize(value);
     const table = copy?.[lang];
@@ -25,7 +26,12 @@
     const active = document.querySelector('.tab[aria-selected="true"]');
     const caption = document.getElementById('cap');
     if (active && caption) caption.textContent = active.getAttribute('data-cap') || '';
-    if (select) select.value = lang;
+    const menu = document.getElementById('burger');
+    if (menu) menu.setAttribute('aria-label',menuLabel(menu.getAttribute('aria-expanded') === 'true'));
+    if (select) {
+      select.value = lang;
+      select.setAttribute('aria-label', {pt:'Idioma', en:'Language', es:'Idioma', fr:'Langue', de:'Sprache', it:'Lingua'}[lang]);
+    }
   }
   select?.addEventListener('change', () => {
     const lang = normalize(select.value);
@@ -33,6 +39,6 @@
     apply(lang);
   });
   window.addEventListener('storage', event => { if (event.key === 'idiomaSistema') apply(event.newValue); });
-  window.SteelHomeI18n = Object.freeze({apply,supported:Object.freeze(supported)});
+  window.SteelHomeI18n = Object.freeze({apply,menuLabel,supported:Object.freeze(supported)});
   apply(read());
 })();

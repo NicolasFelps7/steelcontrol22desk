@@ -325,7 +325,7 @@ app.get(
   (req, res) => {
     return res.redirect(
       302,
-      "/app/login"
+      "/app/home"
     );
   }
 );

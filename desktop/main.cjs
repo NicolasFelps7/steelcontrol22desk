@@ -77,7 +77,7 @@ function securedWindow(options) {
   return win;
 }
 function openSystem(target) {
-  const destination = typeof target === 'string' && trustedRemote(target) ? target : SERVER_URL + '/app/login';
+  const destination = typeof target === 'string' && trustedRemote(target) ? target : SERVER_URL + '/app/home';
   if (!mainWindow || mainWindow.isDestroyed()) {
     mainWindow = securedWindow({ width: 1360, height: 880, minWidth: 1000, minHeight: 680, title: 'SteelControl' });
     mainWindow.loadURL(destination).catch(error => {
