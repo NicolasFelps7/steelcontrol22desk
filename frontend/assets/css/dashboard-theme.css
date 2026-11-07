@@ -12,7 +12,7 @@ html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",A
 .records-table-wrap th,.records-table-wrap td,.records-log-list li,.records-intervention {background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-line)!important}
 .op-panel h2{font-size:15px;font-weight:600;letter-spacing:.2px;text-transform:none;color:#fff;background:#9c5b08}
 .op-panel dt,.op-panel dd,.op-panel dd small,.op-workflow li span,.op-workflow strong{color:var(--ui-text);text-transform:none}.op-panel dd{font-weight:600}.op-panel{border-color:var(--ui-line)}
-:root[data-theme="claro"] .cockpit-logo img{filter:brightness(.3)}
+
 @media(max-width:600px){.dashboard-preferences{justify-content:flex-start;flex-wrap:wrap}}
 
 /* Unified typography and surfaces across the scene and central controls. */
@@ -20,7 +20,7 @@ html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",A
 .dashboard-page :is(button,a,label,small,span,p,dt){font-weight:400!important}
 .dashboard-page :is(h1,h2,h3,h4,h5,strong,b,dd){font-weight:600!important}
 .dashboard-page .tech-back,.dashboard-page .plant-back{font-size:14px!important;font-weight:500!important}
-.dashboard-page .cockpit-machine h1{font-size:28px!important}.dashboard-page .cockpit-header{gap:16px;padding:20px 28px}.dashboard-page .cockpit-account strong{font-size:14px}
+.dashboard-page .cockpit-machine h1{font-size:25px!important}.dashboard-page .cockpit-header{gap:16px;padding:20px 28px}.dashboard-page .cockpit-account strong{font-size:14px}
 .dashboard-page #steelLanguageSwitcher{display:none!important}
 .dashboard-page :is(.op-panel,.plant-readouts,.cockpit-near,.cockpit-metric-strip>*,.cockpit-position-strip>*){background:var(--op-panel)!important;border-color:var(--ui-line)!important;color:var(--ui-text)!important}
 .dashboard-page :is(.plant-readouts,.cockpit-near,.cockpit-metric-strip,.cockpit-position-strip,.op-panel) :is(span,small,strong,dt,dd){color:var(--ui-text)!important}
@@ -38,7 +38,7 @@ html,body {background:var(--ui-bg);color:var(--ui-text);font-family:"Segoe UI",A
 .dashboard-page .cockpit-header{grid-template-columns:54px minmax(180px,1fr) auto auto auto auto}
 .dashboard-page .machine-workspace-modal .tech-shortcuts{background:var(--ui-surface)!important}
 @media(max-width:1100px){.dashboard-page .cockpit-header{display:flex;flex-wrap:wrap}.dashboard-page .cockpit-machine{flex:1}.dashboard-page .cockpit-account{margin-left:auto}}
-@media(max-width:600px){.dashboard-page .cockpit-header{padding:16px}.dashboard-page .cockpit-machine h1{font-size:23px!important}.dashboard-page .cockpit-account{width:100%}}
+@media(max-width:600px){.dashboard-page .cockpit-header{padding:16px}.dashboard-page .cockpit-machine h1{font-size:21px!important}.dashboard-page .cockpit-account{width:100%}}
 
 /* R9: neutral charcoal palette shared with the company screen. */
 :root[data-theme="escuro"]{--ui-bg:#0f1315;--ui-surface:#171c1f;--ui-card:#22292e;--ui-text:#edf0f2;--ui-muted:#aeb7be;--ui-line:#343e45;--ui-accent:#e5a331;--op-panel:rgba(23,28,31,.96)}
@@ -126,9 +126,13 @@ html[data-theme="escuro"] .dashboard-page {
 .dashboard-page .cockpit-logo {
   display: grid; place-items: center;
   width: 50px; height: 50px; padding: 10px;
-  border-radius: 12px; background: var(--steel-orange);
+  border-radius: 12px; background: transparent;
 }
-.dashboard-page .cockpit-logo img { width: 30px; height: 30px; filter: brightness(.12); }
+.dashboard-page .cockpit-logo img { width: 30px; height: 30px; filter: brightness(0); }
+html[data-theme="escuro"] .dashboard-page .cockpit-logo img { filter: brightness(0) invert(1); }
+.dashboard-page .cockpit-header #dashboardSettingsOpen,
+.dashboard-page .cockpit-header #opBack { font-size: 13px !important; font-weight: 500; min-height: 40px; padding: 8px 12px; }
+.dashboard-page .cockpit-header #opUserName { font-size: 13px; }
 .dashboard-page .cockpit-machine > small { color: var(--steel-secondary); }
 .dashboard-page .cockpit-machine h1 { line-height: 1.16; margin-block: 4px; }
 .dashboard-page .cockpit-avatar { color: var(--steel-secondary); background: var(--steel-wash); border-color: var(--steel-line); }
