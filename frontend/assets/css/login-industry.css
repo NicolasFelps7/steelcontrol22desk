@@ -25,3 +25,19 @@ html .login-shell .image-area.industry-photo {
  .login-shell .login-panel { min-width:0;width:100%; }
  .login-shell .industry-photo { min-width:0; }
 }
+
+html[data-theme="escuro"] .login-shell :is(#companyLoginAction, #companyRegisterAction) {
+  background: #ff922c !important;
+  border-color: #ff922c !important;
+  color: #331c0c !important;
+}
+html[data-theme="escuro"] .login-shell :is(#companyLoginAction, #companyRegisterAction) :is(span, i) {
+  color: inherit !important;
+}
+html[data-theme="escuro"] .login-shell :is(#companyLoginAction, #companyRegisterAction):enabled:hover {
+  background: #ffa84f !important;
+}
+html[data-theme="escuro"] .login-shell :is(#companyLoginAction, #companyRegisterAction):focus-visible {
+  outline: 2px solid #ffd6a8;
+  outline-offset: 3px;
+}
