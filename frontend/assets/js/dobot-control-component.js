@@ -404,7 +404,9 @@ window.SteelDobotControl={mount(host,id){
         applySharedAutomatic(machine);
       }
       if (diagnosticResponse.ok) {
-        diagnostic = await diagnosticResponse.json();
+        const next = await diagnosticResponse.json();
+        if (disposed || (Date.parse(next.ultimaTelemetriaEm) || 0) < (Date.parse(diagnostic?.ultimaTelemetriaEm) || 0)) return;
+        diagnostic = next;
         applySharedAutomatic(diagnostic);
       }
       openDedicatedView();
@@ -823,6 +825,7 @@ window.SteelDobotControl={mount(host,id){
   });
 
   listenWindow("steelcontrol:machine-diagnostic", event => {
+    if (event.detail?.id && String(event.detail.id) !== machineId) return;
     diagnostic = { ...(diagnostic || {}), ...(event.detail || {}) };
     applySharedAutomatic(diagnostic);
     render(diagnostic?.dadosExtras);

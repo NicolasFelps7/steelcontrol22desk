@@ -280,6 +280,7 @@ export async function confirmarComando(req, res, next) {
     });
     if (!accepted) return res.status(409).json({ mensagem: "Comando não está mais entregue para execução." });
 
+    publicarEventoMaquina(maquina.id, "comando.confirmado", { id: comandoId, status });
     res.json({ ok: true, status, idempotente: false });
   } catch (erro) {
     next(erro);

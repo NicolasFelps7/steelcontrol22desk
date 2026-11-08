@@ -5876,31 +5876,30 @@ document.addEventListener(
 // =====================================================
 // SINCRONIZAÇÃO MULTI-DISPOSITIVO — MINHA EMPRESA
 // =====================================================
-let steelEmpresaRealtimeTimer = null;
+let companyReadActive = false;
+let reloadProfile = false;
+let reloadUsers = false;
 
-window.addEventListener(
-  "steelcontrol:empresa-evento",
-  event => {
-    const tipo = String(event.detail?.tipo || "");
-    if (!tipo || tipo === "conectado") return;
-
-    clearTimeout(steelEmpresaRealtimeTimer);
-    steelEmpresaRealtimeTimer = setTimeout(async () => {
-      try {
-        if (tipo.startsWith("usuario.")) {
-          await carregarFuncionarios({ silencioso: true });
-          return;
-        }
-
-        if (tipo.startsWith("empresa.")) {
-          await carregarEmpresa();
-          await carregarFuncionarios({ silencioso: true });
-        }
-      } catch (_) {}
-    }, 120);
-  }
-);
-
+async function syncCompanyView(event) {
+  const type = String(event.detail?.tipo || "");
+  const profile = type === "conectado" || type.startsWith("empresa.");
+  if (!profile && !type.startsWith("usuario.")) return;
+  reloadProfile ||= profile;
+  reloadUsers = true;
+  if (companyReadActive) return;
+  companyReadActive = true;
+  try {
+    while (reloadUsers) {
+      const profileNeeded = reloadProfile;
+      reloadProfile = reloadUsers = false;
+      await Promise.allSettled([
+        carregarFuncionarios({ silencioso: true }),
+        profileNeeded && carregarEmpresa()
+      ]);
+    }
+  } finally { companyReadActive = false; }
+}
+window.addEventListener("steelcontrol:empresa-evento", syncCompanyView);
 
 // =====================================================
 // FALLBACK REALTIME CONFIÁVEL — REVISÃO NO POSTGRESQL
@@ -5917,7 +5916,7 @@ async function verificarRevisaoEmpresa() {
   if (
     steelEmpresaRevisionBusy ||
     document.hidden ||
-    !token
+    localStorage.getItem("autenticado") !== "true"
   ) {
     return;
   }

@@ -35,7 +35,11 @@
         close();window.SteelUI?.toast?.({tipo:'info',titulo:'Equipamento removido',mensagem:'A configuração foi fechada porque este equipamento foi removido da empresa.'});
       }
     };
-    const close=()=>{closed=true;clearInterval(timer);window.removeEventListener('steelcontrol:empresa-evento',removed);window.removeEventListener('steelcontrol:machine-removed',removed);dialog.close();dialog.remove();};
+    const connectionChanged = ({detail}) => {
+      if(!closed && !busy && (!detail.dados?.maquinaId || detail.dados.maquinaId === machine?.id)) load().catch(e=>say(e.message,true));
+    };
+    window.addEventListener('steelcontrol:conexao.atualizada',connectionChanged);
+    const close=()=>{window.removeEventListener('steelcontrol:conexao.atualizada',connectionChanged);closed=true;clearInterval(timer);window.removeEventListener('steelcontrol:empresa-evento',removed);window.removeEventListener('steelcontrol:machine-removed',removed);dialog.close();dialog.remove();};
     window.addEventListener('steelcontrol:empresa-evento',removed);
     window.addEventListener('steelcontrol:machine-removed',removed);
     dialog.querySelector('[data-close]').onclick=close;dialog.addEventListener('cancel',event=>{event.preventDefault();close();});

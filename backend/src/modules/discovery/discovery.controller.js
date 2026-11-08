@@ -1,3 +1,4 @@
+import { publicarEventoEmpresa } from "../../lib/realtime.js";
 import { prisma } from "../../lib/prisma.js";
 import { registrarAuditoria } from "../../lib/audit.js";
 import { gerarDeviceKey, hashDeviceKey, deviceKeyHint } from "../../lib/deviceSecurity.js";
@@ -203,6 +204,7 @@ export async function aprovarDescoberto(req, res, next) {
       }
     });
 
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.criada", { maquinaId: machine.id });
     let provisioned = false;
     let provisioningMessage = null;
     try {
@@ -239,6 +241,7 @@ export async function aprovarDescoberto(req, res, next) {
       detalhes: { discoveryId: id, host: device.host, controller: device.controller, protocol: device.protocol, provisioned }
     });
 
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.atualizada", { maquinaId: machine.id });
     res.status(201).json({
       mensagem: provisioned
         ? "Equipamento adicionado e configurado automaticamente. Aguarde a primeira telemetria."

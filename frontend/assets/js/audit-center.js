@@ -1,8 +1,21 @@
 (function(){'use strict';
 const make=(tag,text)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;return n;};
-const modal=make('dialog');modal.id='globalAuditModal';modal.className='machine-audit-modal';modal.setAttribute('aria-label','Auditoria geral da empresa');const header=make('header'),title=make('h2','Auditoria geral da empresa'),close=make('button','×'),status=make('p'),body=make('div');header.className='workspace-modal-header';close.type='button';close.setAttribute('aria-label','Fechar auditoria');status.setAttribute('role','status');header.append(title,close);modal.append(header,status,body);document.body.append(modal);let generation=0,returnFocus=null;
+const modal=make('dialog');modal.id='globalAuditModal';modal.className='machine-audit-modal';modal.setAttribute('aria-label','Auditoria geral da empresa');const header=make('header'),title=make('h2','Auditoria geral da empresa'),close=make('button','×'),status=make('p'),body=make('div');header.className='workspace-modal-header';close.type='button';close.setAttribute('aria-label','Fechar auditoria');status.setAttribute('role','status');header.append(title,close);modal.append(header,status,body);document.body.append(modal);let updateRows=null,refreshing=false,dirty=false;let generation=0,returnFocus=null;
 async function api(path){const token=localStorage.getItem('token');const response=await fetch(`${window.STEELCONTROL_API_URL||''}${path}`,{credentials:'include',cache:'no-store',headers:{Accept:'application/json',...(token?{Authorization:`Bearer ${token}`}:{})}});const data=await response.json();if(!response.ok)throw Error(data.mensagem||'Falha ao consultar a auditoria.');return data;}
-function finish(){generation++;if(modal.open)modal.close();body.replaceChildren();returnFocus?.focus?.();}close.onclick=finish;modal.addEventListener('cancel',event=>{event.preventDefault();finish();});
-async function open(){const g=++generation;returnFocus=document.activeElement;if(!modal.open)modal.showModal();body.replaceChildren();status.textContent='Validando acesso à auditoria geral…';try{const auth=await api('/auth/session');if(g!==generation||!modal.open)return;if(auth.usuario?.cargo!=='ADMINISTRADOR'){status.textContent='Auditoria geral restrita à administração.';return;}const rows=await api('/auditoria?limit=300');if(g!==generation||!modal.open)return;status.textContent='';SteelMachineRecords.audit(body,{rows});}catch(error){if(g===generation)status.textContent=error.message;}}
+function finish(){generation++;updateRows=null;if(modal.open)modal.close();body.replaceChildren();returnFocus?.focus?.();}close.onclick=finish;modal.addEventListener('cancel',event=>{event.preventDefault();finish();});
+async function open(){const g=++generation;returnFocus=document.activeElement;if(!modal.open)modal.showModal();body.replaceChildren();status.textContent='Validando acesso à auditoria geral…';try{const auth=await api('/auth/session');if(g!==generation||!modal.open)return;if(auth.usuario?.cargo!=='ADMINISTRADOR'){status.textContent='Auditoria geral restrita à administração.';return;}const rows=await api('/auditoria?limit=300');if(g!==generation||!modal.open)return;status.textContent='';updateRows=SteelMachineRecords.audit(body,{rows});if(dirty)refresh();}catch(error){if(g===generation)status.textContent=error.message;}}
+async function refresh(){
+ if(!modal.open)return;
+ dirty=true;
+ if(refreshing||!updateRows)return;
+ refreshing=true;
+ try {while(dirty && modal.open && updateRows){
+   dirty=false;const g=generation,rows=await api('/auditoria?limit=300');
+   if(g===generation && modal.open)updateRows(rows);
+ }}catch(error){if(modal.open)status.textContent=error.message;}
+ finally{refreshing=false;}
+}
+window.addEventListener('steelcontrol:auditoria.registrada',refresh);
+window.addEventListener('steelcontrol:conectado',refresh);
 document.getElementById('globalAuditOpen')?.addEventListener('click',open);window.SteelAuditCenter={open,close:finish};window.addEventListener('pagehide',finish);
 })();

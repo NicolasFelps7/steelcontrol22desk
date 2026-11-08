@@ -1,7 +1,25 @@
 import { EventEmitter } from "events";
 
+import { createRealtimeBridge } from "./realtimeBridge.js";
+
 const bus = new EventEmitter();
 bus.setMaxListeners(0);
+
+let bridge;
+export function iniciarRealtimeDistribuido() {
+  bridge = createRealtimeBridge({
+    url: process.env.REDIS_URL,
+    database: process.env.DATABASE_URL || "",
+    deliver: (topic, event) => bus.emit(topic, event)
+  });
+  bridge?.start().catch(() => console.warn("[REALTIME] Canal entre réplicas indisponível."));
+  return () => bridge?.close();
+}
+
+function emitir(topic, event) {
+  bus.emit(topic, event);
+  bridge?.publish(topic, event);
+}
 
 function canalMaquina(maquinaId) {
   return `maquina:${Number(maquinaId)}`;
@@ -12,7 +30,7 @@ function canalEmpresa(empresaId) {
 }
 
 export function publicarEventoMaquina(maquinaId, tipo, dados) {
-  bus.emit(canalMaquina(maquinaId), {
+  emitir(canalMaquina(maquinaId), {
     tipo,
     dados,
     em: new Date().toISOString()
@@ -35,7 +53,7 @@ export function publicarEventoEmpresa(empresaId, tipo, dados = {}) {
   const id = Number(empresaId);
   if (!Number.isInteger(id) || id <= 0) return;
 
-  bus.emit(canalEmpresa(id), {
+  emitir(canalEmpresa(id), {
     tipo,
     dados,
     empresaId: id,

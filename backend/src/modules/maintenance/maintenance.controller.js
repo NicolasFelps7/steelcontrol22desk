@@ -1,3 +1,4 @@
+import { publicarEventoEmpresa } from "../../lib/realtime.js";
 import { prisma } from "../../lib/prisma.js";
 import { registrarAuditoria } from "../../lib/audit.js";
 import {
@@ -187,6 +188,7 @@ export async function criar(
       return criado;
     });
 
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.manutencao", { maquinaId: maquina.id });
     await registrarAuditoria({
       req,
       acao: "CRIAR",
@@ -342,6 +344,7 @@ export async function excluir(
       }
     });
 
+    publicarEventoEmpresa(req.auth.empresaId, "maquina.manutencao", { maquinaId: maquina.id });
     await registrarAuditoria({
       req,
       acao: "ARQUIVAR",

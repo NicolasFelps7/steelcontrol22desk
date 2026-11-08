@@ -5,6 +5,9 @@ import { startDeviceDiscovery, stopDeviceDiscovery } from "./lib/deviceDiscovery
 import { requireRedis } from "./lib/redisStore.js";
 import { startDiagnosticMonitor } from "./lib/diagnostics.js";
 
+import { iniciarRealtimeDistribuido } from "./lib/realtime.js";
+
+let stopRealtime = () => {};
 let server;
 let encerrando = false;
 let stopDiagnosticMonitor=()=>{};
@@ -26,6 +29,7 @@ async function encerrar(
     async () => {
       stopDeviceDiscovery();
       stopDiagnosticMonitor();
+      stopRealtime();
 
       await prisma
         .$disconnect()
@@ -55,6 +59,7 @@ async function iniciar() {
       await requireRedis();
     }
 
+    stopRealtime = iniciarRealtimeDistribuido();
     server =
       app.listen(
         env.port,

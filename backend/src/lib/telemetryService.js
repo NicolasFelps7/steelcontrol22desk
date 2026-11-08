@@ -1,5 +1,5 @@
 import { prisma } from "./prisma.js";
-import { publicarEventoMaquina } from "./realtime.js";
+import { publicarEventoEmpresa, publicarEventoMaquina } from "./realtime.js";
 import { calcularEstadoConexao } from "./machinePolicy.js";
 import { calcularCiclosDesdeManutencao } from "./industrialPolicy.js";
 import { registrarAuditoria } from "./audit.js";
@@ -432,5 +432,11 @@ export async function processarTelemetria({
   );
 
   publicarEventoMaquina(maquina.id, "telemetria", evento);
+  if (criarAlerta || criarAlertaDobot || primeiraLeituraReal || mudouEstado) {
+    publicarEventoMaquina(maquina.id, "historico.atualizado", { maquinaId: maquina.id });
+  }
+  if (primeiraLeituraReal || mudouEstado) {
+    publicarEventoEmpresa(maquina.empresaId, "maquina.estado", { maquinaId: maquina.id });
+  }
   return atualizada;
 }

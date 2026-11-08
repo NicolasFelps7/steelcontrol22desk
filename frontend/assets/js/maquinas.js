@@ -2958,6 +2958,13 @@ formMaquina
 
 
         const maquinaAlteradaId = Number(dados.maquina?.id || maquinaEditandoId || 0);
+        if (dados.maquina && maquinaAlteradaId > 0) {
+          maquinas = [dados.maquina, ...maquinas.filter(item => item.id !== maquinaAlteradaId)];
+          salvarCacheMaquinas(maquinas);
+          atualizarResumo();
+          aplicarFiltros();
+          if (carregarMaquinasPromise) maquinasRecarregarAposResposta = true;
+        }
         window.SteelControlMachineSync.notify(editando ? 'maquina.atualizada' : 'maquina.criada', maquinaAlteradaId);
         if (!editando) window.SteelUI?.toast?.({
           tipo: "success", titulo: "Equipamento cadastrado",
@@ -3241,8 +3248,9 @@ window.addEventListener(
     }
     if (carregarMaquinasPromise) maquinasRecarregarAposResposta = true;
 
-    clearTimeout(steelMaquinasRealtimeTimer);
+    if (steelMaquinasRealtimeTimer !== null) return;
     steelMaquinasRealtimeTimer = setTimeout(() => {
+      steelMaquinasRealtimeTimer = null;
       carregarMaquinas({ silencioso: true });
     }, 120);
   }

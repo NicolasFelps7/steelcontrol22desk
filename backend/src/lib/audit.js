@@ -9,6 +9,7 @@ export function redactSecrets(value, depth = 0) {
   return value;
 }
 
+import { publicarEventoEmpresa } from "./realtime.js";
 import { prisma } from "./prisma.js";
 
 export async function registrarAuditoria({
@@ -50,6 +51,7 @@ export async function registrarAuditoria({
         detalhes: redactSecrets(detalhes) || undefined
       }
     });
+    publicarEventoEmpresa(empresaFinal, "auditoria.registrada");
   } catch (erro) {
     // Auditoria nunca derruba a operação principal.
     console.error("[AUDITORIA] Não foi possível gravar o evento.");

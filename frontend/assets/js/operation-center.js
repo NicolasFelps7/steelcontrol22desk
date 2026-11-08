@@ -7,7 +7,7 @@ const localize = text => STEEL_LITERAL_I18N[text]?.[pegarIdiomaAtual()] ?? text;
 const profiles=await fetch('assets/machine-profiles.json?v=3',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Perfis indisponíveis.');return r.json();});
 const selected = Number(new URLSearchParams(location.search).get('maquinaId'));
 if (!Number.isSafeInteger(selected) || selected <= 0) location.replace('/app/maquinas');
-let machines=[],session=null,snapshot=null,sequence=0,stream=null,company=null,timer=null,refreshing=false,lastStamp=0,initial=true,closed=false;
+let machines=[],session=null,snapshot=null,sequence=0,stream=null,timer=null,refreshing=false,lastStamp=0,initial=true,closed=false;
 async function api(path,options={}){const token=localStorage.getItem('token');const response=await fetch(`${window.STEELCONTROL_API_URL||''}${path}`,{credentials:'include',cache:'no-store',...options,headers:{Accept:'application/json',...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});if(response.status===401){location.replace('/app/login');throw Error('Sessão encerrada.');}const data=await response.json();if(!response.ok)throw Error(data.mensagem||'Não foi possível consultar o equipamento.');return data;}
 const message=text=>$('opMessage').textContent=text;
 const rights=()=>({podeAuditar:session?.cargo==='ADMINISTRADOR',podeRegistrar:['ADMINISTRADOR','SUPERVISOR','TECNICO'].includes(session?.cargo),podeParar:['ADMINISTRADOR','SUPERVISOR','TECNICO','OPERADOR'].includes(session?.cargo)});
@@ -29,9 +29,13 @@ function draw(){const machine=machines.find(m=>m.id===selected);scene.update({ma
  panel('D','Manutenção do equipamento',[['Situação',machine.manutencao],['Última intervenção',machine.ultimaManutencao],['Próxima referência',machine.proximaManutencao]]);
 }
 
-function accept(machine,diagnostic){if(closed||machine.id!==selected)return;const stamp=Date.parse(diagnostic.ultimaTelemetriaEm)||0;if(stamp<lastStamp)return;lastStamp=stamp;snapshot={machine,diagnostic};machines=machines.map(m=>m.id===machine.id?{...m,...machine}:m);draw();}
+function accept(machine,diagnostic){if(closed||machine.id!==selected)return;const stamp=Date.parse(diagnostic.ultimaTelemetriaEm)||0;if(stamp<lastStamp)return;lastStamp=stamp;snapshot={machine,diagnostic};window.dispatchEvent(new CustomEvent('steelcontrol:machine-diagnostic',{detail:{...diagnostic,id:selected}}));machines=machines.map(m=>m.id===machine.id?{...m,...machine}:m);draw();}
 async function read(){const id=selected,version=sequence;if(!id||refreshing||document.hidden||closed)return;refreshing=true;try{const [m,d]=await Promise.all([api(`/maquinas/${id}`),api(`/maquinas/${id}/diagnostico`)]);if(version===sequence&&id===selected){accept(m,d);message('');}}catch(error){if(version===sequence)message(error.message);}finally{refreshing=false;}}
-function watch(){stream?.close();clearInterval(timer);if(!selected)return;const id=selected;stream=new EventSource(`${window.STEELCONTROL_API_URL||''}/maquinas/${id}/stream`,{withCredentials:true});stream.addEventListener('telemetria',event=>{if(id!==selected||document.hidden||closed)return;try{const e=JSON.parse(event.data),raw=e.dados,m=machines.find(m=>m.id===id);if(!raw||!m)return;accept({...m,...raw,id},{...(snapshot?.diagnostic||{}),...raw,origemUltimaLeitura:raw.origem});}catch{}});timer=setInterval(read,2000);read();}
+function watch(){stream?.close();clearInterval(timer);if(!selected)return;const id=selected;stream=new EventSource(`${window.STEELCONTROL_API_URL||''}/maquinas/${id}/stream`,{withCredentials:true});stream.addEventListener('telemetria',event=>{if(id!==selected||document.hidden||closed)return;try{const e=JSON.parse(event.data),raw=e.dados,m=machines.find(m=>m.id===id);if(!raw||!m)return;accept({...m,...raw,id},{...(snapshot?.diagnostic||{}),...raw,origemUltimaLeitura:raw.origem});}catch{}});for (const type of ['open','configuracao','automatico','seguranca','comando.confirmado']) stream.addEventListener(type,read);
+for (const type of ['historico.atualizado','comando.confirmado']) {
+  stream.addEventListener(type, () => window.SteelMachineWorkspace.historyChanged(id));
+}
+timer=setInterval(read,2000);read();}
 async function loadFleet() {
   if (closed || !Number.isSafeInteger(selected) || selected <= 0) return;
   try {
@@ -63,6 +67,11 @@ $('plantMaintenance').onclick=()=>{if(selected)window.SteelMachineWorkspace.show
 $('opRefresh').onclick=()=>{loadFleet();read();};$('opShortcuts').onclick=event=>{const tab=event.target.closest('[data-tab]')?.dataset.tab;if(tab&&selected)window.SteelMachineWorkspace.showTab(selected,tab);};$('opFullscreen').onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await $('opPlantBoard').requestFullscreen();}catch{}};
 window.addEventListener('idiomaAplicado',draw);
 const fleetPoll=setInterval(()=>{if(!document.hidden)loadFleet();},15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadFleet();read();}});
-company=new EventSource(`${window.STEELCONTROL_API_URL||''}/empresa/stream`,{withCredentials:true});for(const type of ['maquina.criada','maquina.atualizada','maquina.desativada','maquina.excluida'])company.addEventListener(type,()=>loadFleet());
-window.addEventListener('pagehide',()=>{closed=true;sequence++;stream?.close();company?.close();clearInterval(timer);clearInterval(fleetPoll);scene.dispose();});
+window.addEventListener('steelcontrol:empresa-evento', ({detail}) => {
+  if (detail?.tipo === 'conectado' || ['maquina.atualizada','maquina.desativada','maquina.excluida','maquina.manutencao'].includes(detail?.tipo) && Number(detail.dados?.maquinaId) === selected) {
+    loadFleet();
+    read();
+  }
+});
+window.addEventListener('pagehide',()=>{closed=true;sequence++;stream?.close();clearInterval(timer);clearInterval(fleetPoll);scene.dispose();});
 await loadFleet();

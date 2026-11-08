@@ -407,6 +407,7 @@ export async function streamEmpresa(
 
     const enviar =
       evento => {
+        if (evento.tipo === "auditoria.registrada" && req.auth.cargo !== "ADMINISTRADOR") return;
         res.write(
           `event: ${evento.tipo || "mensagem"}\n`
         );

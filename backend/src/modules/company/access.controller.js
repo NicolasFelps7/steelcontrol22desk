@@ -35,6 +35,7 @@ export async function decidirSolicitacao(req, res, next) {
       return true;
     });
     if (!alterado) return res.status(409).json({ mensagem: "Solicitação indisponível, não verificada ou já analisada." });
+    publicarEventoEmpresa(req.auth.empresaId, "auditoria.registrada");
     publicarEventoEmpresa(req.auth.empresaId, "usuario.solicitacao-analisada", { usuarioId });
     res.json({ mensagem: aprovado ? "Acesso aprovado como Visitante. Altere o cargo depois, se necessário." : "Solicitação rejeitada." });
   } catch (erro) { next(erro); }

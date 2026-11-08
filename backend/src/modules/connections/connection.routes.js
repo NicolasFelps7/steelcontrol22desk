@@ -1,3 +1,4 @@
+import { publicarEventoEmpresa } from "../../lib/realtime.js";
 import { lockMachine } from "../../lib/machineLock.js";
 import crypto from 'node:crypto';
 import { Router } from 'express';
@@ -18,7 +19,10 @@ const run = fn => (req,res,next) => Promise.resolve(fn(req,res)).catch(error => 
   next(error);
 });
 const fail = (res,status,mensagem) => res.status(status).json({mensagem});
-const audit = (req,acao,detalhes) => registrarAuditoria({req,acao,entidade:'CONEXAO',detalhes});
+const audit = async (req,acao,detalhes) => {
+  await registrarAuditoria({req,acao,entidade:'CONEXAO',detalhes});
+  publicarEventoEmpresa(req.auth.empresaId, 'conexao.atualizada', {maquinaId: detalhes.maquinaId || null});
+};
 const keyContext = (host,id,version) => `${host}:${id}:${version}`;
 
 // O primeiro registro não concede empresa nem acesso a máquinas.

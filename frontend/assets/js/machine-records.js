@@ -9,6 +9,15 @@ function audit(container,{rows=[]}){container.replaceChildren();container.classL
  const holder=make('div',null,'records-table-wrap'),count=make('p',null,'records-count');container.append(count,holder);
  const render=()=>{holder.replaceChildren();const query=search.value.toLocaleLowerCase('pt-BR'),list=rows.filter(row=>(!actions.value||row.acao===actions.value)&&`${row.acao} ${row.usuario?.nome||'Sistema'} ${row.entidade||''} ${JSON.stringify(row.detalhes||{})}`.toLocaleLowerCase('pt-BR').includes(query));count.textContent=`${list.length} de ${rows.length} eventos carregados · mais recentes primeiro`;if(!list.length){holder.append(empty(rows.length?'Nenhum evento corresponde ao filtro.':'Nenhum evento registrado para esta empresa.'));return;}
  const table=make('table'),head=make('thead'),hr=make('tr');for(const label of ['Data e hora','Ação','Responsável','Entidade','Detalhes'])hr.append(make('th',label));head.append(hr);table.append(head);const body=make('tbody');for(const row of list){const tr=make('tr'),date=new Date(row.criadoEm);tr.append(make('td',Number.isFinite(date.getTime())?date.toLocaleString('pt-BR'):'—'),make('td',row.acao),make('td',row.usuario?.nome||'Sistema'),make('td',row.entidade||'—'),make('td',JSON.stringify(row.detalhes||{})));body.append(tr);}table.append(body);holder.append(table);};search.oninput=render;actions.onchange=render;render();
+ return next => {
+   rows = next;
+   const action = actions.value, types = [...new Set(rows.map(r=>r.acao))].sort();
+   actions.replaceChildren(all,...types.map(a=>{const o=make('option',a);o.value=a;return o;}));
+   actions.value = types.includes(action) ? action : '';
+   const values = [rows.length,new Set(rows.map(r=>r.usuario?.nome||'Sistema')).size,types.length];
+   summary.querySelectorAll('strong').forEach((n,i)=>n.textContent=values[i]);
+   render();
+ };
 }
 function maintenance(container,{machine,rows=[],canRegister=false,user={},onCreate,onAudit}){container.replaceChildren();container.classList.add('sc-records');const heading=header('Central de manutenção',machine.nome+' · intervenções, inspeções e histórico técnico');container.append(heading);
  const summary=make('div',null,'records-summary');for(const [label,value]of [['Situação',machine.manutencao||'Não informada'],['Última intervenção',machine.ultimaManutencao||'Sem registro'],['Próxima referência',machine.proximaManutencao||'A definir'],['Registros ativos',rows.length]]){const card=make('article');card.append(make('small',label),make('strong',value));summary.append(card);}container.append(summary);
@@ -17,6 +26,12 @@ function maintenance(container,{machine,rows=[],canRegister=false,user={},onCrea
  const submit=make('button','Salvar intervenção','records-primary');submit.type='submit';const cancel=button('Cancelar',()=>{form.hidden=true;});form.append(formTitle,typeLabel,who,description,status,submit,cancel);form.onsubmit=async event=>{event.preventDefault();if(submit.disabled)return;submit.disabled=true;cancel.disabled=true;status.textContent='Registrando intervenção…';try{await onCreate({tipo:type.value.trim(),descricao:details.value.trim()});}catch(error){status.textContent=error.message||'Não foi possível registrar.';submit.disabled=false;cancel.disabled=false;}};
  if(canRegister)tools.append(button('+ Nova intervenção',()=>{form.hidden=false;type.focus();},'records-primary'));if(onAudit)tools.append(button('Ver auditoria',onAudit));container.append(tools,form);
  const history=make('div',null,'records-history');container.append(history);const render=()=>{const q=search.value.toLocaleLowerCase('pt-BR'),items=rows.filter(row=>`${row.tipo} ${row.tecnico} ${row.descricao}`.toLocaleLowerCase('pt-BR').includes(q));history.replaceChildren();if(!items.length){history.append(empty(rows.length?'Nenhuma intervenção corresponde à busca.':'Nenhuma manutenção registrada.'));return;}for(const row of items){const item=make('article',null,'records-intervention'),top=make('div');top.append(make('span',row.tipo,'records-badge'),make('time',`${row.data||'Data não informada'} ${row.horario||''}`));item.append(top,make('h4',row.tecnico||'Responsável não informado'),make('p',row.descricao));if(Number.isFinite(row.ciclosNoRegistro))item.append(make('small',`Referência da máquina na intervenção: ${row.ciclosNoRegistro} ciclos`));history.append(item);}};search.oninput=render;render();
+ return (nextRows, nextMachine) => {
+   rows = nextRows;
+   const values = [nextMachine.manutencao, nextMachine.ultimaManutencao, nextMachine.proximaManutencao, rows.length];
+   summary.querySelectorAll('strong').forEach((node, index) => {node.textContent = values[index] ?? '—';});
+   render();
+ };
 }
 function logs(container,{machine}){container.replaceChildren();container.classList.add('sc-records');container.append(header('Logs do equipamento',machine.nome+' · registros operacionais disponíveis'));const rows=(machine.logs||[]).slice(-100);if(!rows.length){container.append(empty('Nenhum log registrado.'));return;}const list=make('ol',null,'records-log-list');for(const row of rows)list.append(make('li',typeof row==='string'?row:row.mensagem||JSON.stringify(row)));container.append(list);}
 window.SteelMachineRecords={audit,maintenance,logs};
