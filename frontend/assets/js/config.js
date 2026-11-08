@@ -8322,6 +8322,317 @@ Object.assign(STEEL_LITERAL_I18N, {
 // TRADUÇÃO AUTOMÁTICA DOS TEXTOS ESTÁTICOS
 // =========================================================
 
+Object.assign(STEEL_LITERAL_I18N, {
+  "◷ Auditoria geral": {
+    "en": "◷ General audit",
+    "es": "◷ Auditoría general",
+    "fr": "◷ Audit général",
+    "de": "◷ Gesamtaudit",
+    "it": "◷ Audit generale"
+  },
+  "Consultar auditoria geral da empresa": {
+    "en": "View company audit",
+    "es": "Consultar auditoría de la empresa",
+    "fr": "Consulter l’audit de l’entreprise",
+    "de": "Unternehmensaudit anzeigen",
+    "it": "Consulta audit aziendale"
+  },
+  "Auditoria geral da empresa": {
+    "en": "Company audit",
+    "es": "Auditoría de la empresa",
+    "fr": "Audit de l’entreprise",
+    "de": "Unternehmensaudit",
+    "it": "Audit aziendale"
+  },
+  "AUDITORIA GERAL · EMPRESA": {
+    "en": "COMPANY AUDIT",
+    "es": "AUDITORÍA DE EMPRESA",
+    "fr": "AUDIT DE L’ENTREPRISE",
+    "de": "UNTERNEHMENSAUDIT",
+    "it": "AUDIT AZIENDALE"
+  },
+  "Acessos, contas, equipamentos, manutenção e demais eventos auditados": {
+    "en": "Access, accounts, equipment, maintenance and other audited events",
+    "es": "Accesos, cuentas, equipos, mantenimiento y otros eventos auditados",
+    "fr": "Accès, comptes, équipements, maintenance et autres événements audités",
+    "de": "Zugriffe, Konten, Geräte, Wartung und weitere protokollierte Ereignisse",
+    "it": "Accessi, account, macchine, manutenzione e altri eventi verificati"
+  },
+  "Abrir SteelControl Edge": {
+    "en": "Open SteelControl Edge",
+    "es": "Abrir SteelControl Edge",
+    "fr": "Ouvrir SteelControl Edge",
+    "de": "SteelControl Edge öffnen",
+    "it": "Apri SteelControl Edge"
+  },
+  "Configurar Edge": {
+    "en": "Configure Edge",
+    "es": "Configurar Edge",
+    "fr": "Configurer Edge",
+    "de": "Edge konfigurieren",
+    "it": "Configura Edge"
+  },
+  "Central de Diagnóstico": {
+    "en": "Diagnostics center",
+    "es": "Centro de diagnóstico",
+    "fr": "Centre de diagnostic",
+    "de": "Diagnosezentrale",
+    "it": "Centro diagnostico"
+  },
+  "Histórico da empresa, falhas de comunicação e orientações de resolução.": {
+    "en": "Company history, communication failures and troubleshooting guidance.",
+    "es": "Historial de la empresa, fallos de comunicación y soluciones.",
+    "fr": "Historique de l’entreprise, pannes de communication et aide au dépannage.",
+    "de": "Unternehmenshistorie, Kommunikationsfehler und Lösungshinweise.",
+    "it": "Cronologia aziendale, errori di comunicazione e indicazioni per risolverli."
+  },
+  "Corretiva registrada": {
+    "en": "Corrective maintenance recorded",
+    "es": "Mantenimiento correctivo registrado",
+    "fr": "Maintenance corrective enregistrée",
+    "de": "Korrekturwartung erfasst",
+    "it": "Manutenzione correttiva registrata"
+  },
+  "Preventiva registrada": {
+    "en": "Preventive maintenance recorded",
+    "es": "Mantenimiento preventivo registrado",
+    "fr": "Maintenance préventive enregistrée",
+    "de": "Vorbeugende Wartung erfasst",
+    "it": "Manutenzione preventiva registrata"
+  },
+  "Responsáveis": {
+    "en": "Responsible users",
+    "es": "Responsables",
+    "fr": "Responsables",
+    "de": "Verantwortliche",
+    "it": "Responsabili"
+  },
+  "Tipos de ação": {
+    "en": "Action types",
+    "es": "Tipos de acción",
+    "fr": "Types d’action",
+    "de": "Aktionstypen",
+    "it": "Tipi di azione"
+  },
+  "Buscar ação, responsável ou detalhe": {
+    "en": "Search actions, users or details",
+    "es": "Buscar acciones, responsables o detalles",
+    "fr": "Rechercher actions, responsables ou détails",
+    "de": "Aktionen, Verantwortliche oder Details suchen",
+    "it": "Cerca azioni, responsabili o dettagli"
+  },
+  "Buscar na auditoria": {
+    "en": "Search audit",
+    "es": "Buscar en auditoría",
+    "fr": "Rechercher dans l’audit",
+    "de": "Audit durchsuchen",
+    "it": "Cerca nell’audit"
+  },
+  "Filtrar ação": {
+    "en": "Filter action",
+    "es": "Filtrar acción",
+    "fr": "Filtrer les actions",
+    "de": "Aktion filtern",
+    "it": "Filtra azione"
+  },
+  "Todas as ações": {
+    "en": "All actions",
+    "es": "Todas las acciones",
+    "fr": "Toutes les actions",
+    "de": "Alle Aktionen",
+    "it": "Tutte le azioni"
+  },
+  "Eventos carregados": {
+    "en": "Loaded events",
+    "es": "Eventos cargados",
+    "fr": "Événements chargés",
+    "de": "Geladene Ereignisse",
+    "it": "Eventi caricati"
+  },
+  "Nenhum evento corresponde ao filtro.": {
+    "en": "No events match the filter.",
+    "es": "Ningún evento coincide con el filtro.",
+    "fr": "Aucun événement ne correspond au filtre.",
+    "de": "Keine passenden Ereignisse.",
+    "it": "Nessun evento corrisponde al filtro."
+  },
+  "Nenhum evento registrado para esta empresa.": {
+    "en": "No events recorded for this company.",
+    "es": "No hay eventos registrados para esta empresa.",
+    "fr": "Aucun événement enregistré pour cette entreprise.",
+    "de": "Keine Ereignisse für dieses Unternehmen erfasst.",
+    "it": "Nessun evento registrato per questa azienda."
+  },
+  "Fechar diagnóstico": {
+    "en": "Close diagnostics",
+    "es": "Cerrar diagnóstico",
+    "fr": "Fermer le diagnostic",
+    "de": "Diagnose schließen",
+    "it": "Chiudi diagnostica"
+  },
+  "Código, máquina, usuário ou evento": {
+    "en": "Code, machine, user or event",
+    "es": "Código, máquina, usuario o evento",
+    "fr": "Code, machine, utilisateur ou événement",
+    "de": "Code, Maschine, Benutzer oder Ereignis",
+    "it": "Codice, macchina, utente o evento"
+  },
+  "Aplicar filtros": {
+    "en": "Apply filters",
+    "es": "Aplicar filtros",
+    "fr": "Appliquer les filtres",
+    "de": "Filter anwenden",
+    "it": "Applica filtri"
+  },
+  "Exportar CSV": {
+    "en": "Export CSV",
+    "es": "Exportar CSV",
+    "fr": "Exporter CSV",
+    "de": "CSV exportieren",
+    "it": "Esporta CSV"
+  },
+  "Nenhum evento encontrado para estes filtros.": {
+    "en": "No events found for these filters.",
+    "es": "No hay eventos para estos filtros.",
+    "fr": "Aucun événement pour ces filtres.",
+    "de": "Keine Ereignisse für diese Filter.",
+    "it": "Nessun evento per questi filtri."
+  },
+  "Robótica": {
+    "en": "Robotics",
+    "es": "Robótica",
+    "fr": "Robotique",
+    "de": "Robotik",
+    "it": "Robotica"
+  },
+  "Genérico": {
+    "en": "Generic",
+    "es": "Genérico",
+    "fr": "Générique",
+    "de": "Allgemein",
+    "it": "Generico"
+  },
+  "IHM Impressora 3D": {
+    "en": "3D printer HMI",
+    "es": "HMI de impresora 3D",
+    "fr": "IHM imprimante 3D",
+    "de": "3D-Drucker-HMI",
+    "it": "HMI stampante 3D"
+  },
+  "Painel CNC disponível": {
+    "en": "CNC dashboard available",
+    "es": "Panel CNC disponible",
+    "fr": "Tableau CNC disponible",
+    "de": "Dashboard CNC verfügbar",
+    "it": "Pannello CNC disponibile"
+  },
+  "Abrir painel CNC": {
+    "en": "Open CNC dashboard",
+    "es": "Abrir panel CNC",
+    "fr": "Ouvrir le tableau CNC",
+    "de": "Dashboard CNC öffnen",
+    "it": "Apri pannello CNC"
+  },
+  "Painel Dobot disponível": {
+    "en": "Dobot dashboard available",
+    "es": "Panel Dobot disponible",
+    "fr": "Tableau Dobot disponible",
+    "de": "Dashboard Dobot verfügbar",
+    "it": "Pannello Dobot disponibile"
+  },
+  "Abrir painel Dobot": {
+    "en": "Open Dobot dashboard",
+    "es": "Abrir panel Dobot",
+    "fr": "Ouvrir le tableau Dobot",
+    "de": "Dashboard Dobot öffnen",
+    "it": "Apri pannello Dobot"
+  },
+  "Painel PLC disponível": {
+    "en": "PLC dashboard available",
+    "es": "Panel PLC disponible",
+    "fr": "Tableau PLC disponible",
+    "de": "Dashboard PLC verfügbar",
+    "it": "Pannello PLC disponibile"
+  },
+  "Abrir painel PLC": {
+    "en": "Open PLC dashboard",
+    "es": "Abrir panel PLC",
+    "fr": "Ouvrir le tableau PLC",
+    "de": "Dashboard PLC öffnen",
+    "it": "Apri pannello PLC"
+  },
+  "Painel ESP32 disponível": {
+    "en": "ESP32 dashboard available",
+    "es": "Panel ESP32 disponible",
+    "fr": "Tableau ESP32 disponible",
+    "de": "Dashboard ESP32 verfügbar",
+    "it": "Pannello ESP32 disponibile"
+  },
+  "Abrir painel ESP32": {
+    "en": "Open ESP32 dashboard",
+    "es": "Abrir panel ESP32",
+    "fr": "Ouvrir le tableau ESP32",
+    "de": "Dashboard ESP32 öffnen",
+    "it": "Apri pannello ESP32"
+  },
+  "Painel Robótica disponível": {
+    "en": "Robotics dashboard available",
+    "es": "Panel Robótica disponible",
+    "fr": "Tableau Robotique disponible",
+    "de": "Dashboard Robotik verfügbar",
+    "it": "Pannello Robotica disponibile"
+  },
+  "Abrir painel Robótica": {
+    "en": "Open Robotics dashboard",
+    "es": "Abrir panel Robótica",
+    "fr": "Ouvrir le tableau Robotique",
+    "de": "Dashboard Robotik öffnen",
+    "it": "Apri pannello Robotica"
+  },
+  "Painel Gateway disponível": {
+    "en": "Gateway dashboard available",
+    "es": "Panel Gateway disponible",
+    "fr": "Tableau Gateway disponible",
+    "de": "Dashboard Gateway verfügbar",
+    "it": "Pannello Gateway disponibile"
+  },
+  "Abrir painel Gateway": {
+    "en": "Open Gateway dashboard",
+    "es": "Abrir panel Gateway",
+    "fr": "Ouvrir le tableau Gateway",
+    "de": "Dashboard Gateway öffnen",
+    "it": "Apri pannello Gateway"
+  },
+  "Painel IHM Impressora 3D disponível": {
+    "en": "3D printer HMI dashboard available",
+    "es": "Panel HMI de impresora 3D disponible",
+    "fr": "Tableau IHM imprimante 3D disponible",
+    "de": "Dashboard 3D-Drucker-HMI verfügbar",
+    "it": "Pannello HMI stampante 3D disponibile"
+  },
+  "Abrir painel IHM Impressora 3D": {
+    "en": "Open 3D printer HMI dashboard",
+    "es": "Abrir panel HMI de impresora 3D",
+    "fr": "Ouvrir le tableau IHM imprimante 3D",
+    "de": "Dashboard 3D-Drucker-HMI öffnen",
+    "it": "Apri pannello HMI stampante 3D"
+  },
+  "Painel Genérico disponível": {
+    "en": "Generic dashboard available",
+    "es": "Panel Genérico disponible",
+    "fr": "Tableau Générique disponible",
+    "de": "Dashboard Allgemein verfügbar",
+    "it": "Pannello Generico disponibile"
+  },
+  "Abrir painel Genérico": {
+    "en": "Open Generic dashboard",
+    "es": "Abrir panel Genérico",
+    "fr": "Ouvrir le tableau Générique",
+    "de": "Dashboard Allgemein öffnen",
+    "it": "Apri pannello Generico"
+  }
+});
+
 const CHAVE_POR_TEXTO_PT = new Map(
   Object.entries(traducoes.pt)
     .filter(([, valor]) => typeof valor === "string" && valor.trim())
@@ -8479,11 +8790,7 @@ function traduzirTextosEstaticos(root = document.body) {
 
           if (!atual) return;
 
-          const cacheKey =
-            `steelI18nOriginal_${atributo}`;
-
-          let original =
-            elemento.dataset?.[cacheKey];
+          let original = elemento.getAttribute(`data-steel-i18n-original-${atributo}`);
 
           if (!original) {
             // tenta descobrir a forma portuguesa/base por qualquer idioma

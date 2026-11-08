@@ -1,15 +1,17 @@
-document.getElementById('dashboardCompany').onclick=()=>{localStorage.setItem('empresaOrigem','dashboard');localStorage.setItem('empresaRetornoDashboard','/app/dashboard');};
+document.getElementById('dashboardCompany').onclick=()=>{localStorage.setItem('empresaOrigem','dashboard');sessionStorage.setItem('empresaRetornoMaquina',String(selected));};
 document.getElementById('dashboardSettingsOpen').onclick=()=>document.getElementById('dashboardSettings').showModal();
 document.getElementById('dashboardSettingsClose').onclick=()=>document.getElementById('dashboardSettings').close();
 const $=id=>document.getElementById(id), make=(tag,text,style)=>{const n=document.createElement(tag);if(text!=null)n.textContent=text;if(style)n.className=style;return n;};
 const locale = () => document.documentElement.lang || "pt-BR";
 const localize = text => STEEL_LITERAL_I18N[text]?.[pegarIdiomaAtual()] ?? text;
 const profiles=await fetch('assets/machine-profiles.json?v=3',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Perfis indisponíveis.');return r.json();});
-let machines=[],selected=Number(new URLSearchParams(location.search).get('maquinaId'))||null,session=null,snapshot=null,sequence=0,stream=null,company=null,timer=null,refreshing=false,lastStamp=0,initial=true,closed=false;
+const selected = Number(new URLSearchParams(location.search).get('maquinaId'));
+if (!Number.isSafeInteger(selected) || selected <= 0) location.replace('/app/maquinas');
+let machines=[],session=null,snapshot=null,sequence=0,stream=null,company=null,timer=null,refreshing=false,lastStamp=0,initial=true,closed=false;
 async function api(path,options={}){const token=localStorage.getItem('token');const response=await fetch(`${window.STEELCONTROL_API_URL||''}${path}`,{credentials:'include',cache:'no-store',...options,headers:{Accept:'application/json',...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});if(response.status===401){location.replace('/app/login');throw Error('Sessão encerrada.');}const data=await response.json();if(!response.ok)throw Error(data.mensagem||'Não foi possível consultar o equipamento.');return data;}
 const message=text=>$('opMessage').textContent=text;
 const rights=()=>({podeAuditar:session?.cargo==='ADMINISTRADOR',podeRegistrar:['ADMINISTRADOR','SUPERVISOR','TECNICO'].includes(session?.cargo),podeParar:['ADMINISTRADOR','SUPERVISOR','TECNICO','OPERADOR'].includes(session?.cargo)});
-const scene=SteelMachine3D.create($('op3DScene'),{onSelect:id=>select(id),factoryScene:true});
+const scene=SteelMachine3D.create($('op3DScene'),{factoryScene:true});
 function valueAt(object,path){for(const key of path.split('.')){if(!object||typeof object!=='object'||!Object.hasOwn(object,key))return null;object=object[key];}return ['number','string','boolean'].includes(typeof object)&&!(typeof object==='number'&&!Number.isFinite(object))?object:null;}
 function format(value,unit){if(value==null)return '— Sem dados';if(typeof value==='boolean')return value?'Sim':'Não';if(typeof value==='number')return new Intl.NumberFormat(locale(),{maximumFractionDigits:2}).format(value)+(unit?' '+unit:'');if(/^\d{4}-\d{2}-\d{2}T/.test(value)){const d=new Date(value);if(Number.isFinite(d.getTime()))return d.toLocaleString(locale());}return String(value).slice(0,120);}
 function fresh(machine,diagnostic=machine){const age=Date.now()-Date.parse(diagnostic.ultimaTelemetriaEm);return machine.modoSimulacao===false&&diagnostic.estadoConexao?.codigo==='CONECTADA'&&Number.isFinite(age)&&age>=-5000&&age<Math.max(10000,Number(machine.intervaloLeitura||2000)*3);}
@@ -19,7 +21,7 @@ function panel(letter,title,metrics){$('plantTitle'+letter).textContent=title;$(
 function sectionPanel(letter,section,diagnostic){panel(letter,section.title,section.metrics.map(item=>[item.label,valueAt(diagnostic,item.path),item.unit]));}
 function draw(){const machine=machines.find(m=>m.id===selected);scene.update({machines:(machine?[machine]:machines).map(dto),selectedId:machine?.id||null,caption:machine?'Arraste para girar · roda/pinça para zoom':'Selecione um equipamento no cenário'});$('opFleet').hidden=Boolean(machine);$('opAutomatic').hidden=!machine||String(machine.controlador||'').toUpperCase()!=='DOBOT_MAGICIAN';$('opShortcuts').querySelectorAll('button').forEach(b=>b.disabled=!machine);$('opTitle').textContent=machine?.nome||'Supervisão dos equipamentos';$('opSceneName').textContent=machine?.nome||'Selecione um equipamento';
  for(const letter of ['A','B','C','D'])$('plantPanel'+letter).hidden=!machine;
- if(!machine){$('opSubtitle').textContent='Escolha uma máquina no cenário ou no seletor.';$('opJointStrip').replaceChildren();$('opPositionStrip').replaceChildren();$('opPoseState').textContent='Visão geral da instalação';$('opFleet').replaceChildren(...machines.map(m=>{const button=make('button');button.append(make('strong',m.nome),make('span',m.tipo||m.controlador||'Equipamento'),make('small',m.estadoConexao?.texto||'Estado não informado'));button.onclick=()=>select(m.id);return button;}));return;}
+ if(!machine) return;
  const kind=SteelMachineModels.classify(machine),profile=profiles[kind]||profiles.generic,diagnostic=snapshot?.machine.id===selected?snapshot.diagnostic:{},real=machine.modoSimulacao===false,recent=fresh(machine,diagnostic);
  $('opSubtitle').textContent=localize(profile.title)+' · '+(machine.modelo||localize('modelo não informado'));$('opPoseState').textContent=!real?'SIMULAÇÃO · posição física não confirmada':recent?localize('Juntas medidas')+' · '+new Date(diagnostic.ultimaTelemetriaEm).toLocaleTimeString(locale()):'SEM TELEMETRIA RECENTE · última posição recebida';$('opPoseState').className=recent?'fresh':'stale';nearMetrics(profile,diagnostic,kind);
  const remaining=profile.sections.slice(kind==='dobot'?2:1);sectionPanel('A',remaining[0],diagnostic);sectionPanel('B',remaining[1],diagnostic);
@@ -30,11 +32,35 @@ function draw(){const machine=machines.find(m=>m.id===selected);scene.update({ma
 function accept(machine,diagnostic){if(closed||machine.id!==selected)return;const stamp=Date.parse(diagnostic.ultimaTelemetriaEm)||0;if(stamp<lastStamp)return;lastStamp=stamp;snapshot={machine,diagnostic};machines=machines.map(m=>m.id===machine.id?{...m,...machine}:m);draw();}
 async function read(){const id=selected,version=sequence;if(!id||refreshing||document.hidden||closed)return;refreshing=true;try{const [m,d]=await Promise.all([api(`/maquinas/${id}`),api(`/maquinas/${id}/diagnostico`)]);if(version===sequence&&id===selected){accept(m,d);message('');}}catch(error){if(version===sequence)message(error.message);}finally{refreshing=false;}}
 function watch(){stream?.close();clearInterval(timer);if(!selected)return;const id=selected;stream=new EventSource(`${window.STEELCONTROL_API_URL||''}/maquinas/${id}/stream`,{withCredentials:true});stream.addEventListener('telemetria',event=>{if(id!==selected||document.hidden||closed)return;try{const e=JSON.parse(event.data),raw=e.dados,m=machines.find(m=>m.id===id);if(!raw||!m)return;accept({...m,...raw,id},{...(snapshot?.diagnostic||{}),...raw,origemUltimaLeitura:raw.origem});}catch{}});timer=setInterval(read,2000);read();}
-function select(id){id=Number(id)||null;if(id&&!machines.some(m=>m.id===id))return;selected=id;sequence++;lastStamp=0;snapshot=null;const url=new URL(location.href);id?url.searchParams.set('maquinaId',id):url.searchParams.delete('maquinaId');history.replaceState(null,'',url);$('opMachine').value=id||'';window.SteelMachineWorkspace.select(id);draw();watch();}
-async function loadFleet(){try{const [list,auth]=await Promise.all([api('/maquinas'),api('/auth/session')]);if(closed)return;session=auth.usuario;$('opUserName').textContent=session?.nome||session?.email||'Conta autenticada';$('opUserRole').textContent=session?.cargo||'';$('opUserAvatar').textContent=(session?.nome||session?.email||'U').trim().slice(0,1).toLocaleUpperCase('pt-BR');machines=Array.isArray(list)?list:[];const all=make('option','Visão geral dos equipamentos');all.value='';$('opMachine').replaceChildren(all,...machines.map(m=>{const o=make('option',m.nome);o.value=m.id;return o;}));if(initial){initial=false;select(selected&&machines.some(m=>m.id===selected)?selected:machines[0]?.id||null);}else if(selected&&!machines.some(m=>m.id===selected))select(null);else{$('opMachine').value=selected||'';draw();}}catch(error){message(error.message);}}
+async function loadFleet() {
+  if (closed || !Number.isSafeInteger(selected) || selected <= 0) return;
+  try {
+    const [list, auth] = await Promise.all([api('/maquinas'), api('/auth/session')]);
+    if (closed) return;
+    const machine = list.find(item => item.id === selected);
+    if (!machine) {
+      closed = true;
+      stream?.close();
+      clearInterval(timer);
+      location.replace('/app/maquinas');
+      return;
+    }
+    session = auth.usuario;
+    $('opUserName').textContent = session?.nome || session?.email || 'Conta autenticada';
+    $('opUserRole').textContent = session?.cargo || '';
+    $('opUserAvatar').textContent = $('opUserName').textContent.trim().slice(0,1).toLocaleUpperCase(locale());
+    machines = [machine];
+    if (initial) {
+      initial = false;
+      window.SteelMachineWorkspace.select(selected);
+      watch();
+    }
+    draw();
+  } catch (error) { message(error.message); }
+}
 window.SteelMachineWorkspace.mount({api,tr:key=>({loading:'Consultando equipamento…'}[key]||key),report:rights,user:()=>session,onSnapshot:accept});
 $('plantMaintenance').onclick=()=>{if(selected)window.SteelMachineWorkspace.showTab(selected,'maintenance');};
-$('opMachine').onchange=e=>select(e.target.value);$('opRefresh').onclick=()=>{loadFleet();read();};$('opShortcuts').onclick=event=>{const tab=event.target.closest('[data-tab]')?.dataset.tab;if(tab&&selected)window.SteelMachineWorkspace.showTab(selected,tab);};$('opFullscreen').onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await $('opPlantBoard').requestFullscreen();}catch{}};
+$('opRefresh').onclick=()=>{loadFleet();read();};$('opShortcuts').onclick=event=>{const tab=event.target.closest('[data-tab]')?.dataset.tab;if(tab&&selected)window.SteelMachineWorkspace.showTab(selected,tab);};$('opFullscreen').onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await $('opPlantBoard').requestFullscreen();}catch{}};
 window.addEventListener('idiomaAplicado',draw);
 const fleetPoll=setInterval(()=>{if(!document.hidden)loadFleet();},15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadFleet();read();}});
 company=new EventSource(`${window.STEELCONTROL_API_URL||''}/empresa/stream`,{withCredentials:true});for(const type of ['maquina.criada','maquina.atualizada','maquina.desativada','maquina.excluida'])company.addEventListener(type,()=>loadFleet());

@@ -1,6 +1,6 @@
 /* Fundo industrial estático: sem WebGL, órbitas ou indicadores fictícios. */
 html .login-shell .image-area.industry-photo {
-  background: linear-gradient(180deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.64) 48%,rgba(0,0,0,.78) 100%), url('../img/login-industry-nov06.png?v=20261106_1') center center / cover no-repeat !important;
+  background: linear-gradient(180deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.64) 48%,rgba(0,0,0,.78) 100%), url('../img/login-industry-robots.webp?v=17') center center / cover no-repeat !important;
   isolation:isolate;
 }
 .login-shell .industry-photo::before,

@@ -422,6 +422,10 @@ function destinoDashboardReferenciador() {
 }
 
 function destinoSeguroDashboardEmpresa() {
+  const source = new URL(document.referrer || location.href);
+  const fromMachine = source.origin === location.origin && ['/app/operacao','/app/dashboard'].includes(source.pathname);
+  const id = (fromMachine && source.searchParams.get('maquinaId')) || sessionStorage.getItem('empresaRetornoMaquina');
+  if (origemEmpresaAtual() === 'dashboard' && /^[1-9]\d*$/.test(id)) return '/app/operacao?maquinaId=' + id;
   const retorno =
     destinoDashboardReferenciador() ||
       localStorage.getItem(
@@ -457,7 +461,6 @@ function voltarOrigemEmpresa() {
 
   if (
     origem === "dashboard" &&
-    maquinaId &&
     destinoSalvo
   ) {
     window.location.href =
