@@ -18,6 +18,18 @@ export const DOBOT_COMMANDS = Object.freeze([
   "DOBOT_GRIPPER_CLOSE"
 ]);
 
+// PTP e ROTATE sao movimentos exclusivos. So STOP pode cancelar movimentos
+// ja entregues: um segundo clique nunca revoga o comando em andamento.
+export function ehMovimentoExclusivoDobot(comando) {
+  return comando === "DOBOT_PTP" || comando === "DOBOT_ROTATE";
+}
+
+export function comandosCancelaveisDobot(comando) {
+  return comando === "DOBOT_STOP"
+    ? DOBOT_COMMANDS.filter(item => item !== "DOBOT_STOP")
+    : [];
+}
+
 export function comandoDobotPermitido(comando) {
   return DOBOT_COMMANDS.includes(String(comando || "").trim().toUpperCase());
 }
@@ -26,8 +38,12 @@ const TTL_MS = Object.freeze({
   DOBOT_STOP: 15_000,
   DOBOT_CLEAR_ALARMS: 10_000,
   DOBOT_HOME: 8_000,
-  DOBOT_PTP: 5_000,
-  DOBOT_ROTATE: 8_000,
+  // O Edge revalida a autorização DURANTE o movimento. O prazo precisa
+  // cobrir até 12 s de PTP / 8 s de rotação + latência da API; caso contrário
+  // um comando admitido é revogado quando o braço já está em movimento.
+  // O backend continua exigindo permissão, máquina ativa e status ENTREGUE.
+  DOBOT_PTP: 20_000,
+  DOBOT_ROTATE: 15_000,
   DOBOT_SUCTION_ON: 5_000,
   DOBOT_SUCTION_OFF: 5_000,
   DOBOT_GRIPPER_OPEN: 5_000,

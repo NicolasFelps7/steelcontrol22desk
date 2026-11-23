@@ -4,7 +4,7 @@ const form = document.querySelector('#connection');
 const notice = document.querySelector('#notice');
 const fields = form.elements;
 let profiles = [], selected = null, busy = false, refreshTimer, poll;
-let defaultServer = 'https://web-production-6682df.up.railway.app';
+let defaultServer = 'http://localhost:3000';
 function message(text, error = false) { notice.textContent = text; notice.classList.toggle('error', error); }
 function button(text, action, className = 'secondary') {
   const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.className = className;

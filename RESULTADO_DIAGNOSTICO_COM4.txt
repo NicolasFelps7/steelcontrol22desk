@@ -1,0 +1,6 @@
+[2026-11-13T14:12:01] === DIAGNOSTICO DOBOT COM4 (SOMENTE LEITURA) ===
+[2026-11-13T14:12:01] Nenhum comando de movimento, HOME, STOP ou limpeza de fila/alarme sera enviado.
+[2026-11-13T14:12:01] Feche SteelControl Edge, DobotLab e DobotStudio antes de continuar.
+[2026-11-13T14:12:01] O Dobot deve estar parado, com LED verde e area de trabalho livre.
+[2026-11-13T14:12:07] FASE 0 - Antes de abrir a COM4: AMARELO
+[2026-11-13T14:12:07] Teste interrompido: LED nao estava verde antes da abertura.

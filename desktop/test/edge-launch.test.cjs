@@ -24,8 +24,8 @@ async function fixture(args=[]){
 test('link a frio abre a janela Edge diretamente na máquina e preserva destino após login',async()=>{
  const f=await fixture(['steelcontrol://connect?maquinaId=7']);assert.equal(f.app.protocol,'steelcontrol');assert.equal(f.windows.length,1);
  const edge=f.windows[0];assert.match(edge.url,/edge=1&maquinaId=7/);
- await edge.loadURL('https://web-production-6682df.up.railway.app/app/login');edge.webContents.emit('did-finish-load');assert.match(edge.url,/login$/);
- await edge.loadURL('https://web-production-6682df.up.railway.app/app/maquinas');edge.webContents.emit('did-finish-load');assert.match(edge.url,/edge=1&maquinaId=7/);
+ await edge.loadURL('http://localhost:3000/app/login');edge.webContents.emit('did-finish-load');assert.match(edge.url,/login$/);
+ await edge.loadURL('http://localhost:3000/app/maquinas');edge.webContents.emit('did-finish-load');assert.match(edge.url,/edge=1&maquinaId=7/);
  f.app.emit('second-instance',{},['app.exe','steelcontrol://connect?maquinaId=8']);assert.equal(f.windows.length,1);assert.match(edge.url,/maquinaId=8/);
 });
 test('IPC abre o Edge pelo site autenticável e bloqueia iframe e máquina inválida',async()=>{
@@ -36,5 +36,5 @@ test('IPC abre o Edge pelo site autenticável e bloqueia iframe e máquina invá
  const pair=f.handlers.get('computer:pair');const edge=f.windows[0];assert.equal((await pair({sender:edge.webContents,senderFrame:edge.webContents.mainFrame})).codigo,'temporary-pairing-code');
 });
 test('link com servidor ou segredo arbitrário não abre destino externo',async()=>{
- const f=await fixture(['steelcontrol://connect?url=https://evil.test&token=private']);assert.equal(f.windows.length,1);assert.equal(f.windows[0].url,'https://web-production-6682df.up.railway.app/app/maquinas?edge=1');
+ const f=await fixture(['steelcontrol://connect?url=https://evil.test&token=private']);assert.equal(f.windows.length,1);assert.equal(f.windows[0].url,'http://localhost:3000/app/maquinas?edge=1');
 });

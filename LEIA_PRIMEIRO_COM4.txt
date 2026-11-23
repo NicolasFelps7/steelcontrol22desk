@@ -1,0 +1,59 @@
+STEELCONTROL - CORRECAO DA DESCOBERTA AUTOMATICA USB/COM4
+========================================================
+
+CAUSA CORRIGIDA
+A tela "Equipamentos encontrados na rede e no Edge" exibia apenas a
+resposta do sistema de descoberta UDP. O Edge integrado ao Desktop nao
+inicia o anunciador UDP da antiga interface Edge. Assim a COM4 podia
+existir no Windows e estar no Edge, mas ficar invisivel neste quadro.
+
+O QUE O PATCH MUDA
+- Inclui leitura apenas das portas USB/Serial no aplicativo Desktop,
+  com IPC protegido pela mesma checagem de origem da janela autenticada.
+- Quando a pagina roda no Chrome, mostra portas informadas por
+  computadores Edge ONLINE e VINCULADOS a esta empresa.
+- O painel lista COM4 e outras portas, sem fingir que a porta esta
+  livre ou que o modelo do dispositivo ja foi identificado.
+- Mantem intactos comandos de movimento, alarmes e permissoes.
+- O botao "Configurar conexao USB" abre a configuracao segura do Edge.
+
+INSTALACAO (Windows)
+1. Feche o SteelControl e o Edge e faca backup da pasta.
+2. Extraia os arquivos deste ZIP DIRETAMENTE na raiz do seu projeto,
+   onde existem as pastas desktop e frontend.
+3. Autorize a substituicao dos quatro arquivos abaixo:
+   desktop/main.cjs
+   desktop/computer-preload.cjs
+   frontend/assets/js/maquinas.js
+   frontend/maquinas.html
+4. Inicie o sistema local na raiz:
+   powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+5. Em outro terminal da mesma pasta execute:
+   .\INICIAR_STEELCONTROL_EDGE.bat
+6. Na pagina Maquinas, atualize com Ctrl+Shift+R.
+7. Na descoberta, a COM4 deve aparecer quando o Windows reportar
+   a porta e o Desktop local estiver ativo. No Chrome, e necessario
+   vincular este computador Edge a mesma empresa para ver a COM4.
+8. Clique "Configurar conexao USB" e associe a porta a maquina
+   cadastrada em "Configurar conexao". Detectar COM4 nao liga
+   automaticamente a maquina nem libera movimentos.
+
+SE NAO APARECER COM4
+- Gerenciador de Dispositivos > Portas (COM e LPT): verifique a COM4.
+- Feche o DobotLab (pode ocupar a porta), confira o cabo USB.
+- No Chrome, verifique se o computador Edge foi vinculado a empresa.
+- No Desktop local, confira se o worker Edge abriu sem erro.
+- A luz do Dobot precisa estar verde e sem alarmes antes de testar
+  movimento; se ficar amarela ao conectar, pare o teste de movimento.
+
+SEGURANCA
+O patch nao abre a COM, nao executa HOME, nao limpa alarmes e nao
+ignora bloqueios. A enumeracao da porta nao prova que o robô esta pronto.
+
+TESTES EXECUTADOS
+- 6 casos simulados de visualizacao da COM e deduplicacao.
+- 7 testes de seguranca / inicializacao do Desktop.
+- Sintaxe JS dos tres arquivos alterados verificada.
+O funcionamento na COM4 real precisa ser confirmado no seu PC.
+
+Arquivo tests/test-usb-discovery.cjs e apenas um teste opcional.

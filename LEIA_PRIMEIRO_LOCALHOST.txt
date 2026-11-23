@@ -1,0 +1,27 @@
+STEELCONTROL SEM RAILWAY - CORRECAO LOCALHOST
+
+1. FECHE o aplicativo SteelControl Edge.
+2. FACA BACKUP da pasta do SteelControl.
+3. EXTRAIA este ZIP na raiz da pasta steelcontrol22desk (a pasta que contem backend, desktop e steelcontrol-edge). Substitua os arquivos solicitados.
+
+4. NO VS CODE / POWERSHELL, na raiz do projeto, execute PRIMEIRO:
+   powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+
+   Esse script verifica backend/.env, PostgreSQL, dependencias, migracoes e Face API.
+   Se houver erro, leia a mensagem do terminal antes de continuar.
+
+5. Aguarde o navegador abrir:
+   http://localhost:3000/app/login
+   Teste o login no navegador antes de iniciar o Edge.
+
+6. SOMENTE DEPOIS, em OUTRO TERMINAL na mesma pasta, execute:
+   .\INICIAR_STEELCONTROL_EDGE.bat
+
+7. No Edge, confirme que o servidor exibido é http://localhost:3000.
+   Se um perfil antigo ainda mostrar a URL do Railway, edite esse perfil e vincule com os dados atuais do sistema local.
+
+AVISOS:
+- localhost só é acessível nesse computador; não use esta URL no celular/tablet.
+- Essa alteracao NAO liga o Dobot nem remove alarmes.
+- Se o Dobot estiver com LED amarelo fixo, NAO tente mover o braço nem executar HOME.
+- Nunca remova protecoes de seguranca para forcar um movimento.

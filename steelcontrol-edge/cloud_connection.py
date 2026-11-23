@@ -11,7 +11,7 @@ from transport_security import validate_server_url
 from edge_profiles import MachineProfile, EdgeStore, config_dir, save_store
 from secret_store import protect_text, unprotect_text
 
-SERVER = 'https://web-production-6682df.up.railway.app'
+SERVER = 'http://localhost:3000'
 
 
 class CloudConnection:

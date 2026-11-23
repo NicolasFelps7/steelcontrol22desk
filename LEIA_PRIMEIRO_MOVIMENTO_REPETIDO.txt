@@ -1,0 +1,56 @@
+STEELCONTROL - CORRECAO DE MOVIMENTOS REPETIDOS NO CONTROLE MANUAL
+Data: 13/11/2026. Pacote incremental: funciona SOBRE as duas correcoes anteriores.
+
+POR QUE TRAVAVA APOS O PRIMEIRO MOVIMENTO
+O backend antigo cancelava QUALQUER PTP pendente ou ENTREGUE sempre que
+chegava outro PTP. Quando isso acontecia com o movimento anterior em andamento,
+a revalidacao do Edge percebia a revogacao e acionava a trava de seguranca.
+
+O QUE MUDA
+- Backend: cada PTP/ROTATE e admitido somente se NAO houver outro movimento
+  PTP/ROTATE com status PENDENTE ou ENTREGUE. A nova tentativa recebe HTTP 409
+  com instrucao para aguardar; NUNCA cancela um movimento fisico em andamento.
+  O bloqueio e serializado por maquina no PostgreSQL usando o lock ja presente.
+  DOBOT_STOP CONTINUA podendo cancelar os comandos anteriores.
+- Frontend: uma operacao manual por vez; pode dar cliques sucessivos depois da
+  confirmacao de cada passo ou manter pressionado para repetir passos pequenos.
+  Os passos nao sao sobrepostos. O motivo de falha aparece na interface.
+- Edge: somente erros de validacao PRE-MOVIMENTO, comprovadamente sem envio de
+  movimento ao braco, nao travam permanentemente o controle (e.g. limite J4).
+  Alarmes reais, parada, falha de movimento/USB, perda de autenticacao ou
+  telemetria CONTINUAM BLOQUEANDO ate inspeção e reconexao explicita.
+- Cache JS: operacao.html usa ?v=20.
+
+COMO APLICAR
+1) Feche o SteelControl Edge, o backend local e o DobotLab/DobotStudio.
+2) Faca BACKUP da pasta steelcontrol22desk ANTES de alterar.
+3) Extraia este ZIP na pasta-raiz do SteelControl (pasta que contem backend,
+   frontend e steelcontrol-edge), mantendo pastas; aceite substituir os arquivos.
+4) No terminal da pasta raiz, inicie PRIMEIRO o backend:
+      powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+   Deixe a janela aberta e confirme o login em http://localhost:3000/app/login.
+5) Em outro terminal da mesma pasta, inicie o Edge:
+      .\INICIAR_STEELCONTROL_EDGE.bat
+6) No navegador, use Ctrl+Shift+R para atualizar a interface.
+7) Confira se o Edge esta conectado a http://localhost:3000 e usando COM4.
+
+TESTE DO BRAÇO REAL (APENAS DEPOIS DE PRONTO)
+- Verifique LED VERDE, nenhum alarme, area livre, limites correspondentes ao
+  equipamento, supervisao e parada fisica de emergencia disponivel.
+- Se LED AMARELO fixo, PARE. Esta correcao nao conserta o boot do hardware.
+- Comece com um unico toque de 1 mm no sentido seguro; so tente outro quando
+  a interface confirmar a conclusao. Teste segurar o botao depois desse teste.
+- Ao soltar um botao, nenhum passo novo e enviado; um passo que ja estava
+  aceito pode terminar, pois nao e um controle servo em streaming continuo.
+- Se o Edge registrar FALHOU / alarme, nao insista. Inspecione fisicamente,
+  resolva o alarme e reconecte explicitamente. Nao desative as protecoes.
+
+VERIFICACOES
+- Verificada sintaxe Python e JS e executados 22 testes focados de backend
+  e Edge com simulacao: 22 aprovados.
+- A suite completa nao foi executada com sucesso por dependencias ausentes
+  neste ambiente (pyserial e @electric-sql/pglite).
+- Nao foi realizado teste no Dobot real. Diagnostico fisico continua necessario
+  se o LED amarelo persistir ou ocorrer novo FALHOU.
+- Nenhum arquivo do Mobile precisa mudar: usa o mesmo backend/Edge.
+- Este ZIP NAO contem credenciais, .env nem node_modules.

@@ -8,7 +8,7 @@ import unittest
 
 EDGE_ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EDGE_ROOT))
-from adapters.dobot_adapter import AdapterError, DobotMagicianAdapter
+from adapters.dobot_adapter import AdapterError, DobotMagicianAdapter, MotionPreflightError
 
 
 
@@ -77,7 +77,7 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
         response = bytes([246, 0]) + struct.pack("<Q", 2**40 + 7)
         self.assertEqual(DobotMagicianAdapter._queue_index(response), 2**40 + 7)
 
-    def test_ptp_uses_immediate_serial_command_and_confirms_pose(self):
+    def test_ptp_starts_queue_and_confirms_physical_pose(self):
         driver = ImmediateMotionProbe()
 
         driver.execute_command("DOBOT_PTP", {
@@ -85,8 +85,67 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
         })
 
         ptp = next(item for item in driver.commands if item[0] == 84)
-        self.assertFalse(ptp[2])
+        self.assertTrue(ptp[2])
+        self.assertEqual([item[0] for item in driver.commands if item[0] in (240, 84)], [240, 84, 240])
         self.assertEqual(driver.production, 1)
+
+    def test_two_sequential_ptps_are_allowed_when_previous_completed(self):
+        driver = ImmediateMotionProbe()
+        poses = [
+            {"x": x, "y": 150.0, "z": 100.0, "r": 0.0, "j1": 10.0, "j2": 20.0, "j3": 30.0, "j4": 40.0}
+            for x in (150.0, 155.0, 155.0, 155.0, 160.0, 160.0)
+        ]
+        driver._get_pose = lambda: poses.pop(0)
+        for x in (155, 160):
+            driver.execute_command("DOBOT_PTP", {"x": x, "y": 150, "z": 100, "r": 0, "velocidade": 20})
+        self.assertEqual(driver.production, 2)
+        self.assertEqual(len([item for item in driver.commands if item[0] == 84]), 2)
+
+    def test_ptp_one_mm_waits_for_physical_motion_and_queued_index(self):
+        driver = ImmediateMotionProbe()
+        target = {'x':151, 'y':150, 'z':100, 'r':0, 'velocidade':20}
+        initial = {'x':150, 'y':150, 'z':100, 'r':0, 'j1':10, 'j2':20, 'j3':30, 'j4':40}
+        arrived = {**initial, 'x':151}
+        poses = [initial, initial, arrived, arrived, arrived]
+        driver._get_pose = lambda: poses.pop(0)
+        driver._queue_and_start = lambda *_: bytes([84, 3]) + struct.pack('<Q', 12)
+        indexes=iter([11, 11, 12, 12])
+        driver._current_queue_index = lambda: next(indexes)
+        driver.execute_command('DOBOT_PTP',target)
+        self.assertEqual(driver.production,1)
+        self.assertEqual(poses,[])
+
+    def test_rotation_one_degree_requires_actual_joint_change(self):
+        driver=ImmediateMotionProbe()
+        initial={'x':150,'y':150,'z':100,'r':0,'j1':10,'j2':20,'j3':30,'j4':40}
+        moved={**initial,'j4':41}
+        poses=[initial,initial,moved,moved]
+        driver._get_pose=lambda:poses.pop(0)
+        driver.execute_command('DOBOT_ROTATE', {'delta':1,'velocidade':20})
+        self.assertEqual(poses,[])
+
+    def test_queue_index_is_required_when_device_reports_it(self):
+        driver=ImmediateMotionProbe()
+        self.assertFalse(driver._queue_index(object()))
+        initial={'x':150,'y':150,'z':100,'r':0,'j1':10,'j2':20,'j3':30,'j4':40}
+        arrived={**initial,'x':151}
+        # Uma posição diferente da posição inicial valida que o PTP foi enviado,
+        # mesmo que a fila do controlador nunca avance para o índice solicitado.
+        driver._get_pose=lambda: initial if driver.pose_reads==0 else arrived
+        reads=iter([initial,arrived,arrived,arrived,arrived])
+        driver._get_pose=lambda:next(reads,arrived)
+        driver._queue_and_start=lambda *_:bytes([84,3])+struct.pack('<Q',12)
+        driver._current_queue_index=lambda:11
+        from unittest.mock import patch
+        with patch('adapters.dobot_adapter.time.monotonic',side_effect=[0]+list(range(1,40))),patch('adapters.dobot_adapter.time.sleep'):
+            with self.assertRaisesRegex(AdapterError, 'não confirmou fila PTP'):
+                driver.execute_command('DOBOT_PTP', {'x':151,'y':150,'z':100,'r':0,'velocidade':20})
+
+    def test_preflight_rejects_unreachable_target_without_serial_motion(self):
+        driver = ImmediateMotionProbe()
+        with self.assertRaises(MotionPreflightError):
+            driver.execute_command("DOBOT_PTP", {"x": 290, "y": 290, "z": 100, "r": 0, "velocidade": 20})
+        self.assertFalse(any(item[0] == 84 for item in driver.commands))
 
     def test_home_uses_immediate_serial_command(self):
         driver = ImmediateMotionProbe()
@@ -102,6 +161,7 @@ class DobotAlarmRecoveryTests(unittest.TestCase):
         driver.execute_command("DOBOT_ROTATE", {"delta": 5, "velocidade": 20})
 
         ptp = next(item for item in driver.commands if item[0] == 84)
+        self.assertTrue(ptp[2])
         self.assertEqual(ptp[3][0], 4)
         self.assertEqual(struct.unpack("<4f", ptp[3][1:]), (10.0, 20.0, 30.0, 45.0))
 

@@ -253,6 +253,18 @@ export async function confirmarComando(req, res, next) {
       return res.status(404).json({ mensagem: "Comando não encontrado." });
     }
 
+    const reasons = new Map([
+      ['INTERTRAVADO', 'Edge bloqueado após falha anterior. Inspecione o equipamento antes de reconectar.'],
+      ['PERMISSAO_EDGE', 'Controle desabilitado no perfil do Edge ou no cadastro do Dobot.'],
+      ['ALARME', 'O controlador informou alarme. Consulte os alarmes do Dobot.'],
+      ['SEM_MOVIMENTO', 'O Dobot recebeu o alvo e a posição medida não mudou.'],
+      ['ALVO', 'A posição medida não atingiu o alvo solicitado.'],
+      ['TEMPO', 'Tempo de resposta do Dobot excedido.'],
+      ['INTERROMPIDO', 'Execução interrompida localmente.'],
+      ['EXECUCAO', 'Falha durante a execução ou revalidação do comando pelo Edge.']
+    ]);
+    const reason = status === 'FALHOU' ? reasons.get(req.body.motivo) : null;
+
     // ACK idempotente: repetir confirmação não cria novos logs nem altera o resultado.
     if (["CONCLUIDO", "FALHOU"].includes(comando.status)) {
       return res.json({ ok: true, status: comando.status, idempotente: true });
@@ -274,7 +286,7 @@ export async function confirmarComando(req, res, next) {
       if (changed.count !== 1) return false;
       await tx.log.create({ data: {
         maquinaId: maquina.id,
-        mensagem: `Equipamento confirmou comando ${comando.comando}: ${status}.`
+        mensagem: `Equipamento confirmou comando ${comando.comando}: ${status}.${reason ? " " + reason : ""}`
       }});
       return true;
     });

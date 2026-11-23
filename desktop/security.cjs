@@ -1,6 +1,6 @@
 'use strict';
 const { pathToFileURL } = require('node:url');
-const SERVER_URL = 'https://web-production-6682df.up.railway.app';
+const SERVER_URL = 'http://localhost:3000';
 const SERVER_ORIGIN = new URL(SERVER_URL).origin;
 function trustedRemote(value) {
   try { return new URL(value).origin === SERVER_ORIGIN; } catch { return false; }

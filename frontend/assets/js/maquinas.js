@@ -49,6 +49,7 @@ function textoMaquinas(
 let maquinas = [];
 let maquinaEditandoId = null;
 let dispositivosDescobertos = [];
+let portasUsbDetectadas = [];
 let discoveryRefreshTimer = null;
 let discoveryDiagnostics = null;
 let carregarMaquinasPromise = null;
@@ -1044,64 +1045,158 @@ async function descobrirDispositivoPorIp() {
   }
 }
 
+// A descoberta antiga lista anuncios UDP; a versao integrada do Edge
+// publica portas serial via computador vinculado (e pode lista-las localmente
+// pela ponte de leitura do Desktop). Nao anuncia um equipamento como Dobot
+// sem o fabricante/modelo ter sido confirmado pelo usuario.
+function normalizarPortaUsb(porta, descricao, origem, computador, hostId='') {
+  const port=String(porta||'').trim();
+  if (!/^(COM[1-9]\d{0,3}|\/dev\/[a-zA-Z0-9_.\/-]{1,100})$/i.test(port)) return null;
+  // Windows cria COMs virtuais para Bluetooth. Não são prova de máquina,
+  // nem devem ser oferecidas por padrão para conectar um robô USB.
+  if (/bluetooth|bthenum|rfcomm|link\s+bluetooth/i.test(String(descricao||''))) return null;
+  return {port, descricao:String(descricao||'Porta USB / serial').slice(0,120),
+    origem, computador:String(computador||'Este computador').slice(0,100), hostId};
+}
+
+async function consultarPortasUsbEdge() {
+  const local=window.steelControlComputer && typeof window.steelControlComputer.ports==='function'
+    ? Promise.resolve().then(()=>window.steelControlComputer.ports()) : Promise.resolve([]);
+  const remotas=fetchAutenticado(`${API_URL}/conexoes/computadores`,{cache:'no-store'})
+    .then(async response=>{
+      if(!response.ok)throw new Error('Computadores nao disponiveis');
+      const dados=await response.json();return dados.computadores||[];
+    });
+  const [locais,hosts]=await Promise.allSettled([local,remotas]);
+  const vistas=new Set(), resultado=[];
+  const incluir=p=>{
+    if(!p)return;
+    const chave=`${p.origem}:${p.hostId||'local'}:${p.port.toUpperCase()}`;
+    if(vistas.has(chave))return;
+    vistas.add(chave);resultado.push(p);
+  };
+  if(locais.status==='fulfilled'&&Array.isArray(locais.value)){
+    for(const p of locais.value.slice(0,32)){
+      incluir(normalizarPortaUsb(p.port,p.description,'EDGE LOCAL','Este computador'));
+    }
+  }
+  if(hosts.status==='fulfilled'&&Array.isArray(hosts.value)){
+    for(const host of hosts.value){
+      // Nunca mostrar portas antigas de computadores desconectados.
+      if(!host.online || !Array.isArray(host.portas))continue;
+      for(const p of host.portas.slice(0,32)){
+        // Evita duplicar a COM do Desktop local quando houver tambem vinculo.
+        if(locais.status==='fulfilled'&&Array.isArray(locais.value)&&
+          locais.value.some(lp=>String(lp.port).toUpperCase()===String(p.porta).toUpperCase()))continue;
+        incluir(normalizarPortaUsb(p.porta,p.nome,'EDGE VINCULADO',host.nome,host.id));
+      }
+    }
+  }
+  return resultado;
+}
+
+function configurarPortaUsbDetectada(portEncoded) {
+  const porta=decodeURIComponent(portEncoded);
+  if(!portasUsbDetectadas.some(p=>p.port===porta))return;
+  const disponiveis=maquinas.filter(m=>m.modoSimulacao!==true);
+  const dobots=disponiveis.filter(m=>m.controlador==='DOBOT_MAGICIAN');
+  const escolhida=dobots.length===1?dobots[0]:disponiveis.length===1?disponiveis[0]:null;
+  if(typeof window.abrirConexaoMaquina==='function'){
+    window.abrirConexaoMaquina(escolhida);
+    discoveryMessage(`Porta ${porta} detectada. Vincule o Edge à empresa, escolha a máquina e selecione ${porta} em Porta USB / serial.`);
+  }else discoveryMessage('Abra SteelControl Edge para vincular a porta USB à máquina.','erro');
+}
+
 function renderDispositivosDescobertos() {
   const grid = document.getElementById("discoveredDevicesGrid");
+  const usbList = document.getElementById("usbSerialPortsList");
+  const usbCount = document.getElementById("usbSerialPortsCount");
+  const usbPanel = document.getElementById("usbSerialPortsPanel");
   if (!grid) return;
 
-  if (!dispositivosDescobertos.length) {
-    grid.innerHTML = `
-      <div class="discovery-empty">
-        Nenhum equipamento respondeu ainda. Abra o SteelControl Edge para detectar USB/Serial ou use “Procurar novamente” para equipamentos de rede.
-      </div>`;
-    return;
-  }
+  // Uma porta COM nunca vira "equipamento encontrado": ela pode ser
+  // Bluetooth, adaptador serial, placa de desenvolvimento etc.
+  // As portas ficam numa seção de infraestrutura, separada da descoberta
+  // de equipamentos que responderam por protocolo industrial.
+  const usbCards=portasUsbDetectadas.map(p=>`
+    <article class="discovered-device-card">
+      <div class="discovered-device-top">
+        <div class="discovered-device-icon"><i class="fa-solid fa-usb"></i></div>
+        <div class="discovered-device-copy">
+          <strong>Porta disponível: ${escaparHtml(p.port)}</strong>
+          <span>${escaparHtml(p.descricao)} · Equipamento ainda não identificado</span>
+        </div>
+        <span class="discovery-online">${escaparHtml(p.origem)}</span>
+      </div>
+      <div class="discovered-device-meta">
+        <div><small>Porta</small><b>${escaparHtml(p.port)}</b></div>
+        <div><small>Computador</small><b>${escaparHtml(p.computador)}</b></div>
+        <div><small>Identidade</small><b>Não verificada</b></div>
+        <div><small>Comandos</small><b>Não autorizados pela descoberta</b></div>
+      </div>
+      <button type="button" class="discovery-approve-btn"
+        onclick="configurarPortaUsbDetectada('${encodeURIComponent(p.port)}')">
+        <i class="fa-solid fa-plug"></i> Configurar porta para máquina cadastrada
+      </button>
+    </article>`);
+  if (usbList) usbList.innerHTML=usbCards.length ? usbCards.join('') :
+    '<div class="discovery-empty">Nenhuma porta USB/Serial disponível no Edge vinculado.</div>';
+  if (usbCount) usbCount.textContent=`${portasUsbDetectadas.length} porta(s) serial, sem identificação automática de máquina`;
+  if (usbPanel) usbPanel.hidden=false;
 
-  grid.innerHTML = dispositivosDescobertos.map(device => {
+  const redeCards=dispositivosDescobertos.map(device => {
     const controlador = formatarControladorLista(device.controller);
     const protocolo = formatarProtocoloLista(device.protocol);
     const claimedHere = Boolean(device.claimedByThisCompany);
     const claimed = Boolean(device.claimed);
     const disabled = claimed ? "disabled" : "";
-    const buttonLabel = claimedHere ? "Já adicionado" : claimed ? "Indisponível" : "Adicionar ao SteelControl";
+    const buttonLabel = claimedHere ? "Já adicionado" : claimed ? "Indisponível" : "Analisar e cadastrar";
     const buttonIcon = claimed ? "fa-circle-check" : "fa-link";
-
     return `
       <article class="discovered-device-card">
         <div class="discovered-device-top">
           <div class="discovered-device-icon"><i class="fa-solid fa-microchip"></i></div>
           <div class="discovered-device-copy">
-            <strong>${escaparHtml(device.name || "Equipamento encontrado")}</strong>
+            <strong>${escaparHtml(device.name || "Equipamento anunciado na rede")}</strong>
             <span>${escaparHtml(device.manufacturer || "Fabricante não informado")} • ${escaparHtml(device.model || "Modelo não informado")}</span>
           </div>
           <span class="discovery-online">${escaparHtml(device.discoverySource || "LAN")}</span>
         </div>
         <div class="discovered-device-meta">
-          <div><small>Controlador</small><b>${escaparHtml(controlador)}</b></div>
+          <div><small>Controlador anunciado</small><b>${escaparHtml(controlador)}</b></div>
           <div><small>Protocolo</small><b>${escaparHtml(protocolo)}</b></div>
           <div><small>Endereço</small><b>${escaparHtml(device.host)}:${escaparHtml(device.port)}</b></div>
-          <div><small>Último sinal</small><b>${escaparHtml(formatarTempoDescoberta(device.lastSeenAt))}</b></div>
+          <div><small>Vínculo</small><b>${claimedHere?'Cadastrado nesta empresa':claimed?'Vinculado em outra empresa':'Pendente de aprovação'}</b></div>
         </div>
         <button type="button" class="discovery-approve-btn" ${disabled}
           onclick="aprovarDispositivoDescoberto('${encodeURIComponent(device.id)}')">
           <i class="fa-solid ${buttonIcon}"></i> ${buttonLabel}
         </button>
       </article>`;
-  }).join("");
+  });
+  grid.innerHTML = redeCards.length ? redeCards.join('') :
+    '<div class="discovery-empty">Nenhum equipamento industrial se identificou pela rede. Portas USB do computador não são máquinas; abra a seção "Portas USB/Serial" para configurar uma máquina já cadastrada.</div>';
 }
 
 async function carregarDispositivosDescobertos({ silencioso = false } = {}) {
   if (!usuarioEhAdministrador()) return;
-  try {
-    const resposta = await fetchAutenticado(`${API_URL}/descoberta`, { cache: "no-store" });
-    const dados = await resposta.json().catch(() => []);
-    if (!resposta.ok) throw new Error(dados?.mensagem || "Não foi possível consultar a descoberta automática.");
-    dispositivosDescobertos = Array.isArray(dados) ? dados : [];
-    renderDispositivosDescobertos();
-    if (!silencioso && dispositivosDescobertos.length) {
-      discoveryMessage(`${dispositivosDescobertos.length} equipamento(s) compatível(is) encontrado(s) na rede/Edge.`, "sucesso");
-    }
-  } catch (erro) {
-    if (!silencioso) discoveryMessage(erro?.message || "Erro ao consultar equipamentos da rede.", "erro");
+  // Falha na busca UDP nao deve esconder portas USB vindas do Edge.
+  const [rede,usb]=await Promise.allSettled([
+    fetchAutenticado(`${API_URL}/descoberta`,{cache:'no-store'}).then(async response=>{
+      const dados=await response.json().catch(()=>[]);
+      if(!response.ok)throw new Error(dados?.mensagem||'Falha na descoberta de rede.');
+      return dados;
+    }),
+    consultarPortasUsbEdge()
+  ]);
+  dispositivosDescobertos=rede.status==='fulfilled'&&Array.isArray(rede.value)?rede.value:[];
+  portasUsbDetectadas=usb.status==='fulfilled'?usb.value:[];
+  renderDispositivosDescobertos();
+  const total=dispositivosDescobertos.length+portasUsbDetectadas.length;
+  if(!silencioso){
+    if(total)discoveryMessage(`${dispositivosDescobertos.length} equipamento(s) anunciado(s) pela rede; ${portasUsbDetectadas.length} porta(s) USB disponíveis para associação, sem identificar máquinas.`,"sucesso");
+    else if(rede.status==='rejected')discoveryMessage(rede.reason?.message||'A descoberta de rede falhou. Confira se o Edge esta vinculado.','erro');
+    else discoveryMessage('Nenhum equipamento identificado. Verifique a COM4 no Windows e o vínculo do Edge.');
   }
 }
 
@@ -1111,7 +1206,7 @@ async function varrerDispositivos() {
   const label = button?.querySelector("span");
   if (button) button.disabled = true;
   if (label) label.textContent = "Procurando...";
-  discoveryMessage("Procurando equipamentos SteelControl na rede local...");
+  discoveryMessage("Consultando portas USB do Edge e equipamentos na rede local...");
   try {
     const resposta = await fetchAutenticado(`${API_URL}/descoberta/varrer`, { method: "POST" });
     const dados = await resposta.json().catch(() => ({}));

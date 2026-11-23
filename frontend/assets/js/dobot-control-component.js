@@ -35,6 +35,7 @@ window.SteelDobotControl={mount(host,id){
   const POINTS = ["P0", "P1", "P2", "P3", "P4"];
   const POINT_LABELS = { P0: "Espera", P1: "Acima da peça", P2: "Coleta", P3: "Acima do destino", P4: "Entrega" };
   const storageKey = `steelcontrol:dobot:auto-points:${machineId}`;
+  const homeStorageKey = `steelcontrol:dobot:home-position:${machineId}`;
 
   let machine = null;
   let diagnostic = null;
@@ -54,10 +55,17 @@ window.SteelDobotControl={mount(host,id){
   let automaticHydrated = false;
   let automaticSyncBusy = false;
   let jogBusy = false;
+  let manualCommandBusy = false;
+  let lastManualError = '';
   let jogPose = null;
+  // Não aceite uma telemetria antiga como nova origem após um PTP confirmado.
+  let lastConfirmedPose = null;
+  let homePose = loadSavedHome();
   let jogHoldDirection = null;
   let jogHoldGeneration = 0;
   let connectionOnline = false;
+  let motionReady = false;
+  let edgeControlLatched = false;
 
   async function fetchAuth(url, options = {}) {
     if(disposed){let body={};try{body=JSON.parse(options.body||'{}');}catch{}const stopOnly=(url.endsWith(`/maquinas/${machineId}/comandos`)&&body.comando==='DOBOT_STOP')||(url.endsWith(`/maquinas/${machineId}/dobot/automatico/controle`)&&body.acao==='PARAR');if(!stopOnly)throw new Error("Área do equipamento encerrada.");}
@@ -80,21 +88,26 @@ window.SteelDobotControl={mount(host,id){
     return realEquipment && connectionCode === "CONECTADA" && data?.connected === true;
   }
 
-  function setControlsAvailability(online) {
+  function setControlsAvailability(online, noActiveAlarms) {
     connectionOnline = online;
-    if(dom.jogTarget&&!online)dom.jogTarget.textContent="Aguardando conexão real";
-    else if(dom.jogTarget?.textContent==="Aguardando conexão real")dom.jogTarget.textContent="Pronto para movimento supervisionado";
-    host.querySelectorAll("[data-dobot-command], [data-dobot-jog], [data-dobot-capture]").forEach(button => {
-      const manualLocked = automatic.running && !button.matches('[data-dobot-command="DOBOT_STOP"]');
-      // O movimento em andamento continua protegido por jogBusy. Manter o
-      // botão pressionado habilitado evita que o navegador dispare
-      // pointercancel entre dois passos do movimento contínuo.
-      button.disabled = !online || manualLocked;
+    motionReady = online && noActiveAlarms && !edgeControlLatched && diagnostic?.paradaSeguranca !== true;
+    if (dom.jogTarget && !online) dom.jogTarget.textContent = 'Aguardando conexão real';
+    else if (dom.jogTarget && !noActiveAlarms) dom.jogTarget.textContent = 'Bloqueado: alarmes ativos ou diagnóstico indisponível';
+    else if (dom.jogTarget && diagnostic?.paradaSeguranca === true) dom.jogTarget.textContent = 'Bloqueado: parada de segurança ativa';
+    else if (dom.jogTarget && edgeControlLatched) dom.jogTarget.textContent = 'Edge bloqueado após falha: confira o motivo abaixo e reconecte após inspeção';
+    else if (dom.jogTarget && ['Aguardando conexão real', 'Bloqueado: alarmes ativos ou diagnóstico indisponível', 'Bloqueado: parada de segurança ativa'].includes(dom.jogTarget.textContent)) dom.jogTarget.textContent = 'Confira LED verde e área livre antes de mover';
+    host.querySelectorAll('[data-dobot-command], [data-dobot-jog], [data-dobot-capture]').forEach(button => {
+      const command = button.dataset.dobotCommand;
+      const safetyAction = command === 'DOBOT_STOP' || command === 'DOBOT_CLEAR_ALARMS';
+      const manualLocked = automatic.running && command !== 'DOBOT_STOP';
+      // Alarmes nunca podem ser contornados pelo painel. STOP e limpeza
+      // explícita permanecem acessíveis para diagnóstico com a máquina online.
+      button.disabled = !online || manualLocked || (edgeControlLatched && command !== 'DOBOT_STOP') || (!motionReady && !safetyAction);
     });
-    if (dom.jogStep) dom.jogStep.disabled = !online || jogBusy;
-    if (dom.jogSpeed) dom.jogSpeed.disabled = !online || jogBusy;
-    if (dom.automaticMode) dom.automaticMode.disabled = !online;
-    if (dom.autoStart) dom.autoStart.disabled = !online || automatic.running || POINTS.some(point => !taughtPoints[point]);
+    if (dom.jogStep) dom.jogStep.disabled = !motionReady || jogBusy;
+    if (dom.jogSpeed) dom.jogSpeed.disabled = !motionReady || jogBusy;
+    if (dom.automaticMode) dom.automaticMode.disabled = !motionReady;
+    if (dom.autoStart) dom.autoStart.disabled = !motionReady || automatic.running || POINTS.some(point => !taughtPoints[point]);
   }
 
   function sensor(state, value, unit) {
@@ -123,6 +136,14 @@ window.SteelDobotControl={mount(host,id){
       normalized[key] = value;
     }
     return normalized;
+  }
+
+  function loadSavedHome() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(homeStorageKey) || 'null');
+      if (!raw || typeof raw !== 'object' || !['x','y','z','r'].every(k => Number.isFinite(Number(raw[k])))) return null;
+      return Object.fromEntries(['x','y','z','r'].map(k => [k, Number(raw[k])]));
+    } catch (_) { return null; }
   }
 
   function poseDistance(a, b) {
@@ -361,8 +382,14 @@ window.SteelDobotControl={mount(host,id){
     if (!isDobot()) return;
     const data = lastExtras?.dobot || {};
     const online = hasFreshRealConnection(data);
-    if (!jogBusy && !jogHoldDirection) jogPose = currentPose();
-    setControlsAvailability(online);
+    edgeControlLatched = data.edgeControlLatched === true;
+    const measuredPose = currentPose();
+    if (lastConfirmedPose && measuredPose && poseDistance(measuredPose, lastConfirmedPose) <= 1.5) {
+      lastConfirmedPose = null;
+    }
+    if (!jogBusy && !jogHoldDirection && !lastConfirmedPose) jogPose = measuredPose;
+    const noActiveAlarms = Array.isArray(data.alarms) && data.alarms.length === 0;
+    setControlsAvailability(online, noActiveAlarms);
     if (dom.name) dom.name.textContent = machine?.nome || "Dobot Magician";
     if (dom.badge) {
       dom.badge.className = `dobot-state ${online ? "online" : "waiting"}`;
@@ -371,21 +398,33 @@ window.SteelDobotControl={mount(host,id){
     if (dom.gateway) dom.gateway.textContent = online ? "Online" : "Offline";
     if (dom.port) dom.port.textContent = online ? data.port || diagnostic?.integracaoMeta?.dobot?.port || "AUTO" : "--";
     if (dom.latency) dom.latency.textContent = online && diagnostic?.latenciaMs != null ? `${diagnostic.latenciaMs} ms` : "--";
-    if (dom.alarms) dom.alarms.textContent = online && Array.isArray(data.alarms) ? String(data.alarms.length) : "--";
+    if (dom.alarms) {
+      const details = Array.isArray(data.alarmDetails) ? data.alarmDetails : [];
+      dom.alarms.textContent = online && Array.isArray(data.alarms) ? String(data.alarms.length) : "--";
+      dom.alarms.title = details.length ? details.join(' | ') : 'Nenhum alarme informado pelo equipamento';
+    }
+    if (online && Array.isArray(data.alarms) && data.alarms.length && dom.jogTarget && !jogBusy) {
+      dom.jogTarget.textContent = `Alarme(s) ${data.alarms.join(', ')}. ${Array.isArray(data.alarmDetails) ? data.alarmDetails.join(' | ') : 'Verifique o equipamento antes de limpar.'}`;
+    }
     for (const [key, element] of [["x", dom.x], ["y", dom.y], ["z", dom.z], ["r", dom.r]]) if (element) element.textContent = online ? n(data.pose?.[key], 2) : "--";
     for (const [key, element] of [["j1", dom.j1], ["j2", dom.j2], ["j3", dom.j3], ["j4", dom.j4]]) if (element) element.textContent = online ? n(data.joints?.[key], 2) : "--";
     if (dom.mode) dom.mode.textContent = online ? data.mode || diagnostic?.integracaoMeta?.dobot?.mode || "--" : "--";
     if (dom.queue) dom.queue.textContent = online ? data.queue || "--" : "--";
+    const lastFailure = data.lastCommandDiagnostic;
+    if (lastFailure && ['FALHOU','BLOQUEADO','REJEITADO'].includes(lastFailure.status) && dom.jogTarget && !jogBusy) {
+      dom.jogTarget.textContent = `Último comando ${lastFailure.command}: ${String(lastFailure.reason || lastFailure.status).slice(0,750)}`;
+      dom.jogTarget.title = dom.jogTarget.textContent;
+    }
     if (dom.suction) dom.suction.textContent = online && data.endEffector?.suction === true ? "Ligada" : online && data.endEffector?.suction === false ? "Desligada" : "--";
     if (dom.gripper) dom.gripper.textContent = online && data.endEffector?.gripper === true ? "Fechada" : online && data.endEffector?.gripper === false ? "Aberta" : "--";
     const sensors = data.sensors || {};
     if (dom.temp) dom.temp.textContent = sensor(sensors.temperature, machine?.temperatura, "°C");
     if (dom.vib) dom.vib.textContent = sensor(sensors.vibration, machine?.vibracao, "mm/s");
     if (dom.current) dom.current.textContent = sensor(sensors.current, machine?.corrente, "A");
-    const prepared = online && isDobot();
+    const prepared = motionReady && isDobot();
     if (dom.lock) {
-      dom.lock.classList.toggle("unlocked", prepared);
-      dom.lock.innerHTML = prepared ? '<i class="fa-solid fa-shield"></i> Comandos autenticados' : '<i class="fa-solid fa-lock"></i> Aguardando Dobot';
+      dom.lock.classList.toggle('unlocked', prepared);
+      dom.lock.innerHTML = prepared ? '<i class="fa-solid fa-shield"></i> Conexão e alarmes OK · verifique LED verde' : '<i class="fa-solid fa-lock"></i> Controle de movimento bloqueado';
     }
     window.SteelIndustrialDashboard?.render(
       host.querySelectorId("dobotIndustrialDynamic"),
@@ -416,7 +455,10 @@ window.SteelDobotControl={mount(host,id){
 
   async function sendCommand(comando, payload = {}, { silent = false } = {}) {
     if (!isDobot()) throw new Error("A máquina selecionada não é um Dobot Magician.");
-    if (!connectionOnline) throw new Error("Dobot offline. Aguarde uma conexão real e telemetria recente antes de enviar comandos.");
+    if (!connectionOnline) throw new Error('Dobot offline. Aguarde uma conexão real e telemetria recente antes de enviar comandos.');
+    if (['DOBOT_PTP', 'DOBOT_ROTATE', 'DOBOT_SUCTION_ON', 'DOBOT_SUCTION_OFF', 'DOBOT_GRIPPER_OPEN', 'DOBOT_GRIPPER_CLOSE'].includes(comando) && !motionReady) {
+      throw new Error('Movimento bloqueado: alarmes ativos, parada de segurança ou telemetria incompleta. Confira também o LED do braço.');
+    }
     const response = await fetchAuth(`${API}/maquinas/${machineId}/comandos`, { method: "POST", body: JSON.stringify({ comando, payload }) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.mensagem || "Comando não aceito.");
@@ -443,15 +485,26 @@ window.SteelDobotControl={mount(host,id){
   }
 
   async function manualCommand(comando, payload = {}, { silent = false } = {}) {
+    // Apenas um comando manual por vez; STOP nunca fica preso neste bloqueio.
+    const isStop = comando === 'DOBOT_STOP';
+    if (manualCommandBusy && !isStop) {
+      lastManualError = 'Aguarde a confirmação do movimento anterior.';
+      if (!silent) window.SteelUI?.toast?.({ tipo: 'warning', titulo: 'Comando em execução', mensagem: lastManualError });
+      return null;
+    }
+    if (!isStop) manualCommandBusy = true;
+    lastManualError = '';
     try {
       const queued = await sendCommand(comando, payload, { silent });
-      await waitCommandCompletion(queued?.comando?.id, comando === "DOBOT_HOME" || comando === "DOBOT_PTP" ? 20000 : 12000);
-      if (!silent) window.SteelUI?.toast?.({ tipo: "success", titulo: "Comando executado", mensagem: comando });
+      await waitCommandCompletion(queued?.comando?.id, comando === 'DOBOT_HOME' || comando === 'DOBOT_PTP' ? 20000 : 12000);
+      if (!silent) window.SteelUI?.toast?.({ tipo: 'success', titulo: 'Comando executado', mensagem: comando });
       return queued;
-    }
-    catch (error) {
-      window.SteelUI?.toast?.({ tipo: "error", titulo: "Comando Dobot", mensagem: error.message });
+    } catch (error) {
+      lastManualError = String(error.message || 'Falha não identificada').slice(0, 180);
+      window.SteelUI?.toast?.({ tipo: 'error', titulo: 'Comando Dobot', mensagem: lastManualError });
       return null;
+    } finally {
+      if (!isStop) manualCommandBusy = false;
     }
   }
 
@@ -466,20 +519,46 @@ window.SteelDobotControl={mount(host,id){
     return currentPose();
   }
 
+  async function freshJogPose() {
+    // A primeira leitura de telemetria depois de um movimento pode ser a
+    // posição ANTERIOR. Aguarde a pose real convergir para o alvo já confirmado.
+    // Nunca repita um PTP calculado sobre uma posição defasada.
+    const deadline = Date.now() + 3000;
+    while (Date.now() < deadline) {
+      const actual = await refreshDiagnosticPose();
+      if (actual && (!lastConfirmedPose || poseDistance(actual, lastConfirmedPose) <= 1.5)) {
+        lastConfirmedPose = null;
+        jogPose = actual;
+        return actual;
+      }
+      await delay(140);
+    }
+    throw new Error('Telemetria ainda não confirmou a nova posição. Nenhum segundo movimento foi enviado; confira Edge e LED.');
+  }
+
   function setJogBusy(busy, message) {
     jogBusy = busy;
-    host.querySelectorAll("[data-dobot-jog]").forEach(button => { button.disabled = !connectionOnline || automatic.running; });
-    if (dom.jogStep) dom.jogStep.disabled = !connectionOnline || busy;
-    if (dom.jogSpeed) dom.jogSpeed.disabled = !connectionOnline || busy;
+    // O botão capturado não pode ser desabilitado no meio do movimento:
+    // perderia pointer capture e o evento de soltura do operador.
+    host.querySelectorAll('[data-dobot-jog]').forEach(button => { button.disabled = !motionReady || automatic.running; button.setAttribute('aria-busy', String(busy)); });
+    if (dom.jogStep) dom.jogStep.disabled = !motionReady || busy;
+    if (dom.jogSpeed) dom.jogSpeed.disabled = !motionReady || busy;
     if (dom.jogTarget && message) dom.jogTarget.textContent = message;
   }
 
   async function jog(direction) {
+    if (!motionReady) {
+      window.SteelUI?.toast?.({ tipo: 'warning', titulo: 'Controle jog bloqueado', mensagem: 'Verifique alarmes, parada de segurança e LED verde do Dobot.' });
+      return false;
+    }
     if (automatic.running) {
       window.SteelUI?.toast?.({ tipo: "warning", titulo: "Manual intertravado", mensagem: "O ciclo automático ainda está parando." });
       return false;
     }
-    if (jogBusy) return false;
+    if (jogBusy) {
+      if (dom.jogTarget) dom.jogTarget.textContent = 'Aguardando conclusão do movimento anterior no Edge';
+      return false;
+    }
     const step = Math.max(1, Math.min(20, Number(dom.jogStep?.value) || 5));
     const speed = Math.max(1, Math.min(40, Number(dom.jogSpeed?.value) || 20));
     const delta = {
@@ -510,11 +589,11 @@ window.SteelDobotControl={mount(host,id){
           return true;
         }
         jogPose = null;
-        setJogBusy(false, "Rotação não executada");
+        setJogBusy(false, lastManualError || 'Rotação não executada');
         return false;
       }
-      setJogBusy(true, `${direction.toUpperCase()} • preparando movimento`);
-      const pose = jogPose || currentPose() || await refreshDiagnosticPose();
+      setJogBusy(true, `${direction.toUpperCase()} • aguardando posição real`);
+      const pose = await freshJogPose();
       if (!pose) throw new Error("A posição real do Dobot não está disponível.");
       const target = {
         x: pose.x + (delta.x || 0), y: pose.y + (delta.y || 0),
@@ -524,27 +603,33 @@ window.SteelDobotControl={mount(host,id){
       const executed = await manualCommand("DOBOT_PTP", target, { silent: true });
       if (executed) {
         jogPose = { x: target.x, y: target.y, z: target.z, r: target.r };
+        lastConfirmedPose = { ...jogPose };
         setJogBusy(false, `Posição confirmada • X ${n(target.x, 1)}  Y ${n(target.y, 1)}  Z ${n(target.z, 1)}  R ${n(target.r, 1)}`);
         return true;
       }
       jogPose = null;
-      setJogBusy(false, "Movimento não executado");
+      lastConfirmedPose = null;
+      setJogBusy(false, lastManualError || 'Movimento não executado');
       return false;
     } catch (error) {
       jogPose = null;
-      setJogBusy(false, "Falha no movimento");
+      lastConfirmedPose = null;
+      setJogBusy(false, String(error.message || 'Falha no movimento').slice(0,240));
       window.SteelUI?.toast?.({ tipo: "error", titulo: "Controle jog", mensagem: error.message });
       return false;
     }
   }
 
   async function startJogHold(direction) {
-    if (jogHoldDirection || automatic.running || !connectionOnline) return;
+    if (jogHoldDirection || automatic.running || !motionReady) return;
     jogHoldDirection = direction;
     const generation = ++jogHoldGeneration;
-    while (jogHoldDirection === direction && generation === jogHoldGeneration && connectionOnline && !automatic.running) {
+    // Mantenha pressionado para repetir PASSOS confirmados, jamais enviar
+    // movimentos paralelos ou executar sem telemetria/alarmes válidos.
+    while (jogHoldDirection === direction && generation === jogHoldGeneration && motionReady && !automatic.running) {
       const moved = await jog(direction);
       if (!moved) break;
+      await delay(80);
     }
     if (generation === jogHoldGeneration) jogHoldDirection = null;
   }
@@ -748,6 +833,60 @@ window.SteelDobotControl={mount(host,id){
     }
   }
 
+  const homeSave = host.querySelector('#dobotHomeSave');
+  const homeReturn = host.querySelector('#dobotHomeReturn');
+  homeSave?.addEventListener('click', async () => {
+    if (!motionReady || automatic.running || jogBusy || manualCommandBusy) {
+      window.SteelUI?.toast?.({ tipo:'warning', titulo:'Posição inicial', mensagem:'Aguarde o braço estar pronto e sem comandos em execução.' });
+      return;
+    }
+    try {
+      const pose = await freshJogPose();
+      const seenAt = Date.parse(diagnostic?.ultimaTelemetriaEm || '');
+      if (!Number.isFinite(seenAt) || Date.now() - seenAt > 3000) throw new Error('Telemetria antiga; não é seguro salvar esta posição.');
+      const radius = Math.hypot(pose.x, pose.y);
+      if (Math.abs(pose.x) > 290 || Math.abs(pose.y) > 290 || radius < 80 || radius > 290 ||
+          pose.z < -10 || pose.z > 220 || Math.abs(pose.r) > 180) {
+        throw new Error('Posição fora do envelope preventivo configurado; não pode ser gravada como HOME.');
+      }
+      localStorage.setItem(homeStorageKey, JSON.stringify(pose));
+      homePose = { ...pose };
+      if (dom.jogTarget) dom.jogTarget.textContent = `Posição inicial gravada: X=${n(pose.x)} Y=${n(pose.y)} Z=${n(pose.z)} R=${n(pose.r)}.`;
+      window.SteelUI?.toast?.({ tipo:'success', titulo:'Posição inicial gravada', mensagem:'HOME voltará a esta posição, usando um PTP validado. A gravação fica neste navegador.' });
+    } catch (error) {
+      window.SteelUI?.toast?.({ tipo:'error', titulo:'Salvar posição inicial', mensagem:String(error.message || error) });
+    }
+  });
+  homeReturn?.addEventListener('click', async () => {
+    if (!homePose) {
+      window.SteelUI?.toast?.({ tipo:'warning', titulo:'HOME não definido', mensagem:'Posicione e grave primeiro uma posição inicial segura com “Gravar início”.' });
+      return;
+    }
+    if (!motionReady || automatic.running || jogBusy || manualCommandBusy || jogHoldDirection) {
+      window.SteelUI?.toast?.({ tipo:'warning', titulo:'HOME bloqueado', mensagem:'Aguarde o braço estar pronto e sem movimento em execução.' });
+      return;
+    }
+    if (!window.confirm(`Voltar à posição inicial gravada (X=${n(homePose.x)}, Y=${n(homePose.y)}, Z=${n(homePose.z)}, R=${n(homePose.r)})? Confirme que todo o caminho está livre e que o LED está verde. A trajetória não é verificada por sensores.`)) return;
+    setJogBusy(true, 'HOME: aguardando coordenadas reais');
+    try {
+      const actual = await freshJogPose();
+      if (poseDistance(actual, homePose) <= 0.4) {
+        setJogBusy(false, 'O Dobot já está na posição inicial gravada.');
+        return;
+      }
+      setJogBusy(true, 'HOME: retornando à posição inicial gravada');
+      const result = await manualCommand('DOBOT_PTP', { ...homePose, velocidade: 10 }, { silent: true });
+      if (!result) throw new Error(lastManualError || 'Retorno HOME não confirmado pelo Edge');
+      lastConfirmedPose = { ...homePose };
+      jogPose = { ...homePose };
+      setJogBusy(false, 'HOME confirmado pelo Edge; aguardando atualização das coordenadas.');
+    } catch (error) {
+      lastConfirmedPose = null;
+      jogPose = null;
+      setJogBusy(false, String(error.message || error).slice(0,240));
+      window.SteelUI?.toast?.({ tipo:'error', titulo:'HOME não executado', mensagem:String(error.message || error) });
+    }
+  });
   host.querySelectorAll("[data-dobot-command]").forEach(button => button.addEventListener("click", async () => {
     const commandName = button.dataset.dobotCommand;
     if (automatic.running && commandName !== "DOBOT_STOP") {
@@ -759,30 +898,37 @@ window.SteelDobotControl={mount(host,id){
   }));
 
   host.querySelectorAll("[data-dobot-jog]").forEach(button => {
-    let handledByPointer = false;
+    // Clique curto: exatamente UM passo. Segurar por 420 ms: repetir apenas
+    // passos que foram confirmados pelo Edge, sem cliques duplicados.
+    let press = null;
     button.addEventListener("pointerdown", event => {
-      if (button.disabled) return;
+      if (button.disabled || event.button !== 0) return;
       event.preventDefault();
-      handledByPointer = true;
+      const direction = button.dataset.dobotJog;
+      const state = { pointerId: event.pointerId, repeating: false, timer: null };
+      press = state;
       button.setPointerCapture?.(event.pointerId);
-      startJogHold(button.dataset.dobotJog);
+      state.timer = setTimeout(() => {
+        if (press !== state || button.disabled) return;
+        state.repeating = true;
+        startJogHold(direction);
+      }, 420);
     });
-    button.addEventListener("pointerup", () => {
-      stopJogHold();
-      window.setTimeout(() => { handledByPointer = false; }, 0);
-    });
-    button.addEventListener("pointercancel", () => {
-      stopJogHold();
-      handledByPointer = false;
-    });
-    button.addEventListener("lostpointercapture", stopJogHold);
+    const release = (cancelled = false) => {
+      const state = press;
+      if (!state) return;
+      press = null;
+      clearTimeout(state.timer);
+      if (state.repeating) stopJogHold();
+      else if (!cancelled && !button.disabled) jog(button.dataset.dobotJog);
+    };
+    button.addEventListener("pointerup", () => release(false));
+    button.addEventListener("pointercancel", () => release(true));
+    button.addEventListener("lostpointercapture", () => release(true));
     button.addEventListener("click", event => {
       event.preventDefault();
-      if (handledByPointer) {
-        handledByPointer = false;
-        return;
-      }
-      jog(button.dataset.dobotJog);
+      // Eventos de teclado/acessibilidade geram click com detail=0.
+      if (event.detail === 0 && !button.disabled) jog(button.dataset.dobotJog);
     });
   });
   listenWindow("blur", stopJogHold);

@@ -1,0 +1,65 @@
+STEELCONTROL V6 — DESCOBERTA USB CORRETA + CONEXÃO PASSIVA DOBOT
+==============================================================
+Criado para o projeto steelcontrol22desk em 13/11/2026.
+
+ATENÇÃO
+- Esta atualização não torna seguras ordens de movimento quando o LED está amarelo.
+- A confirmação da fila Dobot não significa que o braço se moveu.
+- O código não substitui a parada de emergência física ou a supervisão do professor.
+- Não conecte o DobotLab e o Edge simultaneamente à mesma COM4.
+
+O QUE MUDA
+1. Tela de descoberta: COM4, COM9 etc. não são mais apresentadas como máquinas.
+   Portas desconhecidas ficam no painel recolhido "Portas USB/Serial disponíveis
+   para configuração". Portas Bluetooth comuns são ocultadas desse painel.
+   Somente anúncios de protocolo de rede permanecem na grade de equipamentos,
+   com aviso quando dependem de aprovação da empresa.
+2. Conexão do Edge: ao ABRIR a COM4, o driver só consulta a posição e alarmes.
+   Ele NÃO manda STOP/CLEAR de fila automaticamente apenas por entrar no
+   dashboard. Quando houver um PTP autorizado, o driver faz parada normal e
+   limpa a fila antiga ANTES de iniciar o movimento, nunca executando comandos
+   de uma sessão antiga.
+3. Em falha PTP, o Edge registra alarmes brutos e ângulos das juntas, além de
+   alvo, posição atual e índice de fila. Não libera comandos consecutivos se o
+   movimento físico não for confirmado.
+
+ARQUIVOS ALTERADOS
+- frontend/maquinas.html
+- frontend/assets/js/maquinas.js
+- steelcontrol-edge/adapters/dobot_adapter.py
+- testes automatizados correspondentes (não interferem com o funcionamento)
+
+INSTALAR NO WINDOWS
+1. Feche o SteelControl Desktop, o Edge e o DobotLab.
+2. Faça backup da pasta do projeto atual.
+3. Extraia o ZIP na pasta-raiz 'steelcontrol22desk' e substitua os arquivos.
+   A pasta-raiz tem pastas frontend, backend, desktop e steelcontrol-edge.
+4. Terminal 1 na pasta do projeto:
+   powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+5. Terminal 2 na mesma pasta:
+   .\INICIAR_STEELCONTROL_EDGE.bat
+6. No navegador: Ctrl+Shift+R.
+7. Em Máquinas > Descoberta automática, abra "Portas USB/Serial disponíveis
+   para configuração" para ver a COM4. A presença da COM4 não prova que é
+   um Dobot: confirme a porta no Gerenciador de Dispositivos / cabos e associe
+   manualmente à máquina cadastrada, através do Edge.
+
+TESTE DE SEGURANÇA
+A. Dobot desconectado do Edge, ligado e LED verde.
+B. Abra o Edge e observe a cor do LED sem mandar nenhum movimento.
+   - Se fica AMARELO imediatamente ao abrir a COM4: PARE. O problema pode
+     estar no driver USB, nas linhas de controle da porta ou no firmware.
+     Use o diagnóstico sem movimento e não envie comandos.
+   - Se fica VERDE, inspecione alarmes e telemetria. Só faça movimento com
+     supervisão e área livre.
+C. Com LED verde e sem alarmes, configure passo de 1 mm e velocidade de 10%.
+   Escolha direção segura que aproxime o braço da área central (não 20 mm para
+   fora, especialmente perto dos limites). Um toque apenas, aguarde conclusão.
+D. Se o comando falhar, NÃO repita e NÃO fique limpando alarmes.
+   Envie o log 'DOBOT_PTP ... FALHOU', com 'alarmes=[...]', 'juntas' e 'alvo'.
+
+LIMITES DO RESULTADO
+Os testes automatizados não acessam o braço físico; uma falha mecânica, de
+protocolo/firmware, alcance, inicialização ou alimentação continua possível.
+O HOME da versão anterior continua sendo retorno a uma posição gravada, não
+calibração física. Não execute HOME se o LED estiver amarelo.

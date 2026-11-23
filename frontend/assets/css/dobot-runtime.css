@@ -236,3 +236,6 @@ html[data-theme="escuro"] .dobot-operation-switch>button.active span,
 html[data-theme="dark"] .dobot-operation-switch>button.active span { color:#f8fafc !important; }
 html[data-theme="escuro"] .dobot-operation-switch>button.active small,
 html[data-theme="dark"] .dobot-operation-switch>button.active small { color:#aeb9bf !important; }
+
+/* Falhas do Edge devem ser legiveis por inteiro no controle manual. */
+.dobot-jog-head output{white-space:normal;overflow-wrap:anywhere;line-height:1.45}

@@ -26,5 +26,5 @@ class SteelControlClient:
         r=self.session.get(self._url('/comandos/proximo'),params={'waitMs':wait_ms},timeout=self.timeout,allow_redirects=False)
         if r.status_code==204:return None
         self._check(r); return r.json()
-    def confirm(self,command_id,status):
-        r=self.session.post(self._url(f'/comandos/{int(command_id)}/confirmar'),json={'status':status},timeout=self.timeout,allow_redirects=False); self._check(r); return r.json()
+    def confirm(self,command_id,status,reason=None):
+        r=self.session.post(self._url(f'/comandos/{int(command_id)}/confirmar'),json={'status':status, **({'motivo':reason} if reason else {})},timeout=self.timeout,allow_redirects=False); self._check(r); return r.json()

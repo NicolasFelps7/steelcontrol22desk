@@ -1,0 +1,63 @@
+STEELCONTROL - REVISAO DO CONTROLE MANUAL (13/11/2026)
+
+O QUE FOI ENCONTRADO NO PROJETO
+1. O driver marcava PTP como concluido com 1,5 mm de tolerancia, MESMO para
+   comandos de 1 mm. A pose inicial ja podia satisfazer a condicao de sucesso,
+   deixando o comando seguinte chegar enquanto o primeiro ainda se movia.
+2. ROTATE tinha situacao semelhante: tolerancia de 1,5 grau mesmo para 1 grau.
+3. O Edge podia travar apos falha, mas o painel mostrava apenas indisponivel
+   e nao explicava o motivo do bloqueio.
+4. HOME remoto esta deliberadamente desativado em backend, Edge e interface.
+   Este pacote nao retira a protecao nem automatiza movimento de calibracao.
+
+O QUE O PACOTE CORRIGE
+- Confirma PTP e ROTATE pela leitura real e, quando fornecido pelo firmware,
+  pelo indice da fila do Dobot (GetQueuedCmdCurrentIndex, comando 246).
+- Ajusta a tolerancia ao tamanho do passo: 1 mm nao e concluido parado.
+- Confirma duas amostras consecutivas perto do alvo antes do proximo passo.
+- Mantem processamento serial dos comandos, STOP, limites e travas reais.
+- Mostra no painel: o ultimo comando, motivo da falha e se o Edge exige
+  inspecao/reconexao. O botao HOME abre instrucoes para homing local.
+- Atualiza versao de JS/CSS para evitar cache.
+
+APLICACAO NO WINDOWS (COM CORRECOES ANTERIORES INSTALADAS)
+1. Feche backend SteelControl, Edge e DobotLab/DobotStudio.
+2. Faca backup da pasta steelcontrol22desk-main.
+3. Extraia este ZIP na pasta RAIZ do projeto: onde estao backend, frontend,
+   steelcontrol-edge. Mantenha a estrutura e substitua os arquivos.
+4. Inicie o backend local PRIMEIRO, deixando o terminal aberto:
+     powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+5. Abra OUTRO terminal na mesma pasta e inicie Edge:
+     .\INICIAR_STEELCONTROL_EDGE.bat
+6. No navegador: Ctrl+Shift+R. Verifique API local em http://localhost:3000.
+7. Confirme COM4 na configuracao do Edge e telemetria REAL.
+
+TESTE CONTROLADO
+- Nao tente mover com LED amarelo fixo, alarmes, parada ativa, ou sem area
+  livre e supervisao. Resolva primeiro no DobotLab/DobotStudio.
+- Somente com LED verde, nenhum alarme e parada de emergencia fisica
+  disponivel, selecione passo 1 mm e o menor percentual de velocidade.
+- De apenas UM toque curto em direcao segura e espere a confirmacao.
+- Observe no painel a posicao REAL e a mensagem do ultimo comando.
+- So depois teste um SEGUNDO toque. Nao repita se aparecer FALHOU.
+- Manter pressionado repete pequenos passos SEPARADOS e confirmados.
+- A tecla PARAR do site e software, nao substitui parada de emergencia.
+
+SE AINDA NAO FUNCIONAR
+Abra no Edge -> Logs. Envie somente a PRIMEIRA linha nova
+'Comando DOBOT_PTP ... FALHOU:' e os numeros de alarmes exibidos.
+Nao envie senhas, device keys, tokens, arquivos .env ou logs completos
+que contenham credenciais.
+
+HOME: O app agora mostra as instrucoes para HOME LOCAL, mas nao movimenta
+remotamente o robo. Essa decisao e intencional por seguranca, pois o driver
+nao comprova o ciclo de calibracao fisico. No DobotLab, configure DobotLink,
+conecte a COM4 com Edge fechado, verifique alarmes e use o procedimento
+oficial de homing local com supervisao e sem pessoas no alcance do braco.
+
+VALIDACAO
+- 52 testes focados de Edge e backend passaram em simulacao.
+- Sintaxe Python/JavaScript verificada.
+- Nao houve teste com o equipamento real nem medicao do LED.
+- pyserial nao esta instalado neste ambiente para executar todos os testes.
+- Este ZIP nao modifica configuracao de localhost, banco, Mobile nem .env.

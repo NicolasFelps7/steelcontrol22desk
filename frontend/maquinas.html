@@ -941,8 +941,8 @@
       <div class="device-discovery-header">
         <div>
           <span class="section-label">DESCOBERTA AUTOMÁTICA</span>
-          <h2>Equipamentos encontrados na rede e no Edge</h2>
-          <p>Descubra equipamentos na rede local e hardware USB/Serial detectado pelo SteelControl Edge. Revise a origem e aprove o cadastro com segurança.</p>
+          <h2>Equipamentos identificados pela rede</h2>
+          <p>Somente equipamentos que responderam pela rede aparecem abaixo. Portas USB do Windows são listadas separadamente e não são máquinas identificadas.</p>
         </div>
         <button type="button" class="discovery-scan-btn" id="discoveryScanBtn" onclick="varrerDispositivos()">
           <i class="fa-solid fa-rotate"></i>
@@ -982,6 +982,17 @@
         </summary>
         <div class="discovery-diagnostics-content" id="discoveryDiagnosticsContent">
           <div class="discovery-diagnostic-loading">Carregando diagnóstico da rede...</div>
+        </div>
+      </details>
+
+      <details class="discovery-diagnostics" id="usbSerialPortsPanel">
+        <summary>
+          <span><i class="fa-solid fa-usb"></i> Portas USB/Serial disponíveis para configuração</span>
+          <small id="usbSerialPortsCount">Portas não comprovam a identidade de um equipamento</small>
+        </summary>
+        <div class="discovery-diagnostics-content">
+          <p style="margin:0;color:var(--texto-suave);font-size:12px">COM4 e outras portas representam interfaces do Windows, não equipamentos da empresa. Selecione a porta somente depois de identificar fisicamente a máquina e vinculá-la ao Edge.</p>
+          <div class="discovered-devices-grid" id="usbSerialPortsList"></div>
         </div>
       </details>
 
@@ -1119,7 +1130,7 @@
   <script src="assets/js/edge-launcher.js?v=20261029_EDGE_CLOUD_1"></script>
   <script src="assets/js/machine-connections.js?v=18"></script>
   <script src="assets/js/diagnostics-center.js?v=20261029_EDGE_CLOUD_1"></script>
-  <script src="assets/js/machine-records.js?v=18"></script><script src="assets/js/audit-center.js?v=18"></script><script src="assets/js/maquinas.js?v=18"></script>
+  <script src="assets/js/machine-records.js?v=18"></script><script src="assets/js/audit-center.js?v=18"></script><script src="assets/js/maquinas.js?v=20_USB_COM_NAO_E_MAQUINA"></script>
 
 <script src="assets/industrial3d/three.min.js"></script><script src="assets/industrial3d/machine-models.js"></script><script src="assets/industrial3d/machine-viewer.js"></script><script src="assets/js/machine-registration-3d.js?v=1"></script>
 </body>

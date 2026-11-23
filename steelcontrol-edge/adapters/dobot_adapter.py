@@ -4,39 +4,55 @@ from .base import BaseAdapter, AdapterError
 
 HEADER=b"\xAA\xAA"
 ALARM_DESCRIPTIONS={
-    0:"reinicialização pendente",
+    0:"reinicialização pendente (exige reconhecimento local)",
+    1:"instrução desconhecida pelo controlador",
+    2:"falha do sistema de arquivos do controlador",
+    3:"falha de comunicação interna MCU/FPGA",
+    4:"falha de leitura de ângulo",
+    16:"singularidade na posição solicitada",
+    17:"posição solicitada fora da área alcançável",
     18:"alvo fora do alcance ou dos limites das juntas",
+    33:"falha de cinemática inversa durante movimento",
+    34:"limite de junta durante movimento",
+    64:"limite positivo J1", 65:"limite negativo J1",
+    66:"limite positivo J2", 67:"limite negativo J2",
+    68:"limite positivo J3", 69:"limite negativo J3",
+    70:"limite positivo J4", 71:"limite negativo J4",
 }
 DOBOT_LIMITS={"x":(-290.0,290.0),"y":(-290.0,290.0),"z":(-10.0,220.0),"r":(-180.0,180.0),"velocidade":(1.0,60.0)}
 RADIAL_LIMITS=(80.0,290.0)
 J4_LIMITS=(-135.0,135.0)
 ROTATION_STEP_LIMIT=20.0
 
+class MotionPreflightError(AdapterError):
+    """Target rejected locally before any motion command reaches the robot."""
+    pass
+
 def validate_ptp(payload):
     values={}
     for key in ("x","y","z","r"):
         try:value=float(payload[key])
-        except (KeyError,TypeError,ValueError):raise AdapterError(f"Coordenada {key.upper()} inválida.")
+        except (KeyError,TypeError,ValueError):raise MotionPreflightError(f"Coordenada {key.upper()} inválida.")
         low,high=DOBOT_LIMITS[key]
-        if isinstance(payload[key],bool) or not math.isfinite(value) or value<low or value>high:raise AdapterError(f"{key.upper()} fora do envelope seguro ({low:g} a {high:g}).")
+        if isinstance(payload[key],bool) or not math.isfinite(value) or value<low or value>high:raise MotionPreflightError(f"{key.upper()} fora do envelope seguro ({low:g} a {high:g}).")
         values[key]=value
     radius=math.hypot(values["x"],values["y"])
     if radius<RADIAL_LIMITS[0] or radius>RADIAL_LIMITS[1]:
-        raise AdapterError(f"Movimento bloqueado antes de acionar o Dobot: raio XY {radius:.1f} mm fora da área preventiva ({RADIAL_LIMITS[0]:g} a {RADIAL_LIMITS[1]:g} mm). Mova no sentido oposto.")
+        raise MotionPreflightError(f"Movimento bloqueado antes de acionar o Dobot: raio XY {radius:.1f} mm fora da área preventiva ({RADIAL_LIMITS[0]:g} a {RADIAL_LIMITS[1]:g} mm). Mova no sentido oposto.")
     try:speed=float(payload.get("velocidade",30))
-    except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
+    except (TypeError,ValueError):raise MotionPreflightError("Velocidade inválida.")
     low,high=DOBOT_LIMITS["velocidade"]
-    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
+    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise MotionPreflightError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
     values["velocidade"]=speed
     return values
 def validate_rotation(payload):
     try:delta=float(payload["delta"])
-    except (KeyError,TypeError,ValueError):raise AdapterError("Passo de rotação inválido.")
-    if isinstance(payload.get("delta"),bool) or not math.isfinite(delta) or delta==0 or abs(delta)>ROTATION_STEP_LIMIT:raise AdapterError(f"Rotação por comando deve ficar entre {-ROTATION_STEP_LIMIT:g}° e {ROTATION_STEP_LIMIT:g}° e não pode ser zero.")
+    except (KeyError,TypeError,ValueError):raise MotionPreflightError("Passo de rotação inválido.")
+    if isinstance(payload.get("delta"),bool) or not math.isfinite(delta) or delta==0 or abs(delta)>ROTATION_STEP_LIMIT:raise MotionPreflightError(f"Rotação por comando deve ficar entre {-ROTATION_STEP_LIMIT:g}° e {ROTATION_STEP_LIMIT:g}° e não pode ser zero.")
     try:speed=float(payload.get("velocidade",20))
-    except (TypeError,ValueError):raise AdapterError("Velocidade inválida.")
+    except (TypeError,ValueError):raise MotionPreflightError("Velocidade inválida.")
     low,high=DOBOT_LIMITS["velocidade"]
-    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise AdapterError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
+    if isinstance(payload.get("velocidade"),bool) or not math.isfinite(speed) or speed<low or speed>high:raise MotionPreflightError(f"Velocidade fora do limite seguro ({low:g}% a {high:g}%).")
     return {"delta":delta,"velocidade":speed}
 def checksum(payload:bytes)->int:return (-sum(payload))&0xFF
 def packet(command_id:int,rw:int=0,queued:bool=False,params:bytes=b"")->bytes:
@@ -46,7 +62,7 @@ def packet(command_id:int,rw:int=0,queued:bool=False,params:bytes=b"")->bytes:
 class DobotMagicianAdapter(BaseAdapter):
     name="Dobot Magician"
     def __init__(self,params=None):
-        super().__init__(params); self.ser=None; self.port=None; self.suction=False; self.gripper=False; self.cycles=0; self.production=0; self.queue_stopped=False; self.startup_reset_acknowledged=False; self.last_motion_target=None
+        super().__init__(params); self.ser=None; self.port=None; self.suction=False; self.gripper=False; self.cycles=0; self.production=0; self.queue_stopped=False; self.startup_reset_acknowledged=False; self.last_motion_target=None; self.last_ptp_diagnostic=None
     def _candidates(self):
         try:
             from serial.tools import list_ports
@@ -60,10 +76,14 @@ class DobotMagicianAdapter(BaseAdapter):
         errors=[]
         for port in self._candidates():
             try:
-                self.ser=serial.Serial(port,int(self.params.get("baud") or 115200),timeout=.7,write_timeout=.7); self.port=port; self._get_pose()
-                # Conectar nunca retoma uma fila antiga ou limpa alarmes.
-                self._exchange(242,1,False)
-                self._exchange(245,1,False)
+                self.ser=serial.Serial(port,int(self.params.get("baud") or 115200),timeout=.7,write_timeout=.7); self.port=port
+                # Abrir conexão deve ser somente leitura. O SteelControl não
+                # altera a fila do robô automaticamente ao abrir o dashboard.
+                # Isso separa falhas do USB dos comandos de movimentação.
+                self._get_pose()
+                self._alarms()
+                # A primeira movimentação explicitamente autorizada saneará
+                # a fila anterior antes de enfileirar QUALQUER PTP novo.
                 self.queue_stopped=True
                 self.connected=True; return
             except Exception as e:
@@ -94,6 +114,8 @@ class DobotMagicianAdapter(BaseAdapter):
         self.ser.reset_input_buffer();self.ser.write(packet(cid,rw,queued,params));self.ser.flush();return self._read_frame(cid)
     @staticmethod
     def _queue_index(response):
+        if not isinstance(response, (bytes, bytearray)) or len(response) < 2:
+            return None
         params=response[2:]
         # O protocolo atual devolve uint64. Mantemos compatibilidade com
         # firmwares antigos que ainda respondem com quatro bytes.
@@ -130,6 +152,10 @@ class DobotMagicianAdapter(BaseAdapter):
         self.queue_stopped=False
     def _queue_and_start(self,cid,params=b""):
         if self.queue_stopped:
+            # Somente após autorização de um movimento. A fila antiga pode
+            # conter comandos de outra sessão: parar normalmente e limpar
+            # antes de iniciar, nunca dar START em alvos desconhecidos.
+            self._exchange(241,1,False)
             self._exchange(245,1,False)
         # Mantém a fila em execução antes e depois de inserir o comando. Isso
         # também recupera a fila depois de um STOP anterior.
@@ -138,6 +164,23 @@ class DobotMagicianAdapter(BaseAdapter):
         self._exchange(240,1,False)
         self.queue_stopped=False
         return response
+    @staticmethod
+    def _target_reached(before, actual, target, keys):
+        # Uma tolerancia fixa de 1,5 mm aceitava um PTP de 1 mm como
+        # concluido SEM o braço sair da posicao inicial. Para eixos alterados
+        # a tolerancia e proporcional ao passo, mantendo um piso realista.
+        for key in keys:
+            travelled = abs(target[key] - before[key])
+            tolerance = min(1.5 if key != 'r' else 2.0,
+                            max(0.15, travelled * 0.35)) if travelled > 0.01 else (1.5 if key != 'r' else 2.0)
+            if abs(actual[key] - target[key]) > tolerance:
+                return False
+        return True
+
+    @staticmethod
+    def _motion_progressed(before, actual, keys):
+        return any(abs(actual[k] - before[k]) >= (0.12 if k != 'r' else 0.2) for k in keys)
+
     def _set_speed(self,value):
         speed=float(value)
         if not math.isfinite(speed) or not 1<=speed<=60:raise AdapterError('Velocidade inválida.')
@@ -222,7 +265,7 @@ class DobotMagicianAdapter(BaseAdapter):
         return out
     def _telemetry_from_pose(self,pose,raw_alarms,queue="READY"):
         alarms=self._blocking_alarms(raw_alarms)
-        data={"producao":self.production,"ciclos":self.cycles,"origem":"DOBOT_REAL","dadosExtras":{"dobot":{"mode":"REAL","connected":True,"port":self.port,"baudRate":int(self.params.get("baud") or 115200),"pose":{k:round(pose[k],4) for k in ["x","y","z","r"]},"joints":{k:round(pose[k],4) for k in ["j1","j2","j3","j4"]},"alarms":alarms,"rawAlarms":raw_alarms,"startupResetAcknowledged":self.startup_reset_acknowledged,"queue":queue,"endEffector":{"suction":self.suction,"gripper":self.gripper}}}}
+        data={"producao":self.production,"ciclos":self.cycles,"origem":"DOBOT_REAL","dadosExtras":{"dobot":{"mode":"REAL","connected":True,"port":self.port,"baudRate":int(self.params.get("baud") or 115200),"pose":{k:round(pose[k],4) for k in ["x","y","z","r"]},"joints":{k:round(pose[k],4) for k in ["j1","j2","j3","j4"]},"alarms":alarms,"rawAlarms":raw_alarms,"alarmDetails":[f"{a}: {ALARM_DESCRIPTIONS.get(a,'consulte manual Dobot')}" for a in raw_alarms],"startupResetAcknowledged":self.startup_reset_acknowledged,"queue":queue,"lastPtpDiagnostic":dict(self.last_ptp_diagnostic) if self.last_ptp_diagnostic else None,"endEffector":{"suction":self.suction,"gripper":self.gripper}}}}
         if hasattr(self,'last_pose_latency_ms'):data['latenciaMs']=self.last_pose_latency_ms
         return data
     def _publish_motion_pose(self,pose,alarms):
@@ -244,37 +287,76 @@ class DobotMagicianAdapter(BaseAdapter):
             target=validate_ptp(payload);x=target['x'];y=target['y'];z=target['z'];r=target['r']
             self._ensure_motion_ready();self.last_motion_target={key:target[key] for key in ('x','y','z','r')};self._set_speed(target['velocidade'])
             before=self._get_pose()
-            # MOVJ_XYZ (modo 1), imediato. O comando continua protegido pela
-            # fila autenticada do SteelControl, mas não fica preso na fila
-            # interna de firmwares Magician/Lite que não avançam o índice.
-            self._exchange(84,1,False,bytes([1])+struct.pack('<4f',x,y,z,r))
-            deadline=time.monotonic()+12.0; moved=False; last=before
+            if all(abs(before[k]-target[k]) <= (0.25 if k != 'r' else 0.35) for k in ('x','y','z','r')):
+                raise MotionPreflightError('Alvo PTP já coincide com a posição real atual. Nenhum movimento foi enviado; atualize a telemetria antes de tentar outro passo.')
+            # O connect() parou e limpou a fila antiga por segurança. Para
+            # movimentar novamente precisamos iniciar a fila do controlador.
+            # SetPTPCmd (ID 84, modo MOVJ_XYZ=1) é enviado como queued=True;
+            # o fim físico é confirmado pelas coordenadas, nunca apenas pelo ACK.
+            response=self._queue_and_start(84,bytes([1])+struct.pack('<4f',x,y,z,r))
+            queued_index=self._queue_index(response)
+            self.last_ptp_diagnostic={"state":"EXECUTANDO", "sentQueueIndex":queued_index, "initialPose":{k:round(before[k],3) for k in ('x','y','z','r')}, "targetPose":{k:round(target[k],3) for k in ('x','y','z','r')}}
+            queue_done=queued_index is None  # Alguns firmwares antigos não devolvem índice.
+            last_queue_index=None
+            deadline=time.monotonic()+12.0; moved=False; last=before; near_samples=0
             while time.monotonic()<deadline:
                 self._check_motion_guard()
                 time.sleep(.06)
                 last=self._get_pose()
-                alarms=self._blocking_alarms()
+                raw_alarms=self._alarms()
+                alarms=self._blocking_alarms(raw_alarms)
                 if alarms:
+                    self.last_ptp_diagnostic.update({"state":"FALHOU","rawAlarms":raw_alarms})
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot rejeitou o alvo PTP X={x:.2f} Y={y:.2f} Z={z:.2f} R={r:.2f}: {self._describe_alarms(alarms)}.{recovery}")
                 self._publish_motion_pose(last,alarms)
-                moved=moved or any(abs(last[k]-before[k])>0.3 for k in ('x','y','z','r'))
-                if abs(last['x']-x)<=1.5 and abs(last['y']-y)<=1.5 and abs(last['z']-z)<=1.5 and abs(last['r']-r)<=2.0:
-                    self.last_motion_target=None;self.cycles+=1;self.production+=1;return
+                moved = moved or self._motion_progressed(before,last,('x','y','z','r'))
+                self.last_ptp_diagnostic.update({"actualPose":{k:round(last[k],3) for k in ('x','y','z','r')}, "rawAlarms":raw_alarms, "movementDetected":moved})
+                if not queue_done:
+                    current=self._current_queue_index()
+                    last_queue_index=current
+                    self.last_ptp_diagnostic["executedQueueIndex"]=current
+                    queue_done=current is not None and current>=queued_index
+                # Não libere o próximo PTP quando a pose inicial já estava
+                # dentro da tolerância do pequeno passo pedido (1 mm / 1°).
+                near=self._target_reached(before,last,target,('x','y','z','r'))
+                near_samples = near_samples + 1 if near and moved and queue_done else 0
+                if near_samples>=2:
+                    self.last_motion_target=None;self.cycles+=1;self.production+=1
+                    self.last_ptp_diagnostic["state"]="CONCLUIDO"; return
+            # Diagnóstico factual para distinguir fila parada, alvo repetido e
+            # ausência de deslocamento físico. Não envia movimento adicional.
+            # Confirmar índice da fila NÃO comprova movimentação física.
+            # Informar alarmes e juntas no instante da falha ajuda a separar
+            # erro de alcance, controlador e telemetria sem mandar outro PTP.
+            raw_alarms=self._alarms()
+            queue_detail=f'fila enviada={queued_index if queued_index is not None else "sem índice"}, índice processado={last_queue_index if last_queue_index is not None else "não consultado"}'
+            pose_detail=(f'inicial=({before["x"]:.2f},{before["y"]:.2f},{before["z"]:.2f},{before["r"]:.2f}); '
+                         f'atual=({last["x"]:.2f},{last["y"]:.2f},{last["z"]:.2f},{last["r"]:.2f}); '
+                         f'alvo=({x:.2f},{y:.2f},{z:.2f},{r:.2f})')
+            extra=f'; alarmes={raw_alarms or "nenhum reportado"}; juntas=({last["j1"]:.2f},{last["j2"]:.2f},{last["j3"]:.2f},{last["j4"]:.2f})'
+            self.last_ptp_diagnostic.update({"state":"FALHOU", "rawAlarms":raw_alarms,
+                "actualJoints":{k:round(last[k],3) for k in ('j1','j2','j3','j4')}})
+            if not queue_done:
+                raise AdapterError(f'Dobot não confirmou fila PTP; {queue_detail}; {pose_detail}{extra}. Verifique estado, alarmes e LED.')
             if not moved:
-                raise AdapterError('Dobot aceitou o PTP, mas não iniciou movimento. Verifique alarmes/intertravamentos e a faixa do alvo.')
-            raise AdapterError(f"Dobot não atingiu o alvo PTP. Atual: X={last['x']:.2f} Y={last['y']:.2f} Z={last['z']:.2f} R={last['r']:.2f}")
+                raise AdapterError(f'Dobot confirmou comando PTP, mas não houve deslocamento medido; {queue_detail}; {pose_detail}{extra}. Inspecione o braço antes de reconectar.')
+            raise AdapterError(f'Dobot iniciou PTP mas não atingiu o destino; {queue_detail}; {pose_detail}{extra}.')
         if command=="DOBOT_ROTATE":
             rotation=validate_rotation(payload)
-            self._ensure_motion_ready();self._set_speed(rotation['velocidade'])
+            self._ensure_motion_ready()
             before=self._get_pose();target_j4=before['j4']+rotation['delta']
             if target_j4<J4_LIMITS[0] or target_j4>J4_LIMITS[1]:
-                raise AdapterError(f"Rotação bloqueada antes de acionar o Dobot: J4 alvo {target_j4:.1f}° fora da faixa preventiva ({J4_LIMITS[0]:g}° a {J4_LIMITS[1]:g}°). Gire no sentido oposto.")
+                raise MotionPreflightError(f"Rotação bloqueada antes de acionar o Dobot: J4 alvo {target_j4:.1f}° fora da faixa preventiva ({J4_LIMITS[0]:g}° a {J4_LIMITS[1]:g}°). Gire no sentido oposto.")
+            self._set_speed(rotation['velocidade'])
             # MOVJ_ANGLE (modo 4) altera somente J4. Usar MOVJ_XYZ para girar
             # o efetuador fazia alguns firmwares recalcularem a postura inteira
             # e deslocarem X/Y, além de aproximar outras juntas dos limites.
-            self._exchange(84,1,False,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
-            deadline=time.monotonic()+8.0;last=before
+            response=self._queue_and_start(84,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
+            queued_index=self._queue_index(response)
+            queue_done=queued_index is None
+            deadline=time.monotonic()+8.0;last=before;near_samples=0
+            tolerance=min(1.5,max(0.15,abs(rotation['delta'])*0.35))
             while time.monotonic()<deadline:
                 self._check_motion_guard()
                 time.sleep(.06);last=self._get_pose();alarms=self._blocking_alarms()
@@ -282,10 +364,18 @@ class DobotMagicianAdapter(BaseAdapter):
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot recusou a rotação de J4: {self._describe_alarms(alarms)}.{recovery}")
                 self._publish_motion_pose(last,alarms)
-                if abs(last['j4']-target_j4)<=1.5:
+                if not queue_done:
+                    current=self._current_queue_index()
+                    queue_done=current is not None and current>=queued_index
+                near=abs(last['j4']-target_j4)<=tolerance
+                moved=abs(last['j4']-before['j4'])>=0.2
+                near_samples=near_samples+1 if near and moved and queue_done else 0
+                if near_samples>=2:
                     self.cycles+=1;return
-            if abs(last['j4']-before['j4'])<=0.3:
-                raise AdapterError("Dobot aceitou a rotação, mas a junta J4 não iniciou movimento.")
+            if not queue_done:
+                raise AdapterError(f'Dobot não confirmou a execução da fila de rotação (índice {queued_index}).')
+            if abs(last['j4']-before['j4'])<=0.2:
+                raise AdapterError("Dobot recebeu a rotação, mas a junta J4 não iniciou movimento.")
             raise AdapterError(f"Dobot não concluiu a rotação. J4 atual={last['j4']:.2f}°, alvo={target_j4:.2f}°.")
         if command=="DOBOT_SUCTION_ON":self._exchange(62,1,False,bytes([1,1]));self._verify_effector(62,True,True);self.suction=True;return
         if command=="DOBOT_SUCTION_OFF":self._exchange(62,1,False,bytes([0,0]));self._verify_effector(62,False,False);self.suction=False;return

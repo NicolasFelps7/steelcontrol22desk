@@ -1,0 +1,64 @@
+CORRECAO DO CONTROLE MANUAL DOBOT - STEELCONTROL
+13/11/2026 | Arquivos corrigidos, sem credenciais
+
+O QUE FOI ALTERADO
+1) steelcontrol-edge/adapters/dobot_adapter.py
+   - PTP e rotacao agora reiniciam a fila nativa parada pela conexao e
+     enviam SetPTPCmd no modo enfileirado (ID 84 / isQueued=1).
+   - Continuam esperando confirmacao da posicao REAL do braco e bloqueando
+     movimento fora dos limites ou com alarmes. Nao altera HOME.
+2) backend/src/lib/dobotPolicy.js
+   - Validade dos comandos PTP de 5s para 20s e ROTATE de 8s para 15s.
+   - O Edge revalida a permissao durante todo o movimento, e antes a
+     validade curta podia vencer durante uma execucao ainda em progresso.
+3) steelcontrol-edge/edge_runtime.py
+   - Logs agora mostram motivo de AdapterError nos movimentos falhados,
+     sem logar payload, credenciais ou respostas da rede.
+   - Bloqueio do controle apos falha e revalidacao permanecem intactos.
+4) frontend/assets/js/dobot-control-component.js + frontend/operacao.html
+   - O painel bloqueia movimento se diagnostico de alarmes nao estiver OK
+     ou se houver parada de seguranca, sem bloquear STOP/Limpar alarmes.
+   - Mantem o aviso para verificar LED verde e a area fisica do braco.
+   - Atualiza a versao do JS para evitar cache antigo no navegador.
+5) Os outros 3 arquivos sao testes de regressao.
+
+APLICAR NO WINDOWS
+A) PARE o Edge e o DobotStudio e garanta que o braco nao esta em movimento.
+B) Faca backup de toda a pasta do projeto (ou commit no Git).
+C) Abra a pasta que contem backend, frontend e steelcontrol-edge.
+D) Extraia ESTE ZIP nessa pasta, mantendo a estrutura de pastas.
+   Quando perguntado, aceite substituir os 8 arquivos acima.
+E) O Edge roda no PC local: reinicie INICIAR_STEELCONTROL_EDGE.bat
+   quando o hardware estiver pronto.
+F) O backend hospedado no Railway precisa receber a alteracao via Git:
+   abra PowerShell na pasta do projeto e rode:
+      git add backend/src/lib/dobotPolicy.js backend/test/dobot-security.test.js
+      git add steelcontrol-edge/adapters/dobot_adapter.py steelcontrol-edge/edge_runtime.py steelcontrol-edge/tests/test_motion_telemetry.py steelcontrol-edge/tests/test_dobot_alarm_recovery.py
+      git add frontend/assets/js/dobot-control-component.js frontend/operacao.html
+      git commit -m "Corrige controle manual Dobot e diagnostico Edge"
+      git push
+   Se a branch principal tiver outra configuracao, siga o fluxo normal do seu repo.
+G) No navegador, recarregue com Ctrl+Shift+R.
+
+ANTES DE QUALQUER MOVIMENTO FISICO
+- O LED AMARELO FIXO no Magician Lite significa inicializacao em andamento.
+- Nao movimente o equipamento enquanto nao ficar verde e sem alarmes.
+- Confirme em DobotLab/DobotStudio que o dispositivo terminou a inicializacao.
+- Com professor/supervisor, area livre, E-stop acessivel e limites conferidos,
+  faca apenas UM movimento de 1 mm em direcao segura para validar.
+- Se houver falha, PARE o teste e procure em Logs Edge uma linha
+  "Comando DOBOT_PTP #... FALHOU: <motivo>". Nao insista.
+- Parada por software nao substitui parada fisica de emergencia.
+
+STATUS DA VERIFICACAO
+- JavaScript: sintaxe validada com Node 22.
+- Testes Python simulados da telemetria, fila e alarmes: 14 aprovados.
+- Testes de politica Dobot no backend: 5 aprovados.
+- Teste com Dobot real NAO realizado, e o estado do LED nao e observavel pela API.
+- A suite Python completa depende de pyserial, ausente neste ambiente.
+- O ZIP Mobile nao precisou de modificacoes: os botoes Mobile enviam
+  os mesmos comandos pela API e dependem do backend e Edge compartilhados.
+
+IMPORTANTE: Esta correcao nao conserta por software um braco preso no boot.
+Se o LED continuar amarelo mesmo sem o Edge/DobotStudio, investigue
+alimentacao, comunicacao e inicializacao com o responsavel pelo equipamento.

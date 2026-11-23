@@ -6,7 +6,9 @@ import {
   comandoDobotPermitido,
   controleRemotoDobotHabilitado,
   expiraEmComandoDobot,
-  validarPayloadDobot
+  validarPayloadDobot,
+  ehMovimentoExclusivoDobot,
+  comandosCancelaveisDobot
 } from "../src/lib/dobotPolicy.js";
 
 test("Dobot real exige remoteControlEnabled explícito", () => {
@@ -48,7 +50,8 @@ test("PTP bloqueia cantos inalcançáveis antes de alarmar o hardware", () => {
 
 test("comandos Dobot recebem TTL curto", () => {
   const start = Date.parse("2026-09-21T00:00:00.000Z");
-  assert.equal(expiraEmComandoDobot("DOBOT_PTP", start), "2026-09-21T00:00:05.000Z");
+  assert.equal(expiraEmComandoDobot("DOBOT_PTP", start), "2026-09-21T00:00:20.000Z");
+  assert.equal(expiraEmComandoDobot("DOBOT_ROTATE", start), "2026-09-21T00:00:15.000Z");
   assert.equal(expiraEmComandoDobot("DOBOT_STOP", start), "2026-09-21T00:00:15.000Z");
 });
 
@@ -64,4 +67,14 @@ test("rotação incremental aceita somente passo e velocidade seguros", () => {
     () => validarPayloadDobot("DOBOT_ROTATE", { delta: 30, velocidade: 20 }),
     /rotação entre/
   );
+});
+
+test("novo PTP/ROTATE nao cancela movimento anterior; somente STOP cancela", () => {
+  assert.equal(ehMovimentoExclusivoDobot("DOBOT_PTP"), true);
+  assert.equal(ehMovimentoExclusivoDobot("DOBOT_ROTATE"), true);
+  assert.equal(ehMovimentoExclusivoDobot("DOBOT_CLEAR_ALARMS"), false);
+  assert.deepEqual(comandosCancelaveisDobot("DOBOT_PTP"), []);
+  assert.deepEqual(comandosCancelaveisDobot("DOBOT_ROTATE"), []);
+  assert.ok(comandosCancelaveisDobot("DOBOT_STOP").includes("DOBOT_PTP"));
+  assert.ok(comandosCancelaveisDobot("DOBOT_STOP").includes("DOBOT_ROTATE"));
 });

@@ -1,0 +1,61 @@
+STEELCONTROL | CORRECAO V5 - TRAVAMENTO APOS PRIMEIRO COMANDO
+Data: 13/11/2026
+
+IMPORTANTE
+Esta correção foi preparada a partir do projeto SteelControl Desktop enviado na conversa,
+com as correções anteriores aplicadas em sequência até a V4. Não substitui o backend.
+Crie um backup da pasta antes de substituir os arquivos.
+
+O QUE FOI ALTERADO
+1) steelcontrol-edge/adapters/dobot_adapter.py
+   - Na conexão inicial usa parada normal da fila (ID 241), em vez de parada forçada (ID 242).
+   - Mantém parada forçada apenas nas rotinas de STOP/falha.
+   - Acrescenta descrições de alarmes de inicialização, alcance e limites.
+   - Registra diagnóstico de PTP: alvo, posição inicial/atual, alarmes e índice da fila.
+2) steelcontrol-edge/edge_runtime.py
+   - Uma falha temporária de HTTP ao publicar a pose de movimento não aciona, sozinha,
+     a parada de segurança. A revalidação periódica da autorização permanece ativa.
+   - Preserva mais detalhes do erro real nos logs.
+3) frontend/assets/js/dobot-control-component.js
+   - Um clique breve envia apenas um passo. Segurar por >=420 ms inicia repetição de passos
+     SE confirmados pelo Edge. Soltar cancela a repetição; STOP continua independente.
+   - Mostra alarmes com códigos e motivo técnico do último comando.
+4) frontend/operacao.html
+   - Passo inicial 1 mm / 1 grau e velocidade inicial 10%.
+   - Atualiza a versão do JS para evitar usar código antigo em cache.
+5) steelcontrol-edge/tests/test_motion_telemetry.py e tests/test_command_security.py
+   - Testes de regressão do novo tratamento de telemetria e da conexão.
+
+COMO APLICAR
+1. Feche o Edge, o Desktop e o servidor principal.
+2. Faça backup completo de steelcontrol22desk.
+3. Extraia este ZIP na raiz steelcontrol22desk (onde estão backend, frontend,
+   steelcontrol-edge), aceitando substituir os arquivos.
+4. Abra PowerShell nessa pasta e inicie o projeto:
+   powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+5. Abra outro terminal e inicie o Edge:
+   .\INICIAR_STEELCONTROL_EDGE.bat
+6. No navegador, pressione Ctrl+Shift+R para carregar o JS atualizado.
+7. Confira Edge em http://localhost:3000 e COM4, sem DobotLab/DobotStudio abertos.
+
+DIAGNOSTICO SE AINDA TRAVAR
+- ANTES de limpar algum alarme, anote o(s) código(s) exibido(s) no painel
+  (passe o mouse em "Alarmes") e veja Logs no Edge.
+- Copie a primeira linha DOBOT_PTP ... FALHOU e a linha de alarmes.
+- Se aparecer "fila enviada=..., executada=..." e "inicial/atual/alvo", envie
+  esses valores: eles separam falha de fila, falta de deslocamento e alvo repetido.
+- Alarme 0 refere-se a reinicialização; alarme 18 geralmente indica alvo fora do
+  alcance/limite. Outros alarmes exigem investigação da causa específica.
+
+SEGURANCA
+A mensagem "Conexão e alarmes OK" NÃO comprova fisicamente que o LED está verde.
+Se o LED estiver amarelo, vermelho ou houver alarmes persistentes, NÃO movimente.
+Não envie HOME, não repita movimentos e não apague alarmes de forma contínua
+para forçar o robô a operar. Interrompa a operação e peça inspeção ao responsável.
+Somente após LED verde, sem alarmes e área livre, execute um único passo de 1 mm
+sob supervisão e aguarde a confirmação antes do próximo.
+
+TESTES
+64 testes Python passaram com serial simulado (a biblioteca pyserial não estava
+instalada no ambiente de validação). Sintaxe JS e Python verificada. O Dobot
+físico não foi testado nesta sessão; não é garantia de funcionamento do hardware.

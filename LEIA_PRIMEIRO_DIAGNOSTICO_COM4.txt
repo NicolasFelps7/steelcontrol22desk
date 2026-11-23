@@ -1,0 +1,28 @@
+DIAGNOSTICO DA MUDANCA DE LED PARA AMARELO AO CONECTAR O STEELCONTROL
+
+Finalidade: distinguir abertura de COM4, leituras somente leitura e comandos
+ativos que o Edge envia assim que conecta. Este pacote NAO e uma correcao do
+controle manual e nao altera nenhum arquivo existente do projeto.
+
+ANTES DE EXECUTAR
+1. Pare o SteelControl Edge, DobotLab e DobotStudio. Nao deixe dois programas
+   usando a COM4 ao mesmo tempo.
+2. Dobot parado, LED VERDE e espaco fisico livre. Nao use o teste se LED
+   estiver amarelo ou vermelho.
+3. Copie os dois arquivos DIAGNOSTICO_DOBOT_COM4.* para a pasta principal
+   steelcontrol22desk, no mesmo nivel de steelcontrol-edge e .venv-edge.
+4. Execute DIAGNOSTICO_DOBOT_COM4.bat.
+5. Primeiro a rotina apenas ABRE A COM4, sem escrever nenhum byte.
+   Digite a cor observada. Se mudar para amarelo, o teste PARA.
+6. Se ficar verde, voce pode autorizar consultas de pose e alarmes.
+   Isso consulta GetPose (10) e GetAlarms (20) sem qualquer movimento.
+7. Compartilhe o texto de RESULTADO_DIAGNOSTICO_COM4.txt para investigar.
+
+ATENCAO: ao abrir uma COM serial, alguns drivers do Windows podem produzir
+pulsos DTR/RTS involuntarios mesmo ao tentar mantê-los desativados. Por isso,
+a luz deve ser observada e nao deve haver movimento durante o teste.
+
+Este teste NAO limpa alarmes, NAO executa HOME, NAO envia STOP nem PTP e NAO
+corrige sozinho um hardware que deixa de responder. Se houver movimento
+inesperado ou alarme, interrompa o teste com seguranca e procure o responsavel
+tecnico do laboratorio.

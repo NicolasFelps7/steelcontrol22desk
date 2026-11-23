@@ -7,7 +7,7 @@ import { gerarDeviceKey, hashDeviceKey, deviceKeyHint } from "../../lib/deviceSe
 import { processarTelemetria, validarLimitesMaquina } from "../../lib/telemetryService.js";
 import { publicarEventoMaquina, assinarEventosMaquina, publicarEventoEmpresa } from "../../lib/realtime.js";
 import { normalizarComandoIhm, politicaComandoIhm, cargoPodeComandoIhm, expiraEmComandoIhm, avaliarPermissaoStartIhm, controleRemotoIhmHabilitado } from "../../lib/hmiPolicy.js";
-import { DOBOT_COMMANDS, comandoDobotPermitido, controleRemotoDobotHabilitado, expiraEmComandoDobot, validarPayloadDobot } from "../../lib/dobotPolicy.js";
+import { DOBOT_COMMANDS, comandoDobotPermitido, controleRemotoDobotHabilitado, expiraEmComandoDobot, validarPayloadDobot, ehMovimentoExclusivoDobot, comandosCancelaveisDobot } from "../../lib/dobotPolicy.js";
 import { automaticoDobotAtual, prepararAutomaticoDobot, prepararEstadoAutomaticoDobot } from "../../lib/dobotAutomation.js";
 
 function ehAdministrador(req) {
@@ -1150,28 +1150,42 @@ export async function criarComandoDobot(req, res, next) {
       expiresAt: expiraEmComandoDobot(comando)
     };
 
-    const cancelaveis = comando === "DOBOT_STOP"
-      ? DOBOT_COMMANDS.filter(item => item !== "DOBOT_STOP")
-      : comando === "DOBOT_PTP"
-        ? ["DOBOT_PTP"]
-        : [];
-
-    const operacoes = [];
-    if (cancelaveis.length) {
-      operacoes.push(prisma.comandoMaquina.updateMany({
-        where: {
-          maquinaId: id,
-          comando: { in: cancelaveis },
-          status: { in: ["PENDENTE", "ENTREGUE"] }
-        },
-        data: { status: "CANCELADO", concluidoEm: new Date() }
-      }));
-    }
-    operacoes.push(prisma.comandoMaquina.create({
-      data: { maquinaId: id, solicitanteId:req.auth.usuarioId, comando, payload }
-    }));
-    const resultados = await prisma.$transaction(operacoes);
-    const criado = resultados.at(-1);
+    // Um segundo PTP nao pode CANCELAR um PTP que o braco ja esta executando.
+    // Caso contrario a revalidacao do Edge detecta a revogacao, para o braco
+    // e trava o manual ate reconexao. Serializamos a checagem por maquina.
+    const movimento = ehMovimentoExclusivoDobot(comando);
+    const cancelaveis = comandosCancelaveisDobot(comando);
+    const criado = await prisma.$transaction(async tx => {
+      await lockMachine(tx, id);
+      if (movimento) {
+        const emExecucao = await tx.comandoMaquina.findFirst({
+          where: {
+            maquinaId: id,
+            comando: { in: ["DOBOT_PTP", "DOBOT_ROTATE"] },
+            status: { in: ["PENDENTE", "ENTREGUE"] }
+          },
+          select: { id: true }
+        });
+        if (emExecucao) {
+          const error = new Error("Movimento anterior ainda em execução. Aguarde sua conclusão antes do próximo passo.");
+          error.statusCode = 409;
+          throw error;
+        }
+      }
+      if (cancelaveis.length) {
+        await tx.comandoMaquina.updateMany({
+          where: {
+            maquinaId: id,
+            comando: { in: cancelaveis },
+            status: { in: ["PENDENTE", "ENTREGUE"] }
+          },
+          data: { status: "CANCELADO", concluidoEm: new Date() }
+        });
+      }
+      return tx.comandoMaquina.create({
+        data: { maquinaId: id, solicitanteId: req.auth.usuarioId, comando, payload }
+      });
+    });
 
     // Acorda o long-poll do Edge assim que a linha está confirmada no banco.
     // Log e auditoria continuam obrigatórios, mas não seguram o despacho físico.

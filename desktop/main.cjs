@@ -145,6 +145,16 @@ async function start() {
     if(!trustedRemoteFrame(event,[mainWindow,edgeWindow]))throw new Error('Origem inválida.');
     return worker.request('pair');
   });
+  // Permite à página autenticada encontrar COM4 pelo Edge integrado,
+  // mesmo antes do vínculo com uma empresa. Não concede abertura nem escrita na porta.
+  ipcMain.handle('computer:ports', async event => {
+    if(!trustedRemoteFrame(event,[mainWindow,edgeWindow]))throw new Error('Origem inválida.');
+    const ports = await worker.request('ports');
+    return Array.isArray(ports) ? ports.slice(0,32).map(p=>({
+      port:String(p.port||'').slice(0,120),
+      description:String(p.description||'USB / serial').slice(0,120)
+    })) : [];
+  });
   ipcMain.handle('computer:open-edge',(event,machineId)=>{
     if(!trustedRemoteFrame(event,[mainWindow,edgeWindow]))throw new Error('Origem inválida.');
     if(machineId!==null&&machineId!==undefined&&(!Number.isInteger(machineId)||machineId<=0||machineId>2147483647))throw new Error('Máquina inválida.');

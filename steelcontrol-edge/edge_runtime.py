@@ -1,9 +1,11 @@
 from __future__ import annotations
 import threading,time,hashlib
+from requests.exceptions import RequestException
 from command_guard import CommandJournal, validate_command, fingerprint, STOP_COMMANDS
 from datetime import datetime,timezone
 from typing import Callable
 from adapters import create_adapter,infer_driver,AdapterError
+from adapters.dobot_adapter import MotionPreflightError
 from edge_client import SteelControlClient
 from edge_profiles import MachineProfile
 from printer3d_normalizer import normalize_printer3d_telemetry
@@ -17,6 +19,7 @@ class MachineRuntime:
     def __init__(self, profile:MachineProfile, log:Callable[[str,str],None], status:Callable[[str,str,dict],None]):
         self.profile=profile; self.log_cb=log; self.status_cb=status; self.stop_event=threading.Event(); self.thread=None; self.adapter=None
         self.command_results={}; self.control_latched=False; self.journal=None
+        self.last_dobot_command=None
     def log(self,msg):
         text=str(msg)
         if self.profile.device_key:text=text.replace(self.profile.device_key,'[CREDENCIAL OCULTA]')
@@ -36,15 +39,34 @@ class MachineRuntime:
         return check
     def _motion_observer(self,client):
         sent=[None]
+        failed=[False]
         def observe(data):
             if self.stop_event.is_set():raise AdapterError('Execução interrompida localmente.')
             now=time.monotonic()
             if sent[0] is not None and now-sent[0]<0.25:return
             # Só publica a pose que o driver acabou de ler, sem outra thread na COM.
-            client.telemetry(data,timeout=2)
+            try:
+                client.telemetry(data,timeout=2)
+                failed[0]=False
+            except RequestException as error:
+                # Publicar pose durante o PTP e informativo. Uma falha HTTP
+                # momentanea de telemetria nao e falha fisica do robô; a
+                # autorizacao do comando continua verificada por _motion_guard.
+                if not failed[0]:
+                    self.log(f'Telemetria de movimento indisponível ({type(error).__name__}); comando segue sob verificação de autorização.')
+                failed[0]=True
             sent[0]=now
         return observe
     def status(self,state,**extra): self.status_cb(self.profile.id,state,extra)
+    def _publish_dobot_diagnostic(self,data,driver):
+        if driver!='DOBOT_MAGICIAN' or not isinstance(data,dict):return data
+        extras=data.get('dadosExtras')
+        if not isinstance(extras,dict):extras={};data['dadosExtras']=extras
+        details=extras.get('dobot')
+        if not isinstance(details,dict):details={};extras['dobot']=details
+        details['edgeControlLatched']=self.control_latched
+        if self.last_dobot_command:details['lastCommandDiagnostic']=dict(self.last_dobot_command)
+        return data
     def start(self):
         if self.thread and self.thread.is_alive():return
         self.stop_event.clear(); self.thread=threading.Thread(target=self._run,name=f"edge-{self.profile.machine_id}",daemon=True); self.thread.start()
@@ -118,7 +140,10 @@ class MachineRuntime:
                         name,payload=validate_command(cmd,self.profile.machine_id,driver)
                         emergency=name in STOP_COMMANDS
                         if (not commands_allowed or self.control_latched) and not emergency:
-                            self.log('Comando bloqueado. Após falha, inspecione a máquina e reconecte explicitamente.')
+                            reason='Comandos não liberados no cadastro/Edge.' if not commands_allowed else 'Trava de segurança do Edge ativa. Inspecione e reconecte o equipamento.'
+                            self.log(f'Comando {name} #{cid} BLOQUEADO: {reason}')
+                            if driver=='DOBOT_MAGICIAN':
+                                self.last_dobot_command={'command':name,'status':'BLOQUEADO','reason':reason,'id':cid}
                             c.confirm(cid,'FALHOU')
                         else:
                             current=c.authorize(cid)
@@ -136,13 +161,30 @@ class MachineRuntime:
                                     if driver=='DOBOT_MAGICIAN':self.adapter.params['_poseObserver']=self._motion_observer(c)
                                     if driver in {'SERIAL_JSON','USB_SERIAL'}:self.adapter.execute_command(name,payload,command_id=cid)
                                     else:self.adapter.execute_command(name,payload)
-                                except Exception:
-                                    result='FALHOU'; self.control_latched=True
-                                    self.status('ERROR',error='Controle bloqueado até inspeção e reconexão explícita.')
-                                    self._halt_adapter()
-                                    self.log('Falha na execução. Controle bloqueado até inspeção e reconexão explícita.')
+                                except Exception as error:
+                                    result='FALHOU'
+                                    # Apenas a rejeição local comprovadamente anterior
+                                    # ao movimento permite tentar OUTRO alvo. Alarmes,
+                                    # perdas de comunicação, falhas PTP e STOP continuam
+                                    # travando o controle ate inspeção/reconexão.
+                                    preflight=isinstance(error,MotionPreflightError)
+                                    if not preflight:self.control_latched=True
+                                    code=getattr(getattr(error,'response',None),'status_code',None)
+                                    cause=(str(error).strip()[:850] if isinstance(error,AdapterError)
+                                           else f'Autorização/comunicação HTTP {code}' if isinstance(code,int)
+                                           else type(error).__name__)
+                                    if driver=='DOBOT_MAGICIAN':
+                                        self.last_dobot_command={'command':name,'status':'REJEITADO' if preflight else 'FALHOU','reason':cause,'id':cid}
+                                    if preflight:
+                                        self.log(f'Comando {name} #{cid} REJEITADO ANTES DE MOVER: {cause}. Escolha passo menor ou sentido oposto.')
+                                    else:
+                                        self.status('ERROR',error='Controle bloqueado até inspeção e reconexão explícita.')
+                                        self._halt_adapter()
+                                        self.log(f'Comando {name} #{cid} FALHOU: {cause}. Controle bloqueado até inspeção e reconexão explícita.')
                                 else:
                                     result='CONCLUIDO';command_executed=True;self.log(f'Comando concluído: {name}')
+                                    if driver=='DOBOT_MAGICIAN':
+                                        self.last_dobot_command={'command':name,'status':'CONCLUIDO','reason':'','id':cid}
                                 finally:
                                     self.adapter.params.pop('_motionGuard',None)
                                     self.adapter.params.pop('_poseObserver',None)
@@ -154,6 +196,7 @@ class MachineRuntime:
                     now=time.time()
                     if command_executed or now>=next_telemetry:
                         data=self.adapter.read_telemetry() or {}
+                        data=self._publish_dobot_diagnostic(data,driver)
                         if data:
                             if str(cfg.get('controlador') or '').upper() == 'IMPRESSORA_3D':
                                 data = normalize_printer3d_telemetry(data, protocol=cfg.get('protocolo') or driver)

@@ -1,0 +1,76 @@
+STEELCONTROL — CORREÇÃO MANUAL V4 / POSIÇÃO INICIAL
+===================================================
+
+ESTE PACOTE É INCREMENTAL: instale sobre o seu projeto que já recebeu as
+correções anteriores (incluindo a V3 e o localhost). NÃO desinstala nada.
+
+1) Feche o SteelControl Edge, o backend e o navegador.
+2) Faça backup da pasta steelcontrol22desk.
+3) Extraia o conteúdo deste ZIP DIRETAMENTE na raiz steelcontrol22desk,
+   mantendo a estrutura das pastas e substituindo os arquivos.
+4) No PowerShell aberto nessa pasta, inicie o SteelControl local:
+   powershell -ExecutionPolicy Bypass -File .\INICIAR_STEELCONTROL.ps1
+5) Em OUTRO terminal da mesma pasta, inicie o Edge:
+   .\INICIAR_STEELCONTROL_EDGE.bat
+6) Atualize o navegador com Ctrl+Shift+R. A operacao.html deve carregar
+   dobot-control-component.js?v=22 (sem espaço em "dobot").
+
+O QUE MUDOU
+===========
+* Após um PTP confirmado, a tela espera a telemetria realmente alcançar
+  a nova posição antes de calcular o destino do próximo passo. Assim não
+  envia por engano o mesmo destino baseado em coordenadas antigas.
+* Se o alvo já coincide com a posição real, o driver rejeita a solicitação
+  ANTES de enfileirar movimento; não ativa a trava de falha física do Edge.
+* Se um comando é aceito mas o braço fica imóvel, o driver mantém o
+  bloqueio por segurança e informa os índices da fila, posição inicial,
+  posição observada e destino; consulte os Logs do Edge.
+* HOME · Voltar ao início: retorna usando DOBOT_PTP validado, 10% de
+  velocidade, até a posição inicial que o operador ensinou e gravou.
+* Gravar início: salva a pose atual no navegador/PC, após checar telemetria
+  recente e envelope preventivo. Não grava no firmware nem no Mobile.
+* NENHUM bloqueio de alarme, parada, limite ou autorização foi removido.
+
+COMO ENSINAR O HOME (NÃO É CALIBRAÇÃO FÍSICA)
+===========================================
+Só com LED VERDE real no braço, sem alarmes, com a área livre e professor
+presente:
+1) Posicione o braço numa pose de repouso que seja realmente segura e
+   com caminho livre a partir das posições que você pretende usar.
+2) Clique 'Gravar início'.
+3) Movimente o braço com pequenos passos e espere cada conclusão.
+4) Clique 'HOME · Voltar ao início' e confirme a posição e o caminho.
+
+ATENÇÃO: O comando HOME deste pacote é retorno a uma posição ensinada.
+Não substitui o procedimento físico de calibração/referenciamento.
+A trajetória não é certificada contra colisões: não use se houver
+obstáculos no caminho. O botão nunca ignora a trava do Edge.
+
+SE DER 'PTP RECEBIDO MAS NÃO MOVEU'
+===================================
+NÃO clique repetidamente nem force a liberação de movimento.
+O erro significa que a fila recebeu o comando mas a posição real não
+foi confirmada; pode haver condições físicas, alarmes, inicialização ou
+falha de comunicação. Inspecione o braço/LED, veja os logs no Edge e
+mande a linha completa que começa com 'Comando DOBOT_PTP' incluindo
+'fila enviada=', 'executada=', 'inicial=', 'atual=', 'alvo='.
+Sem os dados do hardware é impossível confirmar a causa definitiva.
+
+ARQUIVOS NO ZIP
+===============
+steelcontrol-edge/adapters/dobot_adapter.py
+steelcontrol-edge/tests/test_dobot_alarm_recovery.py
+steelcontrol-edge/tests/test_repeat_manual_ptp.py
+frontend/assets/js/dobot-control-component.js
+frontend/operacao.html
+LEIA_PRIMEIRO_CONTROLE_MANUAL_V4.txt
+
+VALIDAÇÃO LOCAL EXECUTADA (SEM O BRAÇO FÍSICO)
+============================================
+python -m unittest discover -s tests -p test_repeat_manual_ptp.py (3 ok)
+python -m unittest discover -s tests -p test_motion_telemetry.py (5 ok)
+python -m unittest discover -s tests -p test_dobot_alarm_recovery.py (15 ok)
+node --check frontend/assets/js/dobot-control-component.js (ok)
+
+Se instalou só parte das versões anteriores, envie a pasta atualizada do
+SteelControl para montar um pacote cumulativo. NÃO envie .env nem chaves.
