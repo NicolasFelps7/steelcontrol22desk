@@ -114,12 +114,12 @@ class CommandSecurity(unittest.TestCase):
         with self.assertRaises(AdapterError):driver._get_pose()
         with self.assertRaises(AdapterError):driver._set_speed(float('nan'))
 
-    def test_connect_uses_read_only_commands_and_defers_queue_clear(self):
+    def test_connect_stops_and_clears_stale_queue_without_start_or_alarm_reset(self):
         driver=DobotMagicianAdapter({'serialPort':'COM_TEST'})
         driver._candidates=lambda:['COM_TEST'];driver._get_pose=Mock(return_value={})
         driver._exchange=Mock(return_value=b'');driver._recover_alarms=Mock();driver._initialize_controller=Mock()
         with patch('serial.Serial',return_value=Mock()):driver.connect()
-        self.assertEqual([call.args[0] for call in driver._exchange.call_args_list],[20])
+        self.assertEqual([call.args[0] for call in driver._exchange.call_args_list],[242,245])
         self.assertTrue(driver.queue_stopped)
         driver._recover_alarms.assert_not_called();driver._initialize_controller.assert_not_called()
 

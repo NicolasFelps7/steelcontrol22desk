@@ -12,13 +12,13 @@ class MotionTelemetry(unittest.TestCase):
  def test_publishes_measured_intermediate_pose_before_command_returns(self):
   seen=[];d=self.driver(seen.append)
   with patch('adapters.dobot_adapter.time.sleep'):d.execute_command('DOBOT_PTP',{'x':200,'y':0,'z':100,'r':0,'velocidade':10})
-  self.assertEqual([p['dadosExtras']['dobot']['pose']['x'] for p in seen],[175,200,200]);self.assertEqual(seen[0]['dadosExtras']['dobot']['joints']['j1'],10);self.assertEqual(seen[0]['dadosExtras']['dobot']['queue'],'MOVING');self.assertEqual(d.cycles,1);self.assertEqual(d._exchange.call_count,3);self.assertEqual([c.args[0] for c in d._exchange.call_args_list],[240,84,240]);self.assertTrue(d._exchange.call_args_list[1].args[2])
- def test_first_ptp_after_connect_restarts_stopped_queue(self):
+  self.assertEqual([p['dadosExtras']['dobot']['pose']['x'] for p in seen],[175,200,200]);self.assertEqual(seen[0]['dadosExtras']['dobot']['joints']['j1'],10);self.assertEqual(seen[0]['dadosExtras']['dobot']['queue'],'MOVING');self.assertEqual(d.cycles,1);self.assertEqual(d._exchange.call_count,1);self.assertEqual([c.args[0] for c in d._exchange.call_args_list],[84]);self.assertFalse(d._exchange.call_args_list[-1].args[2])
+ def test_first_ptp_after_connect_does_not_restart_queue(self):
   seen=[];d=self.driver(seen.append);d.queue_stopped=True
   with patch('adapters.dobot_adapter.time.sleep'):d.execute_command('DOBOT_PTP',{'x':200,'y':0,'z':100,'r':0,'velocidade':10})
-  self.assertEqual([c.args[0] for c in d._exchange.call_args_list],[241,245,240,84,240])
-  self.assertTrue(d._exchange.call_args_list[3].args[2])
-  self.assertFalse(d.queue_stopped)
+  self.assertEqual([c.args[0] for c in d._exchange.call_args_list],[84])
+  self.assertFalse(d._exchange.call_args_list[-1].args[2])
+  self.assertTrue(d.queue_stopped)
   self.assertEqual(d.cycles,1)
  def test_publication_failure_is_not_reported_as_completed_motion(self):
   d=self.driver(Mock(side_effect=RuntimeError('offline')))

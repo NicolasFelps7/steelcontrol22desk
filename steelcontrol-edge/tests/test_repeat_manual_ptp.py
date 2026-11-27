@@ -42,7 +42,7 @@ class ManualRepeatChecks(unittest.TestCase):
         self.assertEqual(robot.production, 2)
         self.assertEqual(sum(cid == 84 for cid, _, _ in robot.calls), 2)
 
-    def test_real_stall_remains_fatal_and_provides_queue_and_pose(self):
+    def test_real_stall_remains_fatal_and_provides_transport_and_pose(self):
         robot = Probe([pose(150)] * 9)
         clock = iter([0, 1, 4, 8, 12, 13, 14, 15])
         with patch('adapters.dobot_adapter.time.monotonic', side_effect=lambda: next(clock)), patch('adapters.dobot_adapter.time.sleep'):
@@ -50,7 +50,7 @@ class ManualRepeatChecks(unittest.TestCase):
                 robot.execute_command('DOBOT_PTP', dict(x=155, y=150, z=100, r=0, velocidade=20))
         detail = str(error.exception)
         self.assertIn('não houve deslocamento medido', detail)
-        self.assertIn('fila enviada=', detail)
+        self.assertIn('transporte imediato', detail)
         self.assertIn('inicial=', detail)
         self.assertIn('alvo=', detail)
 

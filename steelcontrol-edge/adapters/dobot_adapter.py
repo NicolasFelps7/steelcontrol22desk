@@ -77,13 +77,11 @@ class DobotMagicianAdapter(BaseAdapter):
         for port in self._candidates():
             try:
                 self.ser=serial.Serial(port,int(self.params.get("baud") or 115200),timeout=.7,write_timeout=.7); self.port=port
-                # Abrir conexão deve ser somente leitura. O SteelControl não
-                # altera a fila do robô automaticamente ao abrir o dashboard.
-                # Isso separa falhas do USB dos comandos de movimentação.
+                # Compatibilidade com a versão antiga: parar e descartar a
+                # fila anterior, sem iniciar movimentos nem limpar alarmes.
                 self._get_pose()
-                self._alarms()
-                # A primeira movimentação explicitamente autorizada saneará
-                # a fila anterior antes de enfileirar QUALQUER PTP novo.
+                self._exchange(242,1,False)
+                self._exchange(245,1,False)
                 self.queue_stopped=True
                 self.connected=True; return
             except Exception as e:
@@ -127,6 +125,7 @@ class DobotMagicianAdapter(BaseAdapter):
         if index is None:return
         deadline=time.monotonic()+timeout
         while time.monotonic()<deadline:
+            self._check_motion_guard()
             current=self._current_queue_index()
             # O índice é monotônico. Comparar apenas por igualdade podia perder
             # a confirmação quando o controlador avançava mais de um item entre
@@ -139,8 +138,11 @@ class DobotMagicianAdapter(BaseAdapter):
     def _initialize_controller(self):
         # Sequência compatível com o controlador do Magician/Lite: a fila deve
         # estar rodando antes de receber os parâmetros e movimentos.
-        self._exchange(240,1,False)
+        self._check_motion_guard()
+        # Descarte a fila anterior ANTES do START: nunca retome alvos antigos.
+        self._exchange(241,1,False)
         self._exchange(245,1,False)
+        self._exchange(240,1,False)
         self._exchange(80,1,True,struct.pack('<8f',*[200.0]*8))
         self._exchange(81,1,True,struct.pack('<4f',200.0,200.0,200.0,200.0))
         self._exchange(82,1,True,struct.pack('<2f',10.0,200.0))
@@ -150,6 +152,11 @@ class DobotMagicianAdapter(BaseAdapter):
         self._exchange(240,1,False)
         self._wait_queue_index(self._queue_index(response),3.0)
         self.queue_stopped=False
+    def _prepare_direct_motion(self):
+        self._check_motion_guard()
+        self._ensure_motion_ready()
+        self._check_motion_guard()
+
     def _queue_and_start(self,cid,params=b""):
         if self.queue_stopped:
             # Somente após autorização de um movimento. A fila antiga pode
@@ -285,19 +292,17 @@ class DobotMagicianAdapter(BaseAdapter):
             self._exchange(31,1,False,struct.pack('<I',0));self.cycles+=1;return
         if command=="DOBOT_PTP":
             target=validate_ptp(payload);x=target['x'];y=target['y'];z=target['z'];r=target['r']
-            self._ensure_motion_ready();self.last_motion_target={key:target[key] for key in ('x','y','z','r')};self._set_speed(target['velocidade'])
+            self._ensure_motion_ready();self.last_motion_target={key:target[key] for key in ('x','y','z','r')}
             before=self._get_pose()
             if all(abs(before[k]-target[k]) <= (0.25 if k != 'r' else 0.35) for k in ('x','y','z','r')):
                 raise MotionPreflightError('Alvo PTP já coincide com a posição real atual. Nenhum movimento foi enviado; atualize a telemetria antes de tentar outro passo.')
-            # O connect() parou e limpou a fila antiga por segurança. Para
-            # movimentar novamente precisamos iniciar a fila do controlador.
-            # SetPTPCmd (ID 84, modo MOVJ_XYZ=1) é enviado como queued=True;
-            # o fim físico é confirmado pelas coordenadas, nunca apenas pelo ACK.
-            response=self._queue_and_start(84,bytes([1])+struct.pack('<4f',x,y,z,r))
-            queued_index=self._queue_index(response)
-            self.last_ptp_diagnostic={"state":"EXECUTANDO", "sentQueueIndex":queued_index, "initialPose":{k:round(before[k],3) for k in ('x','y','z','r')}, "targetPose":{k:round(target[k],3) for k in ('x','y','z','r')}}
-            queue_done=queued_index is None  # Alguns firmwares antigos não devolvem índice.
-            last_queue_index=None
+            # Transporte imediato do driver antigo; a fila autenticada do Edge
+            # continua serializando comandos. A conclusão exige movimento medido.
+            self._prepare_direct_motion()
+            self._set_speed(target['velocidade'])
+            self._check_motion_guard()
+            self._exchange(84,1,False,bytes([1])+struct.pack('<4f',x,y,z,r))
+            self.last_ptp_diagnostic={"state":"EXECUTANDO", "transport":"IMMEDIATE", "initialPose":{k:round(before[k],3) for k in ('x','y','z','r')}, "targetPose":{k:round(target[k],3) for k in ('x','y','z','r')}}
             deadline=time.monotonic()+12.0; moved=False; last=before; near_samples=0
             while time.monotonic()<deadline:
                 self._check_motion_guard()
@@ -312,15 +317,10 @@ class DobotMagicianAdapter(BaseAdapter):
                 self._publish_motion_pose(last,alarms)
                 moved = moved or self._motion_progressed(before,last,('x','y','z','r'))
                 self.last_ptp_diagnostic.update({"actualPose":{k:round(last[k],3) for k in ('x','y','z','r')}, "rawAlarms":raw_alarms, "movementDetected":moved})
-                if not queue_done:
-                    current=self._current_queue_index()
-                    last_queue_index=current
-                    self.last_ptp_diagnostic["executedQueueIndex"]=current
-                    queue_done=current is not None and current>=queued_index
                 # Não libere o próximo PTP quando a pose inicial já estava
                 # dentro da tolerância do pequeno passo pedido (1 mm / 1°).
                 near=self._target_reached(before,last,target,('x','y','z','r'))
-                near_samples = near_samples + 1 if near and moved and queue_done else 0
+                near_samples = near_samples + 1 if near and moved else 0
                 if near_samples>=2:
                     self.last_motion_target=None;self.cycles+=1;self.production+=1
                     self.last_ptp_diagnostic["state"]="CONCLUIDO"; return
@@ -330,15 +330,13 @@ class DobotMagicianAdapter(BaseAdapter):
             # Informar alarmes e juntas no instante da falha ajuda a separar
             # erro de alcance, controlador e telemetria sem mandar outro PTP.
             raw_alarms=self._alarms()
-            queue_detail=f'fila enviada={queued_index if queued_index is not None else "sem índice"}, índice processado={last_queue_index if last_queue_index is not None else "não consultado"}'
+            queue_detail='transporte imediato; confirmação por pose real'
             pose_detail=(f'inicial=({before["x"]:.2f},{before["y"]:.2f},{before["z"]:.2f},{before["r"]:.2f}); '
                          f'atual=({last["x"]:.2f},{last["y"]:.2f},{last["z"]:.2f},{last["r"]:.2f}); '
                          f'alvo=({x:.2f},{y:.2f},{z:.2f},{r:.2f})')
             extra=f'; alarmes={raw_alarms or "nenhum reportado"}; juntas=({last["j1"]:.2f},{last["j2"]:.2f},{last["j3"]:.2f},{last["j4"]:.2f})'
             self.last_ptp_diagnostic.update({"state":"FALHOU", "rawAlarms":raw_alarms,
                 "actualJoints":{k:round(last[k],3) for k in ('j1','j2','j3','j4')}})
-            if not queue_done:
-                raise AdapterError(f'Dobot não confirmou fila PTP; {queue_detail}; {pose_detail}{extra}. Verifique estado, alarmes e LED.')
             if not moved:
                 raise AdapterError(f'Dobot confirmou comando PTP, mas não houve deslocamento medido; {queue_detail}; {pose_detail}{extra}. Inspecione o braço antes de reconectar.')
             raise AdapterError(f'Dobot iniciou PTP mas não atingiu o destino; {queue_detail}; {pose_detail}{extra}.')
@@ -348,13 +346,13 @@ class DobotMagicianAdapter(BaseAdapter):
             before=self._get_pose();target_j4=before['j4']+rotation['delta']
             if target_j4<J4_LIMITS[0] or target_j4>J4_LIMITS[1]:
                 raise MotionPreflightError(f"Rotação bloqueada antes de acionar o Dobot: J4 alvo {target_j4:.1f}° fora da faixa preventiva ({J4_LIMITS[0]:g}° a {J4_LIMITS[1]:g}°). Gire no sentido oposto.")
+            self._prepare_direct_motion()
             self._set_speed(rotation['velocidade'])
+            self._check_motion_guard()
             # MOVJ_ANGLE (modo 4) altera somente J4. Usar MOVJ_XYZ para girar
             # o efetuador fazia alguns firmwares recalcularem a postura inteira
             # e deslocarem X/Y, além de aproximar outras juntas dos limites.
-            response=self._queue_and_start(84,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
-            queued_index=self._queue_index(response)
-            queue_done=queued_index is None
+            self._exchange(84,1,False,bytes([4])+struct.pack('<4f',before['j1'],before['j2'],before['j3'],target_j4))
             deadline=time.monotonic()+8.0;last=before;near_samples=0
             tolerance=min(1.5,max(0.15,abs(rotation['delta'])*0.35))
             while time.monotonic()<deadline:
@@ -364,16 +362,11 @@ class DobotMagicianAdapter(BaseAdapter):
                     recovery=self._recover_rejected_motion(alarms)
                     raise AdapterError(f"Dobot recusou a rotação de J4: {self._describe_alarms(alarms)}.{recovery}")
                 self._publish_motion_pose(last,alarms)
-                if not queue_done:
-                    current=self._current_queue_index()
-                    queue_done=current is not None and current>=queued_index
                 near=abs(last['j4']-target_j4)<=tolerance
                 moved=abs(last['j4']-before['j4'])>=0.2
-                near_samples=near_samples+1 if near and moved and queue_done else 0
+                near_samples=near_samples+1 if near and moved else 0
                 if near_samples>=2:
                     self.cycles+=1;return
-            if not queue_done:
-                raise AdapterError(f'Dobot não confirmou a execução da fila de rotação (índice {queued_index}).')
             if abs(last['j4']-before['j4'])<=0.2:
                 raise AdapterError("Dobot recebeu a rotação, mas a junta J4 não iniciou movimento.")
             raise AdapterError(f"Dobot não concluiu a rotação. J4 atual={last['j4']:.2f}°, alvo={target_j4:.2f}°.")
